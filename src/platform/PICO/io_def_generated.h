@@ -1,20 +1,19 @@
 /*
- * This file is part of Betaflight.
+ * This file is part of Cleanflight and Betaflight.
  *
- * Betaflight is free software. You can redistribute this software
- * and/or modify this software under the terms of the GNU General
- * Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later
- * version.
+ * Cleanflight and Betaflight are free software. You can redistribute
+ * this software and/or modify this software under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * Betaflight is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
+ * Cleanflight and Betaflight are distributed in the hope that they
+ * will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public
- * License along with this software.
+ * You should have received a copy of the GNU General Public License
+ * along with this software.
  *
  * If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,63 +24,72 @@
 // DEFIO_PORT_<port>_USED_COUNT is count of used pins on target
 
 #if defined(RP2350A)
-#define DEFIO_USED_COUNT 30
+#define DEFIO_PORT_A_USED_COUNT 30
 #elif defined(RP2350B)
-#define DEFIO_USED_COUNT 48
+#define DEFIO_PORT_A_USED_COUNT 48
 #else
 #error "Unsupported target MCU type for PICO"
 #endif
 
-#define DEFIO_TAG__PA0    DEFIO_TAG_MAKE(0,0)
-#define DEFIO_TAG__PA1    DEFIO_TAG_MAKE(0,1)
-#define DEFIO_TAG__PA2    DEFIO_TAG_MAKE(0,2)
-#define DEFIO_TAG__PA3    DEFIO_TAG_MAKE(0,3)
-#define DEFIO_TAG__PA4    DEFIO_TAG_MAKE(0,4)
-#define DEFIO_TAG__PA5    DEFIO_TAG_MAKE(0,5)
-#define DEFIO_TAG__PA6    DEFIO_TAG_MAKE(0,6)
-#define DEFIO_TAG__PA7    DEFIO_TAG_MAKE(0,7)
-#define DEFIO_TAG__PA8    DEFIO_TAG_MAKE(0,8)
-#define DEFIO_TAG__PA9    DEFIO_TAG_MAKE(0,9)
-#define DEFIO_TAG__PA10   DEFIO_TAG_MAKE(0,10)
-#define DEFIO_TAG__PA11   DEFIO_TAG_MAKE(0,11)
-#define DEFIO_TAG__PA12   DEFIO_TAG_MAKE(0,12)
-#define DEFIO_TAG__PA13   DEFIO_TAG_MAKE(0,13)
-#define DEFIO_TAG__PA14   DEFIO_TAG_MAKE(0,14)
-#define DEFIO_TAG__PA15   DEFIO_TAG_MAKE(0,15)
-#define DEFIO_TAG__PA16   DEFIO_TAG_MAKE(0,16)
-#define DEFIO_TAG__PA17   DEFIO_TAG_MAKE(0,17)
-#define DEFIO_TAG__PA18   DEFIO_TAG_MAKE(0,18)
-#define DEFIO_TAG__PA19   DEFIO_TAG_MAKE(0,19)
-#define DEFIO_TAG__PA20   DEFIO_TAG_MAKE(0,20)
-#define DEFIO_TAG__PA21   DEFIO_TAG_MAKE(0,21)
-#define DEFIO_TAG__PA22   DEFIO_TAG_MAKE(0,22)
-#define DEFIO_TAG__PA23   DEFIO_TAG_MAKE(0,23)
-#define DEFIO_TAG__PA24   DEFIO_TAG_MAKE(0,24)
-#define DEFIO_TAG__PA25   DEFIO_TAG_MAKE(0,25)
-#define DEFIO_TAG__PA26   DEFIO_TAG_MAKE(0,26)
-#define DEFIO_TAG__PA27   DEFIO_TAG_MAKE(0,27)
-#define DEFIO_TAG__PA28   DEFIO_TAG_MAKE(0,28)
-#define DEFIO_TAG__PA29   DEFIO_TAG_MAKE(0,29)
+#define DEFIO_PORT_A_OFFSET (0)
+
+// DEFIO_GPIOID__<port> maps to port index
+#define DEFIO_GPIOID__A 0
+
+// DEFIO_TAG__P<port><pin> will expand to TAG if defined for target, error is triggered otherwise
+// DEFIO_TAG_E__P<port><pin> will expand to TAG if defined, to NONE otherwise (usefull for tables that are CPU-specific)
+// DEFIO_REC__P<port><pin> will expand to ioRec* (using DEFIO_REC_INDEX(idx))
+
+#define DEFIO_TAG__PA0    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 0)
+#define DEFIO_TAG__PA1    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 1)
+#define DEFIO_TAG__PA2    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 2)
+#define DEFIO_TAG__PA3    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 3)
+#define DEFIO_TAG__PA4    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 4)
+#define DEFIO_TAG__PA5    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 5)
+#define DEFIO_TAG__PA6    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 6)
+#define DEFIO_TAG__PA7    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 7)
+#define DEFIO_TAG__PA8    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 8)
+#define DEFIO_TAG__PA9    DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 9)
+#define DEFIO_TAG__PA10   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 10)
+#define DEFIO_TAG__PA11   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 11)
+#define DEFIO_TAG__PA12   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 12)
+#define DEFIO_TAG__PA13   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 13)
+#define DEFIO_TAG__PA14   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 14)
+#define DEFIO_TAG__PA15   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 15)
+#define DEFIO_TAG__PA16   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 16)
+#define DEFIO_TAG__PA17   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 17)
+#define DEFIO_TAG__PA18   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 18)
+#define DEFIO_TAG__PA19   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 19)
+#define DEFIO_TAG__PA20   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 20)
+#define DEFIO_TAG__PA21   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 21)
+#define DEFIO_TAG__PA22   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 22)
+#define DEFIO_TAG__PA23   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 23)
+#define DEFIO_TAG__PA24   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 24)
+#define DEFIO_TAG__PA25   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 25)
+#define DEFIO_TAG__PA26   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 26)
+#define DEFIO_TAG__PA27   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 27)
+#define DEFIO_TAG__PA28   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 28)
+#define DEFIO_TAG__PA29   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 29)
 
 #if defined(RP2350B)
-#define DEFIO_TAG__PA30   DEFIO_TAG_MAKE(0,30)
-#define DEFIO_TAG__PA31   DEFIO_TAG_MAKE(0,31)
-#define DEFIO_TAG__PA32   DEFIO_TAG_MAKE(0,32)
-#define DEFIO_TAG__PA33   DEFIO_TAG_MAKE(0,33)
-#define DEFIO_TAG__PA34   DEFIO_TAG_MAKE(0,34)
-#define DEFIO_TAG__PA35   DEFIO_TAG_MAKE(0,35)
-#define DEFIO_TAG__PA36   DEFIO_TAG_MAKE(0,36)
-#define DEFIO_TAG__PA37   DEFIO_TAG_MAKE(0,37)
-#define DEFIO_TAG__PA38   DEFIO_TAG_MAKE(0,38)
-#define DEFIO_TAG__PA39   DEFIO_TAG_MAKE(0,39)
-#define DEFIO_TAG__PA40   DEFIO_TAG_MAKE(0,40)
-#define DEFIO_TAG__PA41   DEFIO_TAG_MAKE(0,41)
-#define DEFIO_TAG__PA42   DEFIO_TAG_MAKE(0,42)
-#define DEFIO_TAG__PA43   DEFIO_TAG_MAKE(0,43)
-#define DEFIO_TAG__PA44   DEFIO_TAG_MAKE(0,44)
-#define DEFIO_TAG__PA45   DEFIO_TAG_MAKE(0,45)
-#define DEFIO_TAG__PA46   DEFIO_TAG_MAKE(0,46)
-#define DEFIO_TAG__PA47   DEFIO_TAG_MAKE(0,47)
+#define DEFIO_TAG__PA30   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 30)
+#define DEFIO_TAG__PA31   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 31)
+#define DEFIO_TAG__PA32   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 32)
+#define DEFIO_TAG__PA33   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 33)
+#define DEFIO_TAG__PA34   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 34)
+#define DEFIO_TAG__PA35   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 35)
+#define DEFIO_TAG__PA36   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 36)
+#define DEFIO_TAG__PA37   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 37)
+#define DEFIO_TAG__PA38   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 38)
+#define DEFIO_TAG__PA39   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 39)
+#define DEFIO_TAG__PA40   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 40)
+#define DEFIO_TAG__PA41   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 41)
+#define DEFIO_TAG__PA42   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 42)
+#define DEFIO_TAG__PA43   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 43)
+#define DEFIO_TAG__PA44   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 44)
+#define DEFIO_TAG__PA45   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 45)
+#define DEFIO_TAG__PA46   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 46)
+#define DEFIO_TAG__PA47   DEFIO_TAG_MAKE(DEFIO_GPIOID__A, 47)
 #endif
 
 #define DEFIO_TAG_E__PA0  DEFIO_TAG__PA0
@@ -135,24 +143,24 @@
 #define DEFIO_TAG_E__PA46 DEFIO_TAG__PA46
 #define DEFIO_TAG_E__PA47 DEFIO_TAG__PA47
 #else
-#define DEFIO_TAG_E__PA30 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA31 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA32 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA33 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA34 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA35 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA36 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA37 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA38 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA39 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA40 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA41 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA42 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA43 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA44 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA45 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA46 DEFIO_TAG__NONE
-#define DEFIO_TAG_E__PA47 DEFIO_TAG__NONE
+#define DEFIO_TAG_E__PA30 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA31 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA32 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA33 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA34 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA35 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA36 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA37 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA38 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA39 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA40 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA41 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA42 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA43 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA44 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA45 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA46 DEFIO_TAG_A__NONE
+#define DEFIO_TAG_E__PA47 DEFIO_TAG_A__NONE
 #endif
 
 #define DEFIO_REC__PA0    DEFIO_REC_INDEXED(0)
@@ -209,16 +217,15 @@
 
 // DEFIO_IO_USED_COUNT is number of io pins supported on target
 #if defined(RP2350A)
-#define DEFIO_IO_USED_COUNT DEFIO_USED_COUNT
+#define DEFIO_IO_USED_COUNT 30
 #elif defined(RP2350B)
-#define DEFIO_IO_USED_COUNT DEFIO_USED_COUNT
+#define DEFIO_IO_USED_COUNT 48
 #endif
 
 // DEFIO_PORT_USED_LIST - comma separated list of bitmask for all used ports.
 // DEFIO_PORT_OFFSET_LIST - comma separated list of port offsets (count of pins before this port)
 // unused ports on end of list are skipped
-// NB the following are not required in src/main
 #define DEFIO_PORT_USED_COUNT   1
-#define DEFIO_PORT_USED_LIST
-#define DEFIO_PORT_OFFSET_LIST  0
-#define DEFIO_PIN_USED_COUNT    DEFIO_USED_COUNT
+#define DEFIO_PORT_USED_LIST    DEFIO_PORT_A_USED_MASK
+#define DEFIO_PORT_OFFSET_LIST  DEFIO_PORT_A_OFFSET
+#define DEFIO_PIN_USED_COUNT    DEFIO_PORT_A_USED_COUNT

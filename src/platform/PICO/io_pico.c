@@ -27,12 +27,8 @@
 #include "common/utils.h"
 #include "hardware/gpio.h"
 
-#if DEFIO_PORT_USED_COUNT > 1
-#error PICO code currently based on a single io port
-#endif
-
-// Initialize all ioRec_t structures.
-// PICO (single port) doesn't use the gpio field.
+// initialize all ioRec_t structures from ROM
+// currently only bitmask is used, this may change in future
 void IOInitGlobal(void)
 {
     ioRec_t *ioRec = ioRecs;
@@ -41,36 +37,6 @@ void IOInitGlobal(void)
         ioRec->pin = pin;
         ioRec++;
     }
-
-#ifdef PICO_TRACE
-#ifdef PICO_TRACE_TX_GPIO
-    ioRecs[PICO_TRACE_TX_GPIO].owner = OWNER_SYSTEM;
-#endif
-#ifdef PICO_TRACE_RX_GPIO
-    ioRecs[PICO_TRACE_RX_GPIO].owner = OWNER_SYSTEM;
-#endif
-#endif
-
-    // Some boards (e.g. Hellbender) require a pin to be held low in order to generate a 5V / 9V
-    // power supply from the main battery.
-    // (TODO: should we manage a list of pins that we want to send low or high?)
-#ifdef PICO_BEC_5V_ENABLE_PIN
-    const int pin5 = IO_PINBYTAG(IO_TAG(PICO_BEC_5V_ENABLE_PIN));
-    gpio_init(pin5);
-    gpio_set_dir(pin5, 1);
-    gpio_put(pin5, 0);
-    bprintf("5V enable pin: %d set low", pin5);
-    ioRecs[pin5].owner = OWNER_SYSTEM;
-#endif
-
-#ifdef PICO_BEC_9V_ENABLE_PIN
-    const int pin9 = IO_PINBYTAG(IO_TAG(PICO_BEC_9V_ENABLE_PIN));
-    gpio_init(pin9);
-    gpio_set_dir(pin9, 1);
-    gpio_put(pin9, 0);
-    bprintf("9V enable pin: %d set low", pin9);
-    ioRecs[pin9].owner = OWNER_SYSTEM;
-#endif
 }
 
 uint32_t IO_EXTI_Line(IO_t io)
@@ -121,36 +87,11 @@ void IOToggle(IO_t io)
 
 void IOConfigGPIO(IO_t io, ioConfig_t cfg)
 {
-    /*
-TODO: update to support the following
-IOCFG_AF_PP
-IOCFG_IN_FLOATING
-IOCFG_IPD
-IOCFG_IPU
-IOCFG_OUT_OD
-IOCFG_OUT_PP
-IO_RESET_CFG
-
-SPI_IO_CS_CFG (as defined)
-SPI_IO_CS_HIGH_CFG (as defined)
-    */
     if (!io) {
         return;
     }
 
-    uint16_t ioPin = IO_Pin(io);
-    bprintf("pico IOConfigGPIO gpio %d for 0x%02x (0=in, 1=out)",ioPin, cfg);
-
-    gpio_function_t currentFunction = gpio_get_function(ioPin);
-    if (currentFunction == GPIO_FUNC_NULL) {
-        // Select GPIO_FUNC_SIO, set direction to input, clear output value (set to low)
-        gpio_init(ioPin);
-    } else if (currentFunction != GPIO_FUNC_SIO) {
-        bprintf("Warning: not redefining gpio function type from %d to SIO\n", currentFunction);
-    }
-
-    gpio_set_dir(ioPin, (cfg & 0x01)); // 0 = in, 1 = out
-    gpio_set_pulls(ioPin, (cfg >> 5) & GPIO_PULLUP, (cfg >> 5) & GPIO_PULLDOWN);
+    gpio_set_dir(IO_Pin(io), (cfg & 0x01));
 }
 
 IO_t IOGetByTag(ioTag_t tag)
@@ -167,31 +108,4 @@ IO_t IOGetByTag(ioTag_t tag)
     }
 
     return &ioRecs[pinIdx];
-}
-
-int IO_GPIOPortIdx(IO_t io)
-{
-    if (!io) {
-        return -1;
-    }
-    return 0; // Single port
-}
-
-int IO_GPIO_PortSource(IO_t io)
-{
-    return IO_GPIOPortIdx(io);
-}
-
-// zero based pin index
-int IO_GPIOPinIdx(IO_t io)
-{
-    if (!io) {
-        return -1;
-    }
-    return IO_Pin(io);
-}
-
-int IO_GPIO_PinSource(IO_t io)
-{
-    return IO_GPIOPinIdx(io);
 }

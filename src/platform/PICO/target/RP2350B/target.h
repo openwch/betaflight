@@ -21,6 +21,10 @@
 
 #pragma once
 
+#ifndef RP2350B
+#define RP2350B
+#endif
+
 #ifndef TARGET_BOARD_IDENTIFIER
 #define TARGET_BOARD_IDENTIFIER "235B"
 #endif
@@ -29,127 +33,180 @@
 #define USBD_PRODUCT_STRING     "Betaflight RP2350B"
 #endif
 
-#ifdef PICO_TRACE
-#include "pico_trace.h"
-#define bprintf tprintf
-#else
-#define bprintf(fmt,...)
-#endif
-
-#ifndef RP2350B
-#define RP2350B
-#endif
-
-#define USE_MULTICORE
-
+#define USE_IO
 #define USE_UART0
 #define USE_UART1
-#define USE_PIOUART0
-#define USE_PIOUART1
-#define UART_RX_BUFFER_SIZE 1024
-#define UART_TX_BUFFER_SIZE 1024
-#define UARTHARDWARE_MAX_PINS 12
-#define UART_TRAIT_AF_PORT 1
 
 #define USE_SPI
-#define SPIDEV_COUNT 2
-#define USE_SPI_DEVICE_0
 #define USE_SPI_DEVICE_1
-#define USE_SPI_DMA_ENABLE_LATE
-#define MAX_SPI_PIN_SEL 6
-
-#define QUADSPIDEV_COUNT 1
-
-#define USE_I2C
-#define I2CDEV_COUNT 2
-#define USE_I2C_DEVICE_0
-#define USE_I2C_DEVICE_1
-
-#define USE_ADC
-
-#define USE_VCP
-
-#define USE_USB_MSC
+#define USE_SPI_DEVICE_2
 
 #undef USE_SOFTSERIAL1
 #undef USE_SOFTSERIAL2
+
+#undef USE_VCP
+
 #undef USE_TRANSPONDER
+#undef USE_DMA
+#undef USE_FLASH
+#undef USE_FLASH_CHIP
+#undef USE_SDCARD
+
 #undef USE_TIMER
+#undef USE_I2C
+#undef USE_UART
+#undef USE_DSHOT
 #undef USE_RCC
-
-// Assume on-board flash (see linker files)
-#define CONFIG_IN_FLASH
-
-// Pico flash writes are all aligned and in batches of FLASH_PAGE_SIZE (256)
-#define FLASH_CONFIG_STREAMER_BUFFER_SIZE   FLASH_PAGE_SIZE
-#define FLASH_CONFIG_BUFFER_TYPE            uint8_t
-
-/* DMA Settings */
-#define DMA_IRQ_CORE_NUM 1 // Use core 1 for DMA IRQs
-#undef USE_DMA_SPEC // not yet required - possibly won't be used at all
-
-// Radio RX
-// SERIALRX CRSF supported, also TELEMETRY_CRSF
-// #undef USE_CRSF
-// #undef USE_SERIALRX_CRSF
-
-// 0, 1 or 2 for pio0, pio1, pio2
-// maybe these more dynamic,
-// or configurable in config.h
-// Four state machines (sm) per pio block
-// pio0 -> dshot for motors 1,2,3,4
-// pio1 -> UART2, UART3
-// pio2 -> LED STRIP
-#define PIO_DSHOT_INDEX    0
-#define PIO_UART_INDEX     1
-#define PIO_LEDSTRIP_INDEX 2
-
-// Various untested or unsupported elements are undefined below
-
-#undef USE_RX_SPI
+#undef USE_CLI
+#undef USE_PWM_OUTPUT
 #undef USE_RX_PWM
 #undef USE_RX_PPM
+#undef USE_RX_SPI
 #undef USE_RX_CC2500
-#undef USE_RX_EXPRESSLRS
-#undef USE_RX_SX1280
-#undef USE_SERIALRX_GHST
-#undef USE_SERIALRX_IBUS
-#undef USE_SERIALRX_JETIEXBUS
-#undef USE_SERIALRX_SBUS
-#undef USE_SERIALRX_SPEKTRUM
-#undef USE_SERIALRX_SUMD
-#undef USE_SERIALRX_SUMH
-#undef USE_SERIALRX_XBUS
-#undef USE_SERIALRX_FPORT
-
-#undef USE_TELEMETRY_GHST
-#undef USE_TELEMETRY_FRSKY_HUB
-#undef USE_TELEMETRY_HOTT
-#undef USE_TELEMETRY_IBUS
-#undef USE_TELEMETRY_IBUS_EXTENDED
-#undef USE_TELEMETRY_JETIEXBUS
-#undef USE_TELEMETRY_LTM
-#undef USE_TELEMETRY_MAVLINK
-#undef USE_TELEMETRY_SMARTPORT
-#undef USE_TELEMETRY_SRXL
-
 #undef USE_SERIAL_4WAY_BLHELI_INTERFACE
 #undef USE_SERIAL_4WAY_BLHELI_BOOTLOADER
 #undef USE_SERIAL_4WAY_SK_BOOTLOADER
 #undef USE_MULTI_GYRO
+#undef USE_BARO
+
+
 
 #undef USE_RANGEFINDER_HCSR04
+#undef USE_CRSF
+#undef USE_TELEMETRY_CRSF
+#undef USE_RX_EXPRESSLRS
+#undef USE_MAX7456
+#undef USE_MAG
+#undef USE_MAG_HMC5883
+#undef USE_MAG_SPI_HMC5883
 #undef USE_VTX_RTC6705
 #undef USE_VTX_RTC6705_SOFTSPI
+#undef USE_RX_SX1280
 #undef USE_SRXL
+#undef USE_TELEMETRY
+#undef USE_OSD
 #undef USE_SPEKTRUM
 #undef USE_SPEKTRUM_BIND
+#undef USE_MSP
+#undef USE_MSP_UART
+#undef USE_GPS
+#undef USE_GPS_UBLOX
+#undef USE_GPS_MTK
+#undef USE_GPS_NMEA
+#undef USE_GPS_SERIAL
+#undef USE_GPS_SONAR
+#undef USE_GPS_UBLOX7
+#undef USE_GPS_UBLOX8
+#undef USE_GPS_RESCUE
 
-#undef USE_SERIAL_PASSTHROUGH
+#undef USE_VTX
+#undef USE_VTX_TRAMP
+#undef USE_VTX_SMARTAUDIO
+#undef USE_SPEKTRUM_VTX_CONTROL
+#undef USE_VTX_COMMON
+#undef USE_FLASH
+#undef USE_FLASH_CHIP
+#undef USE_FLASH_M25P16
+#undef USE_FLASH_W25N01G
+#undef USE_FLASH_W25N02K
+#undef USE_FLASH_W25M
+#undef USE_FLASH_W25M512
+#undef USE_FLASH_W25M02G
+#undef USE_FLASH_W25Q128FV
+#undef USE_FLASH_PY25Q128HA
+#undef USE_FLASH_W25Q64FV
 
-#undef USE_DSHOT_BITBANG
-#define USE_DSHOT_TELEMETRY
-#undef USE_ESC_SENSOR
+#define FLASH_PAGE_SIZE 0x1000
+#define CONFIG_IN_RAM
 
-#undef USE_RPM_LIMIT
-#undef USE_OSD_HD
+#define U_ID_0 0
+#define U_ID_1 1
+#define U_ID_2 2
+
+/* to be moved to a config file once target if working */
+#define LED0_PIN             PA6
+#define LED1_PIN             PA7
+
+#define SPI0_SCK_PIN         PA5
+#define SPI0_SDI_PIN         PA6
+#define SPI0_SDO_PIN         PA7
+
+#define SPI1_SCK_PIN         PA26
+#define SPI1_SDI_PIN         PA24
+#define SPI1_SDO_PIN         PA27
+
+#define SDCARD_CS_PIN        PA25
+#define FLASH_CS_PIN         PA25
+#define MAX7456_SPI_CS_PIN   PA17
+
+#define GYRO_1_CS_PIN        PA1
+#define GYRO_2_CS_PIN        NONE
+
+#define MAX7456_SPI_INSTANCE SPI1
+#define SDCARD_SPI_INSTANCE  SPI1
+#define GYRO_1_SPI_INSTANCE  SPI0
+
+#define USE_GYRO
+#define USE_GYRO_SPI_ICM42688P
+#define USE_ACC
+#define USE_ACC_SPI_ICM42688P
+//#define USE_FLASH
+//#define USE_FLASH_W25Q128FV
+//#define USE_MAX7456
+
+/*
+
+SPI0_CS         P1
+SPI0_SCLK       P2
+SPI0_COPI       P3
+SPI0_CIPO       P4
+BUZZER          P5
+LED0            P6
+LED1            P7
+UART1_TX        P8
+UART1_RX        P9
+I2C1_SDA        P10
+I2C1_SCL        P11
+UART0_TX        P12
+UART0_RX        P13
+
+OSD_CS          P17
+
+UART2_TX        P20
+UART2_RX        P21
+
+GYRO_INT        P22
+
+GYRO_CLK        P23
+
+SPI1_CIPO       P24
+SPI1_CS         P25
+SPI1_SCLK       P26
+SPI1_COPI       P27
+
+MOTOR1          P28
+MOTOR2          P29
+MOTOR3          P30
+MOTOR4          P31
+
+SPARE1          P32
+SPARE2          P33
+
+UART3_TX        P34
+UART3_RX        P35
+
+DVTX_SBUS_RX    P36
+TELEM_RX        P37
+LED_STRIP       P38
+RGB_LED         P39
+
+VBAT_SENSE      P40
+CURR_SENSE      P41
+ADC_SPARE       P42
+
+I2C0_SDA        P44
+I2C0_SCL        P45
+
+SPARE3          P47
+
+*/

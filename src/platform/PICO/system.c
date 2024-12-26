@@ -19,32 +19,24 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-#include <string.h>
-
 #include "platform.h"
-
-#include "common/time.h"
-#include "drivers/system.h"
-#include "drivers/time.h"
-
-#include "drivers/io.h"
-#include "drivers/light_led.h"
-#include "drivers/sound_beeper.h"
-
-#include "platform/multicore.h"
-
-#include "hardware/clocks.h"
+#include <stdint.h>
 #include "hardware/timer.h"
-#include "hardware/watchdog.h"
-#include "pico/bootrom.h"
-#include "pico/unique_id.h"
-// flash.h used by PICO QSPI helpers is included where needed in PICO bus/flash code
+#include "hardware/clocks.h"
 
-///////////////////////////////////////////////////
+int main(int argc, char * argv[]);
 
-// SystemInit and SystemCoreClock variables/functions,
-// as per pico-sdk rp2_common/cmsis/stub/CMSIS/Device/RP2350/Source/system_RP2350.c
+void Reset_Handler(void);
+void Default_Handler(void);
+
+// cycles per microsecond
+static uint32_t usTicks = 0;
+
+void (* const vector_table[])() __attribute__((section(".vectors"))) = {
+    (void (*)())0x20000000, // Initial Stack Pointer
+    Reset_Handler,           // Interrupt Handler for reset
+    Default_Handler,         // Default handler for other interrupts
+};
 
 uint32_t SystemCoreClock; /* System Clock Frequency (Core Clock)*/
 
@@ -58,212 +50,83 @@ void __attribute__((constructor)) SystemInit (void)
     SystemCoreClockUpdate();
 }
 
-////////////////////////////////////////////////////
+void Reset_Handler(void)
+{
+    // Initialize data segments
+    extern uint32_t _sdata, _edata, _sidata;
+    uint32_t *src = &_sidata;
+    uint32_t *dst = &_sdata;
+
+    while (dst < &_edata) {
+        *dst++ = *src++;
+    }
+
+    // Clear bss segment
+    extern uint32_t _sbss, _ebss;
+    dst = &_sbss;
+
+    while (dst < &_ebss) {
+        *dst++ = 0;
+    }
+
+    usTicks = clock_get_hz(clk_sys) / 1000000;
+
+    // Call main function
+    main(0, 0);
+}
+
+void Default_Handler(void)
+{
+    while (1); // Infinite loop on default handler
+}
 
 void systemReset(void)
 {
-    bprintf("*** PICO systemReset ***");
-    //TODO: check
-
-#if 1
-#ifdef USE_MULTICORE
-    // Reset core 1
-    multicore_reset_core1();
-#endif
-    watchdog_reboot(0, 0, 0);
-#else
-    // this might be fine
-    __disable_irq();
-    NVIC_SystemReset();
-#endif
-}
-
-uint32_t systemUniqueId[3] = { 0 };
-
-// cycles per microsecond
-static uint32_t usTicks = 0;
-static float usTicksInv = 0.0f;
-
-// These are defined in pico-sdk headers as volatile uint32_t types
-#define PICO_DWT_CTRL   m33_hw->dwt_ctrl
-#define PICO_DWT_CYCCNT m33_hw->dwt_cyccnt
-#define PICO_DEMCR      m33_hw->demcr
-
-void cycleCounterInit(void)
-{
-    // TODO check clock_get_hz(clk_sys) is the clock for CPU cycles
-    usTicks = SystemCoreClock / 1000000;
-    usTicksInv = 1e6f / SystemCoreClock;
-
-    // Global DWT enable
-    PICO_DEMCR |= M33_DEMCR_TRCENA_BITS;
-
-    // Reset and enable cycle counter
-    PICO_DWT_CYCCNT = 0;
-    PICO_DWT_CTRL |= M33_DWT_CTRL_CYCCNTENA_BITS;
+    //TODO: implement
 }
 
 void systemInit(void)
 {
     //TODO: implement
-
-    SystemInit();
-
-    cycleCounterInit();
-
-    // load the unique id into a local array
-    pico_unique_board_id_t id;
-    pico_get_unique_board_id(&id);
-    memcpy(&systemUniqueId, &id.id, MIN(sizeof(systemUniqueId), PICO_UNIQUE_BOARD_ID_SIZE_BYTES));
-
-
-#ifdef USE_MULTICORE
-    multicoreStart();
-#endif // USE_MULTICORE
 }
-
-void systemResetToBootloader(bootloaderRequestType_e requestType)
-{
-    switch (requestType) {
-    case BOOTLOADER_REQUEST_ROM:
-        rom_reset_usb_boot_extra(-1, 0, false);
-        break;
-    case BOOTLOADER_REQUEST_FLASH:
-    default:
-        systemReset();
-    }
-}
-
-// We can make use of time_us_64 if BF defines USE_64BIT_TIME in future, but that will require some changes
-STATIC_ASSERT(sizeof(timeMs_t) == sizeof(uint32_t), timeMs_t_is_32_bit_failed);
-STATIC_ASSERT(sizeof(timeUs_t) == sizeof(uint32_t), timeUs_t_is_32_bit_failed);
 
 // Return system uptime in milliseconds (rollover in 49 days)
-timeMs_t millis(void)
+uint32_t millis(void)
 {
-    return (timeMs_t)(time_us_64() / 1000);
+    //TODO: correction required?
+    return time_us_32() / 1000;
 }
 
-// Return system uptime in micros (rollover in 71 mins)
-timeUs_t micros(void)
+// Return system uptime in micros
+uint32_t micros(void)
 {
     return time_us_32();
 }
 
-timeUs_t microsISR(void)
+uint32_t microsISR(void)
 {
     return micros();
 }
 
 void delayMicroseconds(uint32_t us)
 {
-    sleep_us(us);
+    uint32_t now = micros();
+    while (micros() - now < us);
 }
 
 void delay(uint32_t ms)
 {
-    sleep_ms(ms);
+    while (ms--) {
+        delayMicroseconds(1000);
+    }
 }
 
 uint32_t getCycleCounter(void)
 {
-    return PICO_DWT_CYCCNT;
-}
-
-// Conversion routines copied from platform/common/stm32/system.c
-int32_t clockCyclesToMicros(int32_t clockCycles)
-{
-    return clockCycles / usTicks;
-}
-
-float clockCyclesToMicrosf(int32_t clockCycles)
-{
-    return clockCycles * usTicksInv;
-}
-
-// Note that this conversion is signed as this is used for periods rather than absolute timestamps
-int32_t clockCyclesTo10thMicros(int32_t clockCycles)
-{
-    return 10 * clockCycles / (int32_t)usTicks;
-}
-
-// Note that this conversion is signed as this is used for periods rather than absolute timestamps
-int32_t clockCyclesTo100thMicros(int32_t clockCycles)
-{
-    return 100 * clockCycles / (int32_t)usTicks;
+    return time_us_32();
 }
 
 uint32_t clockMicrosToCycles(uint32_t micros)
 {
-    return micros * usTicks;
-}
-
-static void indicate(uint8_t count, uint16_t duration)
-{
-    if (count) {
-        LED1_ON;
-        LED0_OFF;
-
-        while (count--) {
-            LED1_TOGGLE;
-            LED0_TOGGLE;
-            BEEP_ON;
-            delay(duration);
-
-            LED1_TOGGLE;
-            LED0_TOGGLE;
-            BEEP_OFF;
-            delay(duration);
-        }
-    }
-}
-
-void indicateFailure(failureMode_e mode, int codeRepeatsRemaining)
-{
-    while (codeRepeatsRemaining--) {
-        indicate(WARNING_FLASH_COUNT, WARNING_FLASH_DURATION_MS);
-
-        delay(WARNING_PAUSE_DURATION_MS);
-
-        indicate(mode + 1, WARNING_CODE_DURATION_LONG_MS);
-
-        delay(1000);
-    }
-}
-
-void failureMode(failureMode_e mode)
-{
-    indicateFailure(mode, 10);
-
-#ifdef DEBUG
-    systemReset();
-#else
-    systemResetToBootloader(BOOTLOADER_REQUEST_ROM);
-#endif
-}
-
-static void unusedPinInit(IO_t io)
-{
-    if (IOGetOwner(io) == OWNER_FREE) {
-        IOConfigGPIO(io, 0);
-    }
-}
-
-void unusedPinsInit(void)
-{
-    IOTraversePins(unusedPinInit);
-}
-
-const mcuTypeInfo_t *getMcuTypeInfo(void)
-{
-    static const mcuTypeInfo_t info = {
-#if defined(RP2350A)
-        .id = MCU_TYPE_RP2350A, .name = "RP2350A"
-#elif defined(RP2350B)
-        .id = MCU_TYPE_RP2350B, .name = "RP2350B"
-#else
-#error MCU Type info not defined for PICO / variant
-#endif
-    };
-    return &info;
+    return micros / usTicks;
 }
