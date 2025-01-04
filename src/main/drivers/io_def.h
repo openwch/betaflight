@@ -41,17 +41,17 @@
 // get ioRec by index
 #define DEFIO_REC_INDEXED(idx) (ioRecs + (idx))
 
-// split ioTag bits between pin and port
-// port is encoded as +1 to avoid collision with 0x0 (false as bool)
-#ifndef DEFIO_PORT_PINS
-// pins per port
-#define DEFIO_PORT_PINS 16
+// TARGET must define used pins
+#include "target.h"
+
+// TODO: hack for the minute
+#ifndef DEFIO_PIN_BITMASK
+#define DEFIO_PIN_BITMASK 0x0f
 #endif
 
-STATIC_ASSERT((DEFIO_PORT_PINS & (DEFIO_PORT_PINS - 1)) == 0, "DEFIO_PORT_PINS must be power of 2");
-
-#define DEFIO_PORT_BITSHIFT LOG2(DEFIO_PORT_PINS)
-#define DEFIO_PIN_BITMASK   ((1 << DEFIO_PORT_BITSHIFT ) - 1)
+#ifndef DEFIO_PORT_BITSHIFT
+#define DEFIO_PORT_BITSHIFT 4
+#endif
 
 // ioTag_t accessor macros
 #define DEFIO_TAG_MAKE(gpioid, pin) ((ioTag_t)((((gpioid) + 1) << DEFIO_PORT_BITSHIFT) | (pin)))
@@ -59,8 +59,5 @@ STATIC_ASSERT((DEFIO_PORT_PINS & (DEFIO_PORT_PINS - 1)) == 0, "DEFIO_PORT_PINS m
 #define DEFIO_TAG_GPIOID(tag) (((tag) >> DEFIO_PORT_BITSHIFT) - 1)
 #define DEFIO_TAG_PIN(tag) ((tag) & DEFIO_PIN_BITMASK)
 
-
-// TARGET must define used pins
-#include "target.h"
 // include template-generated macros for IO pins
 #include "io_def_generated.h"
