@@ -124,22 +124,22 @@
 #define U_ID_2 2
 
 /* to be moved to a config file once target if working */
-#define LED0_PIN             PA6
-#define LED1_PIN             PA7
+#define LED0_PIN             P6
+#define LED1_PIN             P7
 
-#define SPI0_SCK_PIN         PA5
-#define SPI0_SDI_PIN         PA6
-#define SPI0_SDO_PIN         PA7
+#define SPI0_SCK_PIN         P5
+#define SPI0_SDI_PIN         P6
+#define SPI0_SDO_PIN         P7
 
-#define SPI1_SCK_PIN         PA26
-#define SPI1_SDI_PIN         PA24
-#define SPI1_SDO_PIN         PA27
+#define SPI1_SCK_PIN         P26
+#define SPI1_SDI_PIN         P24
+#define SPI1_SDO_PIN         P27
 
-#define SDCARD_CS_PIN        PA25
-#define FLASH_CS_PIN         PA25
-#define MAX7456_SPI_CS_PIN   PA17
+#define SDCARD_CS_PIN        P25
+#define FLASH_CS_PIN         P25
+#define MAX7456_SPI_CS_PIN   P17
 
-#define GYRO_1_CS_PIN        PA1
+#define GYRO_1_CS_PIN        P1
 #define GYRO_2_CS_PIN        NONE
 
 #define MAX7456_SPI_INSTANCE SPI1
@@ -153,6 +153,9 @@
 //#define USE_FLASH
 //#define USE_FLASH_W25Q128FV
 //#define USE_MAX7456
+
+#define DEFIO_PIN_BITMASK   0x7f
+#define DEFIO_PORT_BITSHIFT 7
 
 /*
 
