@@ -42,6 +42,7 @@
 #include "drivers/motor.h"
 #include "drivers/nvic.h"
 #include "pwm_output_dshot_shared.h"
+#include "drivers/pwm_output.h" // XXX for pwmOutputPort_t motors[]; should go away with refactoring
 #include "drivers/dshot_bitbang_decode.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
@@ -736,6 +737,7 @@ bool dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (!device || !motorConfig) {
         return false;
     }
@@ -745,6 +747,8 @@ bool dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
 
     dshotMotorCount = device->count;
 =======
+=======
+>>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
     motorProtocol = motorConfig->motorProtocol;
     bbDevice.vTable = bbVTable;
     motorCount = count;

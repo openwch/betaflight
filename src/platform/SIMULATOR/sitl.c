@@ -693,9 +693,10 @@ static const motorVTable_t vTable = {
 
 };
 
-bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t _idlePulse)
+motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t _idlePulse, uint8_t motorCount, bool useUnsyncedUpdate)
 {
     UNUSED(motorConfig);
+    UNUSED(useUnsyncedUpdate);
 
     if (!device) {
         return false;

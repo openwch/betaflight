@@ -21,21 +21,8 @@
 
 #include "dshot_bitbang_impl.h"
 
-FAST_DATA_ZERO_INIT bbPacer_t bbPacers[MAX_MOTOR_PACERS];  // TIM1 or TIM8
-FAST_DATA_ZERO_INIT int usedMotorPacers = 0;
-
-FAST_DATA_ZERO_INIT bbPort_t bbPorts[MAX_SUPPORTED_MOTOR_PORTS];
-FAST_DATA_ZERO_INIT int usedMotorPorts;
-
-FAST_DATA_ZERO_INIT bbMotor_t bbMotors[MAX_SUPPORTED_MOTORS];
-
-dshotBitbangStatus_e bbStatus;
-
-void bbDshotRequestTelemetry(unsigned motorIndex)
+void bbDshotRequestTelemetry(uint8_t motorIndex)
 {
-    if (motorIndex >= ARRAYLEN(bbMotors)) {
-        return;
-    }
     bbMotor_t *const bbmotor = &bbMotors[motorIndex];
 
     if (!bbmotor->configured) {
@@ -44,25 +31,8 @@ void bbDshotRequestTelemetry(unsigned motorIndex)
     bbmotor->protocolControl.requestTelemetry = true;
 }
 
-bool bbDshotIsMotorIdle(unsigned motorIndex)
+bool bbDshotIsMotorIdle(uint8_t motorIndex)
 {
-    if (motorIndex >= ARRAYLEN(bbMotors)) {
-        return false;
-    }
-
     bbMotor_t *const bbmotor = &bbMotors[motorIndex];
-    return bbmotor->protocolControl.value == 0;
+    return bbmotor->protocolControl.value;
 }
-
-#ifdef USE_DSHOT_BITBANG
-bool isDshotBitbangActive(const motorDevConfig_t *motorDevConfig)
-{
-#if defined(STM32F4) || defined(APM32F4)
-    return motorDevConfig->useDshotBitbang == DSHOT_BITBANG_ON ||
-        (motorDevConfig->useDshotBitbang == DSHOT_BITBANG_AUTO && motorDevConfig->useDshotTelemetry && motorDevConfig->motorProtocol != MOTOR_PROTOCOL_PROSHOT1000);
-#else
-    return motorDevConfig->useDshotBitbang == DSHOT_BITBANG_ON ||
-        (motorDevConfig->useDshotBitbang == DSHOT_BITBANG_AUTO && motorDevConfig->motorProtocol != MOTOR_PROTOCOL_PROSHOT1000);
-#endif
-}
-#endif

@@ -27,9 +27,6 @@
 
 #include "pg/motor.h"
 #include "drivers/motor_types.h"
-// TODO: move bitbang as implementation detail of dshot (i.e. dshot should be the interface)
-#include "drivers/dshot_bitbang.h"
-#include "sensors/esc_sensor.h"
 
 #define DSHOT_MIN_THROTTLE              (48)
 #define DSHOT_MAX_THROTTLE              (2047)
@@ -116,6 +113,7 @@ typedef struct dshotTelemetryState_s {
     dshotRawValueState_t rawValueState;
 } dshotTelemetryState_t;
 
+#ifdef USE_DSHOT_TELEMETRY
 extern uint32_t readDoneCount;
 
 FAST_DATA_ZERO_INIT extern uint32_t inputStampUs;
@@ -126,6 +124,11 @@ typedef struct dshotTelemetryCycleCounters_s {
 } dshotTelemetryCycleCounters_t;
 
 FAST_DATA_ZERO_INIT extern dshotTelemetryCycleCounters_t dshotDMAHandlerCycleCounters;
+
+#endif
+
+struct motorDevConfig_s;
+motorDevice_t *dshotPwmDevInit(const struct motorDevConfig_s *motorConfig, uint16_t idlePulse, uint8_t motorCount, bool useUnsyncedUpdate);
 
 extern dshotTelemetryState_t dshotTelemetryState;
 

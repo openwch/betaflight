@@ -20,7 +20,9 @@
 
 #pragma once
 
-#include "platform.h"
+#include "common/time.h"
+#include "drivers/motor.h"
+#include "drivers/dshot.h"
 
 #include "common/time.h"
 
@@ -294,5 +296,5 @@ void bbDMA_Cmd(bbPort_t *bbPort, FunctionalState NewState);
 #endif
 int  bbDMA_Count(bbPort_t *bbPort);
 
-void bbDshotRequestTelemetry(unsigned motorIndex);
-bool bbDshotIsMotorIdle(unsigned motorIndex);
+void bbDshotRequestTelemetry(uint8_t motorIndex);
+bool bbDshotIsMotorIdle(uint8_t motorIndex);

@@ -33,7 +33,7 @@
 #include "pwm_output_dshot_shared.h"
 #include "drivers/dshot.h"
 #include "dshot_dpwm.h"
-#include "drivers/motor_impl.h"
+#include "drivers/motor.h"
 
 #include "pg/motor.h"
 
@@ -160,10 +160,15 @@ static const motorVTable_t dshotPwmVTable = {
     .isMotorIdle = pwmDshotIsMotorIdle,
 };
 
-bool dshotPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig)
+FAST_DATA_ZERO_INIT motorDevice_t dshotPwmDevice;
+
+motorDevice_t *dshotPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idlePulse, uint8_t motorCount, bool useUnsyncedUpdate)
 {
-    device->vTable = &dshotPwmVTable;
-    dshotMotorCount = device->count;
+    UNUSED(idlePulse);
+    UNUSED(useUnsyncedUpdate);
+
+    dshotPwmDevice.vTable = dshotPwmVTable;
+
 #ifdef USE_DSHOT_TELEMETRY
     useDshotTelemetry = motorConfig->useDshotTelemetry;
 #endif

@@ -29,9 +29,10 @@
 #include "drivers/motor_types.h"
 #include "drivers/timer.h"
 
-#include "pg/motor.h"
-
 #define PWM_TIMER_1MHZ        MHZ_TO_HZ(1)
+
+// TODO: move the implementation defintions to impl header (platform)
+struct timerHardware_s;
 
 typedef struct {
     volatile uint32_t *ccr;

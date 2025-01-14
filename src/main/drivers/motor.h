@@ -28,9 +28,14 @@
 
 #include "drivers/motor_types.h"
 
-void motorPostInit(void);
+void motorPostInitNull();
+void motorWriteNull(uint8_t index, float value);
+bool motorDecodeTelemetryNull(void);
+void motorUpdateCompleteNull(void);
+
+void motorPostInit();
 void motorWriteAll(float *values);
-void motorRequestTelemetry(unsigned index);
+void motorRequestTelemetry(uint8_t index);
 
 void motorInitEndpoints(const motorConfig_t *motorConfig, float outputLimit, float *outputLow, float *outputHigh, float *disarm, float *deadbandMotor3DHigh, float *deadbandMotor3DLow);
 
@@ -52,7 +57,7 @@ void motorDisable(void);
 void motorEnable(void);
 float motorEstimateMaxRpm(void);
 bool motorIsEnabled(void);
-bool motorIsMotorEnabled(unsigned index);
-bool motorIsMotorIdle(unsigned index);
+bool motorIsMotorEnabled(uint8_t index);
+bool motorIsMotorIdle(uint8_t index);
 timeMs_t motorGetMotorEnableTimeMs(void);
 void motorShutdown(void); // Replaces stopPwmAllMotors
