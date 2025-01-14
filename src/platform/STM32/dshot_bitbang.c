@@ -42,7 +42,6 @@
 #include "drivers/motor.h"
 #include "drivers/nvic.h"
 #include "pwm_output_dshot_shared.h"
-#include "drivers/pwm_output.h" // XXX for pwmOutputPort_t motors[]; should go away with refactoring
 #include "drivers/dshot_bitbang_decode.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
