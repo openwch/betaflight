@@ -74,18 +74,16 @@ motorDmaOutput_t *getMotorDmaOutput(unsigned index)
     return &dmaMotors[index];
 }
 
-bool pwmDshotIsMotorIdle(unsigned index)
+bool pwmDshotIsMotorIdle(uint8_t index)
 {
     const motorDmaOutput_t *motor = getMotorDmaOutput(index);
-    return motor && motor->protocolControl.value == 0;
+    return motor->protocolControl.value;
 }
 
-void pwmDshotRequestTelemetry(unsigned index)
+void pwmDshotRequestTelemetry(uint8_t index)
 {
     motorDmaOutput_t * const motor = getMotorDmaOutput(index);
-    if (motor) {
-        motor->protocolControl.requestTelemetry = true;
-    }
+    motor->protocolControl.requestTelemetry = true;
 }
 
 uint8_t getTimerIndex(void *timer)

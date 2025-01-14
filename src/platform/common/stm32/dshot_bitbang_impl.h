@@ -23,11 +23,8 @@
 #include "platform.h"
 
 #include "common/time.h"
-
-#include "drivers/timer.h"
-#include "drivers/motor_types.h"
+#include "drivers/motor.h"
 #include "drivers/dshot.h"
-#include "pg/motor.h"
 
 #if !defined(STM32N6)
 #define USE_DMA_REGISTER_CACHE
@@ -291,6 +288,5 @@ void bbDMA_Cmd(bbPort_t *bbPort, FunctionalState NewState);
 #endif
 int  bbDMA_Count(bbPort_t *bbPort);
 
-void bbDshotRequestTelemetry(unsigned motorIndex);
-bool bbDshotIsMotorIdle(unsigned motorIndex);
-IO_t bbGetMotorIO(unsigned index);
+void bbDshotRequestTelemetry(uint8_t motorIndex);
+bool bbDshotIsMotorIdle(uint8_t motorIndex);
