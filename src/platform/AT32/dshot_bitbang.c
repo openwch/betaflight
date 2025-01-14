@@ -41,6 +41,7 @@
 #include "drivers/motor.h"
 #include "drivers/nvic.h"
 #include "pwm_output_dshot_shared.h"
+#include "drivers/pwm_output.h" // XXX for pwmOutputPort_t motors[]; should go away with refactoring
 #include "drivers/dshot_bitbang_decode.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
@@ -677,7 +678,6 @@ static motorVTable_t bbVTable = {
     .shutdown = bbShutdown,
     .isMotorIdle = bbDshotIsMotorIdle,
     .requestTelemetry = bbDshotRequestTelemetry,
-    .getMotorIO = bbGetMotorIO,
 };
 
 dshotBitbangStatus_e dshotBitbangGetStatus(void)
@@ -691,9 +691,8 @@ bool dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
     dbgPinLo(1);
 
     motorProtocol = motorConfig->motorProtocol;
-    device->vTable = &bbVTable;
-    dshotMotorCount = device->count;
-
+    bbDevice.vTable = bbVTable;
+    motorCount = count;
     bbStatus = DSHOT_BITBANG_STATUS_OK;
 
 #ifdef USE_DSHOT_TELEMETRY

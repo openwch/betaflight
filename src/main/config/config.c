@@ -284,7 +284,7 @@ static void validateAndFixConfig(void)
         }
     }
 
-    if ((motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_PWM ) && (motorConfig()->dev.motorPwmRate > BRUSHLESS_MOTORS_PWM_RATE)) {
+    if ((motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_STANDARD) && (motorConfig()->dev.motorPwmRate > BRUSHLESS_MOTORS_PWM_RATE)) {
         motorConfigMutable()->dev.motorPwmRate = BRUSHLESS_MOTORS_PWM_RATE;
     }
 
@@ -449,7 +449,7 @@ static void validateAndFixConfig(void)
 #if defined(USE_DSHOT)
     // If using DSHOT protocol disable unsynched PWM as it's meaningless
     if (configuredMotorProtocolDshot) {
-        motorConfigMutable()->dev.useContinuousUpdate = false;
+        motorConfigMutable()->dev.useUnsyncedUpdate = false;
     }
 
 #if defined(USE_DSHOT_TELEMETRY) && defined(USE_TIMER)
@@ -598,7 +598,11 @@ void validateAndFixGyroConfig(void)
         }
 #endif // USE_DSHOT && USE_PID_DENOM_CHECK
         switch (motorConfig()->dev.motorProtocol) {
+<<<<<<< HEAD
         case MOTOR_PROTOCOL_PWM :
+=======
+        case MOTOR_PROTOCOL_STANDARD:
+>>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
                 motorUpdateRestriction = 1.0f / BRUSHLESS_MOTORS_PWM_RATE;
                 break;
         case MOTOR_PROTOCOL_ONESHOT125:
@@ -620,11 +624,19 @@ void validateAndFixGyroConfig(void)
             break;
         }
 
+<<<<<<< HEAD
         if (motorConfig()->dev.useContinuousUpdate) {
             bool configuredMotorProtocolDshot = false;
             checkMotorProtocolEnabled(&motorConfig()->dev, &configuredMotorProtocolDshot);
             // Prevent overriding the max rate of motors
             if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_PWM ) {
+=======
+        if (motorConfig()->dev.useUnsyncedUpdate) {
+            bool configuredMotorProtocolDshot = false;
+            checkMotorProtocolEnabled(&motorConfig()->dev, &configuredMotorProtocolDshot);
+            // Prevent overriding the max rate of motors
+            if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_STANDARD) {
+>>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
                 const uint32_t maxEscRate = lrintf(1.0f / motorUpdateRestriction);
                 motorConfigMutable()->dev.motorPwmRate = MIN(motorConfig()->dev.motorPwmRate, maxEscRate);
             }

@@ -22,20 +22,13 @@
 #pragma once
 
 #include "common/time.h"
-#include "drivers/io_types.h"
 
 #define ALL_MOTORS 255
 #define MOTOR_OUTPUT_LIMIT_PERCENT_MIN 1
 #define MOTOR_OUTPUT_LIMIT_PERCENT_MAX 100
 
 typedef enum {
-    MOTOR_PROTOCOL_FAMILY_UNKNOWN = 0,
-    MOTOR_PROTOCOL_FAMILY_PWM,
-    MOTOR_PROTOCOL_FAMILY_DSHOT,
-} motorProtocolFamily_e;
-
-typedef enum {
-    MOTOR_PROTOCOL_PWM = 0,
+    MOTOR_PROTOCOL_STANDARD = 0,
     MOTOR_PROTOCOL_ONESHOT125,
     MOTOR_PROTOCOL_ONESHOT42,
     MOTOR_PROTOCOL_MULTISHOT,
@@ -56,7 +49,7 @@ typedef struct motorVTable_s {
     uint16_t (*convertMotorToExternal)(float motorValue);
     bool (*enable)(void);
     void (*disable)(void);
-    bool (*isMotorEnabled)(unsigned index);
+    bool (*isMotorEnabled)(uint8_t index);
     bool (*telemetryWait)(void);
     bool (*decodeTelemetry)(void);
     void (*updateInit)(void);
@@ -64,15 +57,14 @@ typedef struct motorVTable_s {
     void (*writeInt)(uint8_t index, uint16_t value);
     void (*updateComplete)(void);
     void (*shutdown)(void);
-    bool (*isMotorIdle)(unsigned index);
-    IO_t (*getMotorIO)(unsigned index);
+    bool (*isMotorIdle)(uint8_t index);
 
     // Digital commands
-    void (*requestTelemetry)(unsigned index);
+    void (*requestTelemetry)(uint8_t index);
 } motorVTable_t;
 
 typedef struct motorDevice_s {
-    const motorVTable_t *vTable;
+    motorVTable_t vTable;
     uint8_t       count;
     bool          initialized;
     bool          enabled;
