@@ -44,8 +44,8 @@ void pwmDshotSetDirectionOutput(
 #endif
 );
 
-void pwmDshotRequestTelemetry(uint8_t index);
-bool pwmDshotIsMotorIdle(uint8_t index);
+void pwmDshotRequestTelemetry(unsigned index);
+bool pwmDshotIsMotorIdle(unsigned index);
 bool pwmTelemetryDecode(void);
 
 #endif

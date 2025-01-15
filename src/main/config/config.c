@@ -284,7 +284,7 @@ static void validateAndFixConfig(void)
         }
     }
 
-    if ((motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_STANDARD) && (motorConfig()->dev.motorPwmRate > BRUSHLESS_MOTORS_PWM_RATE)) {
+    if ((motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_PWM50HZ ) && (motorConfig()->dev.motorPwmRate > BRUSHLESS_MOTORS_PWM_RATE)) {
         motorConfigMutable()->dev.motorPwmRate = BRUSHLESS_MOTORS_PWM_RATE;
     }
 
@@ -599,10 +599,14 @@ void validateAndFixGyroConfig(void)
 #endif // USE_DSHOT && USE_PID_DENOM_CHECK
         switch (motorConfig()->dev.motorProtocol) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         case MOTOR_PROTOCOL_PWM :
 =======
         case MOTOR_PROTOCOL_STANDARD:
 >>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
+=======
+        case MOTOR_PROTOCOL_PWM50HZ :
+>>>>>>> bfc968050 (Adjustments based on feedback from @ledvinap)
                 motorUpdateRestriction = 1.0f / BRUSHLESS_MOTORS_PWM_RATE;
                 break;
         case MOTOR_PROTOCOL_ONESHOT125:
@@ -635,8 +639,12 @@ void validateAndFixGyroConfig(void)
             bool configuredMotorProtocolDshot = false;
             checkMotorProtocolEnabled(&motorConfig()->dev, &configuredMotorProtocolDshot);
             // Prevent overriding the max rate of motors
+<<<<<<< HEAD
             if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_STANDARD) {
 >>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
+=======
+            if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_PWM50HZ ) {
+>>>>>>> bfc968050 (Adjustments based on feedback from @ledvinap)
                 const uint32_t maxEscRate = lrintf(1.0f / motorUpdateRestriction);
                 motorConfigMutable()->dev.motorPwmRate = MIN(motorConfig()->dev.motorPwmRate, maxEscRate);
             }
