@@ -120,7 +120,7 @@ static tmr_channel_select_type toCHSelectType(const uint8_t bfChannel, const boo
 void dshotEnableChannels(unsigned motorCount)
 {
     for (unsigned i = 0; i < motorCount; i++) {
-        tmr_primary_mode_select((tmr_type *)dmaMotors[i].timerHardware->tim, TMR_PRIMARY_SEL_COMPARE);
+        tmr_primary_mode_select(dmaMotors[i].timerHardware->tim, TMR_PRIMARY_SEL_COMPARE);
 
         tmr_channel_select_type atCh = toCHSelectType(dmaMotors[i].timerHardware->channel, dmaMotors[i].output & TIMER_OUTPUT_N_CHANNEL);
         tmr_channel_enable((tmr_type *)dmaMotors[i].timerHardware->tim, atCh, TRUE);

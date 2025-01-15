@@ -676,21 +676,22 @@ void servoWrite(uint8_t index, float value)
     }
 }
 
-static const motorVTable_t vTable = {
-    .postInit = motorPostInitNull,
-    .convertExternalToMotor = pwmConvertFromExternal,
-    .convertMotorToExternal = pwmConvertToExternal,
-    .enable = pwmEnableMotors,
-    .disable = pwmDisableMotors,
-    .isMotorEnabled = pwmIsMotorEnabled,
-    .decodeTelemetry = motorDecodeTelemetryNull,
-    .write = pwmWriteMotor,
-    .writeInt = pwmWriteMotorInt,
-    .updateComplete = pwmCompleteMotorUpdate,
-    .shutdown = pwmShutdownPulsesForAllMotors,
-    .requestTelemetry = NULL,
-    .isMotorIdle = NULL,
-
+static motorDevice_t motorPwmDevice = {
+    .vTable = {
+        .postInit = motorPostInitNull,
+        .convertExternalToMotor = pwmConvertFromExternal,
+        .convertMotorToExternal = pwmConvertToExternal,
+        .enable = pwmEnableMotors,
+        .disable = pwmDisableMotors,
+        .isMotorEnabled = pwmIsMotorEnabled,
+        .decodeTelemetry = motorDecodeTelemetryNull,
+        .write = pwmWriteMotor,
+        .writeInt = pwmWriteMotorInt,
+        .updateComplete = pwmCompleteMotorUpdate,
+        .shutdown = pwmShutdownPulsesForAllMotors,
+        .requestTelemetry = NULL,
+        .isMotorIdle = NULL,
+    }
 };
 
 motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t _idlePulse, uint8_t motorCount, bool useUnsyncedUpdate)
