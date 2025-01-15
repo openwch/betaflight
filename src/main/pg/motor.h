@@ -32,6 +32,7 @@
 #define BRUSHLESS_MOTORS_PWM_RATE 480
 #endif
 
+//TODO: Timers are platform specific. This should be moved to platform specific code.
 typedef enum {
     DSHOT_BITBANGED_TIMER_AUTO = 0,
     DSHOT_BITBANGED_TIMER_TIM1,
@@ -63,7 +64,7 @@ typedef enum {
 } dshotEdt_e;
 
 typedef struct motorDevConfig_s {
-    uint16_t motorPwmRate;                  // The update rate of motor outputs (50-498Hz)
+    uint16_t motorPwmRate;               // The update rate of motor outputs (50-498Hz)
     uint8_t  motorProtocol;              // Pwm Protocol
     uint8_t  motorInversion;             // Active-High vs Active-Low. Useful for brushed FCs converted for brushless operation
     uint8_t  useUnsyncedUpdate;

@@ -143,9 +143,16 @@ static void pwmCompleteMotorUpdate(void)
         return;
     }
 
-    for (int index = 0; index < pwmMotorCount; index++) {
-        if (pwmMotors[index].forceOverflow) {
-            timerForceOverflow(pwmMotors[index].channel.tim);
+bool pwmIsMotorEnabled(unsigned index)
+{
+    return motors[index].enabled;
+}
+
+static void pwmCompleteOneshotMotorUpdate(void)
+{
+    for (int index = 0; index < motorPwmDevice.count; index++) {
+        if (motors[index].forceOverflow) {
+            timerForceOverflow(motors[index].channel.tim);
         }
         // Set the compare register to 0, which stops the output pulsing if the timer overflows before the main loop completes again.
         // This compare register will be set to the output value on the next main loop.
@@ -171,12 +178,8 @@ static const motorVTable_t motorPwmVTable = {
     .shutdown = pwmShutdownPulsesForAllMotors,
     .convertExternalToMotor = pwmConvertFromExternal,
     .convertMotorToExternal = pwmConvertToExternal,
-    .write = pwmWriteStandard,
-    .decodeTelemetry = NULL,
-    .updateComplete = pwmCompleteMotorUpdate,
     .requestTelemetry = NULL,
     .isMotorIdle = NULL,
-    .getMotorIO = pwmGetMotorIO,
 };
 
 motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idlePulse, uint8_t motorCount, bool useUnsyncedUpdate)
@@ -208,7 +211,7 @@ motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idl
         useUnsyncedUpdate = true;
         idlePulse = 0;
         break;
-    case MOTOR_PROTOCOL_STANDARD:
+    case MOTOR_PROTOCOL_PWM50HZ :
         sMin = 1e-3f;
         sLen = 1e-3f;
         useUnsyncedUpdate = true;
