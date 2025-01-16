@@ -29,6 +29,8 @@
 #include "drivers/motor_types.h"
 #include "drivers/timer.h"
 
+#include "pg/motor.h"
+
 #define PWM_TIMER_1MHZ        MHZ_TO_HZ(1)
 
 typedef struct {
@@ -48,7 +50,7 @@ typedef struct {
 extern FAST_DATA_ZERO_INIT pwmOutputPort_t pwmMotors[MAX_SUPPORTED_MOTORS];
 extern FAST_DATA_ZERO_INIT uint8_t pwmMotorCount;
 
-bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorDevConfig, uint16_t idlePulse);
+void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorDevConfig, uint16_t idlePulse);
 
 void pwmOutputConfig(timerChannel_t *channel, const timerHardware_t *timerHardware, uint32_t hz, uint16_t period, uint16_t value, uint8_t inversion);
 void pwmWriteChannel(timerChannel_t *channel, uint32_t value);

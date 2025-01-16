@@ -130,8 +130,7 @@ FAST_DATA_ZERO_INIT extern dshotTelemetryCycleCounters_t dshotDMAHandlerCycleCou
 
 #endif
 
-struct motorDevConfig_s;
-motorDevice_t *dshotPwmDevInit(const struct motorDevConfig_s *motorConfig, uint16_t idlePulse, uint8_t motorCount, bool useUnsyncedUpdate);
+void dshotPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig);
 
 extern dshotTelemetryState_t dshotTelemetryState;
 
