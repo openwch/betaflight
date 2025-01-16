@@ -29,6 +29,8 @@
 #include "drivers/motor_types.h"
 #include "drivers/timer.h"
 
+#include "pg/motor.h"
+
 #define PWM_TIMER_1MHZ        MHZ_TO_HZ(1)
 
 // TODO: move the implementation defintions to impl header (platform)
@@ -51,7 +53,7 @@ typedef struct {
 extern FAST_DATA_ZERO_INIT pwmOutputPort_t pwmMotors[MAX_SUPPORTED_MOTORS];
 extern FAST_DATA_ZERO_INIT uint8_t pwmMotorCount;
 
-bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorDevConfig, uint16_t idlePulse);
+void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorDevConfig, uint16_t idlePulse);
 
 typedef struct servoDevConfig_s {
     // PWM values, in milliseconds, common range is 1000-2000 (1ms to 2ms)

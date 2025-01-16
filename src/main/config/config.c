@@ -284,7 +284,7 @@ static void validateAndFixConfig(void)
         }
     }
 
-    if ((motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_PWM50HZ ) && (motorConfig()->dev.motorPwmRate > BRUSHLESS_MOTORS_PWM_RATE)) {
+    if ((motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_PWM ) && (motorConfig()->dev.motorPwmRate > BRUSHLESS_MOTORS_PWM_RATE)) {
         motorConfigMutable()->dev.motorPwmRate = BRUSHLESS_MOTORS_PWM_RATE;
     }
 
@@ -600,6 +600,7 @@ void validateAndFixGyroConfig(void)
         switch (motorConfig()->dev.motorProtocol) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         case MOTOR_PROTOCOL_PWM :
 =======
         case MOTOR_PROTOCOL_STANDARD:
@@ -607,6 +608,9 @@ void validateAndFixGyroConfig(void)
 =======
         case MOTOR_PROTOCOL_PWM50HZ :
 >>>>>>> bfc968050 (Adjustments based on feedback from @ledvinap)
+=======
+        case MOTOR_PROTOCOL_PWM :
+>>>>>>> a9cf38440 (Refactored motor to use only one motorDevice_t instance, and vTable is now pointing to const.)
                 motorUpdateRestriction = 1.0f / BRUSHLESS_MOTORS_PWM_RATE;
                 break;
         case MOTOR_PROTOCOL_ONESHOT125:
@@ -640,11 +644,15 @@ void validateAndFixGyroConfig(void)
             checkMotorProtocolEnabled(&motorConfig()->dev, &configuredMotorProtocolDshot);
             // Prevent overriding the max rate of motors
 <<<<<<< HEAD
+<<<<<<< HEAD
             if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_STANDARD) {
 >>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
 =======
             if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_PWM50HZ ) {
 >>>>>>> bfc968050 (Adjustments based on feedback from @ledvinap)
+=======
+            if (!configuredMotorProtocolDshot && motorConfig()->dev.motorProtocol != MOTOR_PROTOCOL_PWM ) {
+>>>>>>> a9cf38440 (Refactored motor to use only one motorDevice_t instance, and vTable is now pointing to const.)
                 const uint32_t maxEscRate = lrintf(1.0f / motorUpdateRestriction);
                 motorConfigMutable()->dev.motorPwmRate = MIN(motorConfig()->dev.motorPwmRate, maxEscRate);
             }

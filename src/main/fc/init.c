@@ -510,19 +510,11 @@ void init(void)
 
     mixerInit(mixerConfig()->mixerMode);
 
-    uint16_t idlePulse = motorConfig()->mincommand;
-    if (featureIsEnabled(FEATURE_3D)) {
-        idlePulse = flight3DConfig()->neutral3d;
-    }
-    if (motorConfig()->dev.motorProtocol == MOTOR_PROTOCOL_BRUSHED) {
-        idlePulse = 0; // brushed motors
-    }
 #ifdef USE_MOTOR
     /* Motors needs to be initialized soon as posible because hardware initialization
      * may send spurious pulses to esc's causing their early initialization. Also ppm
      * receiver may share timer with motors so motors MUST be initialized here. */
     motorDevInit(getMotorCount());
-    // TODO: add check here that motors actually initialised correctly
     systemState |= SYSTEM_STATE_MOTORS_READY;
 #endif
 

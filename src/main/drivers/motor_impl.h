@@ -24,7 +24,6 @@
 #include "drivers/motor_types.h"
 
 void motorPostInitNull(void);
-void motorWriteNull(uint8_t index, float value);
 bool motorDecodeTelemetryNull(void);
 void motorUpdateCompleteNull(void);
 
