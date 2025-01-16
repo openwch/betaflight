@@ -111,7 +111,7 @@ static void dshotPwmDisableMotors(void)
 
 static bool dshotPwmEnableMotors(void)
 {
-    for (int i = 0; i < dshotMotorCount; i++) {
+    for (int i = 0; i < motorCount; i++) {
         motorDmaOutput_t *motor = getMotorDmaOutput(i);
         const IO_t motorIO = IOGetByTag(motor->timerHardware->tag);
         IOConfigGPIOAF(motorIO, motor->iocfg, motor->timerHardware->alternateFunction);
@@ -160,15 +160,10 @@ static const motorVTable_t dshotPwmVTable = {
     .isMotorIdle = pwmDshotIsMotorIdle,
 };
 
-FAST_DATA_ZERO_INIT motorDevice_t dshotPwmDevice;
-
-motorDevice_t *dshotPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idlePulse, uint8_t motorCount, bool useUnsyncedUpdate)
+void dshotPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig)
 {
-    UNUSED(idlePulse);
-    UNUSED(useUnsyncedUpdate);
-
-    dshotPwmDevice.vTable = dshotPwmVTable;
-
+    device->vTable = &dshotPwmVTable;
+    motorCount = device->count;
 #ifdef USE_DSHOT_TELEMETRY
     useDshotTelemetry = motorConfig->useDshotTelemetry;
 #endif
@@ -209,12 +204,11 @@ motorDevice_t *dshotPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idl
         }
 
         /* not enough motors initialised for the mixer or a break in the motors */
-        dshotMotorCount = 0;
+        device->vTable = NULL;
+        motorCount = 0;
         /* TODO: block arming and add reason system cannot arm */
-        return false;
+        return;
     }
-
-    return true;
 }
 
 #endif // USE_DSHOT

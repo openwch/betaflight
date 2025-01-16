@@ -41,5 +41,5 @@ bool bbDshotIsMotorIdle(unsigned motorIndex)
     }
 
     bbMotor_t *const bbmotor = &bbMotors[motorIndex];
-    return bbmotor->protocolControl.value != 0;
+    return bbmotor->protocolControl.value == 0;
 }

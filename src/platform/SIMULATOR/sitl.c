@@ -676,44 +676,47 @@ void servoWrite(uint8_t index, float value)
     }
 }
 
-static motorDevice_t motorPwmDevice = {
-    .vTable = {
-        .postInit = motorPostInitNull,
-        .convertExternalToMotor = pwmConvertFromExternal,
-        .convertMotorToExternal = pwmConvertToExternal,
-        .enable = pwmEnableMotors,
-        .disable = pwmDisableMotors,
-        .isMotorEnabled = pwmIsMotorEnabled,
-        .decodeTelemetry = motorDecodeTelemetryNull,
-        .write = pwmWriteMotor,
-        .writeInt = pwmWriteMotorInt,
-        .updateComplete = pwmCompleteMotorUpdate,
-        .shutdown = pwmShutdownPulsesForAllMotors,
-        .requestTelemetry = NULL,
-        .isMotorIdle = NULL,
-    }
+static const motorVTable_t vTable = {
+    .postInit = motorPostInitNull,
+    .convertExternalToMotor = pwmConvertFromExternal,
+    .convertMotorToExternal = pwmConvertToExternal,
+    .enable = pwmEnableMotors,
+    .disable = pwmDisableMotors,
+    .isMotorEnabled = pwmIsMotorEnabled,
+    .decodeTelemetry = motorDecodeTelemetryNull,
+    .write = pwmWriteMotor,
+    .writeInt = pwmWriteMotorInt,
+    .updateComplete = pwmCompleteMotorUpdate,
+    .shutdown = pwmShutdownPulsesForAllMotors,
+    .requestTelemetry = NULL,
+    .isMotorIdle = NULL,
+
 };
 
-motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t _idlePulse, uint8_t motorCount, bool useUnsyncedUpdate)
+void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t _idlePulse)
 {
     UNUSED(motorConfig);
-    UNUSED(useUnsyncedUpdate);
 
     if (!device) {
-        return false;
+        return;
     }
     device->vTable = &vTable;
-
-    printf("Initialized motor count %d\n", pwmMotorCount);
-    pwmRawPkt.motorCount = pwmMotorCount;
+    uint8_t motorCount = device->count;
+    printf("Initialized motor count %d\n", motorCount);
+    pwmRawPkt.motorCount = motorCount;
 
     idlePulse = _idlePulse;
 
     for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < pwmMotorCount; motorIndex++) {
         pwmMotors[motorIndex].enabled = true;
     }
+}
 
-    return true;
+// ADC part
+uint16_t adcGetChannel(uint8_t channel)
+{
+    UNUSED(channel);
+    return 0;
 }
 
 // stack part
