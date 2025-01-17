@@ -27,6 +27,7 @@
 #include "drivers/timer.h"
 #include "drivers/motor_types.h"
 #include "drivers/dshot.h"
+#include "pg/motor.h"
 
 #if !defined(STM32N6)
 #define USE_DMA_REGISTER_CACHE
