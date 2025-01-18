@@ -449,7 +449,7 @@ static void validateAndFixConfig(void)
 #if defined(USE_DSHOT)
     // If using DSHOT protocol disable unsynched PWM as it's meaningless
     if (configuredMotorProtocolDshot) {
-        motorConfigMutable()->dev.useUnsyncedUpdate = false;
+        motorConfigMutable()->dev.useContinuousUpdate = false;
     }
 
 #if defined(USE_DSHOT_TELEMETRY) && defined(USE_TIMER)
@@ -633,6 +633,9 @@ void validateAndFixGyroConfig(void)
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 443336b3b (Renamed "unsynced" to be more specific with "continuous")
         if (motorConfig()->dev.useContinuousUpdate) {
             bool configuredMotorProtocolDshot = false;
             checkMotorProtocolEnabled(&motorConfig()->dev, &configuredMotorProtocolDshot);
