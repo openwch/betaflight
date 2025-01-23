@@ -124,7 +124,7 @@ static void pwmWriteStandard(uint8_t index, float value)
 
 static void pwmShutdownPulsesForAllMotors(void)
 {
-    for (int index = 0; motorCount; index++) {
+    for (int index = 0; pwmMotorCount; index++) {
         // Set the compare register to 0, which stops the output pulsing if the timer overflows
         if (pwmMotors[index].channel.ccr) {
             *pwmMotors[index].channel.ccr = 0;
@@ -140,7 +140,7 @@ static void pwmDisableMotors(void)
 bool pwmEnableMotors(void)
 {
     /* check motors can be enabled */
-    return motorCount > 0;
+    return pwmMotorCount > 0;
 }
 
 bool pwmIsMotorEnabled(unsigned index)
@@ -154,7 +154,7 @@ static void pwmCompleteMotorUpdate(void)
         return;
     }
 
-    for (int index = 0; motorCount; index++) {
+    for (int index = 0; pwmMotorCount; index++) {
         if (motors[index].forceOverflow) {
             timerForceOverflow(motors[index].channel.tim);
         }
@@ -189,11 +189,11 @@ static const motorVTable_t motorPwmVTable = {
     .isMotorIdle = NULL,
 };
 
-void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t idlePulse)
+bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t idlePulse)
 {
     memset(pwmMotors, 0, sizeof(pwmMotors));
 
-    motorCount = device->count;
+    pwmMotorCount = device->count;
     device->vTable = &motorPwmVTable;
     useContinuousUpdate = motorConfig->useContinuousUpdate;
 
@@ -226,7 +226,7 @@ void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
         break;
     }
 
-    for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < motorCount; motorIndex++) {
+    for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < pwmMotorCount; motorIndex++) {
         const unsigned reorderedMotorIndex = motorConfig->motorOutputReordering[motorIndex];
         const ioTag_t tag = motorConfig->ioTags[reorderedMotorIndex];
         const timerHardware_t *timerHardware = timerAllocate(tag, OWNER_MOTOR, RESOURCE_INDEX(reorderedMotorIndex));
@@ -234,9 +234,9 @@ void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
         if (timerHardware == NULL) {
             /* not enough motors initialised for the mixer or a break in the motors */
             device->vTable = NULL;
-            motorCount = 0;
+            pwmMotorCount = 0;
             /* TODO: block arming and add reason system cannot arm */
-            return;
+            return false;
         }
 
         pwmMotors[motorIndex].io = IOGetByTag(tag);
@@ -275,6 +275,7 @@ void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
         pwmMotors[motorIndex].enabled = true;
     }
 
+    return true;
 }
 
 pwmOutputPort_t *pwmGetMotors(void)

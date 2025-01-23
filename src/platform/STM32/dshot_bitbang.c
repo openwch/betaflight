@@ -59,16 +59,6 @@
 // Maximum time to wait for telemetry reception to complete
 #define DSHOT_TELEMETRY_TIMEOUT 2000
 
-FAST_DATA_ZERO_INIT bbPacer_t bbPacers[MAX_MOTOR_PACERS];  // TIM1 or TIM8
-FAST_DATA_ZERO_INIT int usedMotorPacers = 0;
-
-FAST_DATA_ZERO_INIT bbPort_t bbPorts[MAX_SUPPORTED_MOTOR_PORTS];
-FAST_DATA_ZERO_INIT int usedMotorPorts;
-
-FAST_DATA_ZERO_INIT bbMotor_t bbMotors[MAX_SUPPORTED_MOTORS];
-
-dshotBitbangStatus_e bbStatus;
-
 // For MCUs that use MPU to control DMA coherency, there might be a performance hit
 // on manipulating input buffer content especially if it is read multiple times,
 // as the buffer region is attributed as not cachable.
@@ -641,7 +631,7 @@ static void bbUpdateComplete(void)
     // If there is a dshot command loaded up, time it correctly with motor update
 
     if (!dshotCommandQueueEmpty()) {
-        if (!dshotCommandOutputIsEnabled(motorCount)) {
+        if (!dshotCommandOutputIsEnabled(dshotMotorCount)) {
             return;
         }
     }
@@ -739,7 +729,7 @@ dshotBitbangStatus_e dshotBitbangGetStatus(void)
     return bbStatus;
 }
 
-void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig)
+bool dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig)
 {
     dbgPinLo(0);
     dbgPinLo(1);
@@ -761,14 +751,18 @@ void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
 >>>>>>> d3c113b4c (Refactoring motors to simplify implementation on other platforms)
 =======
     if (!device || !motorConfig) {
-        return;
+        return false;
     }
 
     motorProtocol = motorConfig->motorProtocol;
     device->vTable = &bbVTable;
 
+<<<<<<< HEAD
     motorCount = device->count;
 >>>>>>> a9cf38440 (Refactored motor to use only one motorDevice_t instance, and vTable is now pointing to const.)
+=======
+    dshotMotorCount = device->count;
+>>>>>>> 2c340a63d (Consolidating motorCounts, and removing dependencies.)
     bbStatus = DSHOT_BITBANG_STATUS_OK;
 
 #ifdef USE_DSHOT_TELEMETRY
@@ -795,6 +789,7 @@ void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
             /* not enough motors initialised for the mixer or a break in the motors */
             device->vTable = NULL;
 <<<<<<< HEAD
+<<<<<<< HEAD
             dshotMotorCount = 0;
             bbStatus = DSHOT_BITBANG_STATUS_MOTOR_PIN_CONFLICT;
             return false;
@@ -803,6 +798,11 @@ void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
             bbStatus = DSHOT_BITBANG_STATUS_MOTOR_PIN_CONFLICT;
             return;
 >>>>>>> a9cf38440 (Refactored motor to use only one motorDevice_t instance, and vTable is now pointing to const.)
+=======
+            dshotMotorCount = 0;
+            bbStatus = DSHOT_BITBANG_STATUS_MOTOR_PIN_CONFLICT;
+            return false;
+>>>>>>> 2c340a63d (Consolidating motorCounts, and removing dependencies.)
         }
 
         int pinIndex = IO_GPIOPinIdx(io);
@@ -826,9 +826,13 @@ void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     return true;
 =======
 >>>>>>> a9cf38440 (Refactored motor to use only one motorDevice_t instance, and vTable is now pointing to const.)
+=======
+    return true;
+>>>>>>> 2c340a63d (Consolidating motorCounts, and removing dependencies.)
 }
 
 #endif // USE_DSHOT_BB

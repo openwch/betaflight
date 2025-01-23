@@ -586,6 +586,8 @@ void servoDevInit(const servoDevConfig_t *servoConfig)
     }
 }
 
+static motorDevice_t pwmMotorDevice; // Forward
+
 pwmOutputPort_t *pwmGetMotors(void)
 {
     return pwmMotors;
@@ -603,7 +605,14 @@ static uint16_t pwmConvertToExternal(float motorValue)
 
 static void pwmDisableMotors(void)
 {
-    // NOOP
+    pwmMotorDevice.enabled = false;
+}
+
+static bool pwmEnableMotors(void)
+{
+    pwmMotorDevice.enabled = true;
+
+    return true;
 }
 
 static void pwmWriteMotor(uint8_t index, float value)
@@ -628,7 +637,7 @@ static void pwmWriteMotorInt(uint8_t index, uint16_t value)
 
 static void pwmShutdownPulsesForAllMotors(void)
 {
-    motorPwmDevice.enabled = false;
+    pwmMotorDevice.enabled = false;
 }
 
 bool pwmIsMotorEnabled(unsigned index)
@@ -684,12 +693,12 @@ static const motorVTable_t vTable = {
 
 };
 
-void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t _idlePulse)
+bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t _idlePulse)
 {
     UNUSED(motorConfig);
 
     if (!device) {
-        return;
+        return false;
     }
     device->vTable = &vTable;
 
@@ -701,6 +710,8 @@ void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
     for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < pwmMotorCount; motorIndex++) {
         pwmMotors[motorIndex].enabled = true;
     }
+
+    return true;
 }
 
 // stack part

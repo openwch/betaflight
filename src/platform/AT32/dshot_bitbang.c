@@ -53,16 +53,6 @@
 // Maximum time to wait for telemetry reception to complete
 #define DSHOT_TELEMETRY_TIMEOUT 2000
 
-FAST_DATA_ZERO_INIT bbPacer_t bbPacers[MAX_MOTOR_PACERS];  // TIM1 or TIM8
-FAST_DATA_ZERO_INIT int usedMotorPacers = 0;
-
-FAST_DATA_ZERO_INIT bbPort_t bbPorts[MAX_SUPPORTED_MOTOR_PORTS];
-FAST_DATA_ZERO_INIT int usedMotorPorts;
-
-FAST_DATA_ZERO_INIT bbMotor_t bbMotors[MAX_SUPPORTED_MOTORS];
-
-dshotBitbangStatus_e bbStatus;
-
 // For MCUs that use MPU to control DMA coherency, there might be a performance hit
 // on manipulating input buffer content especially if it is read multiple times,
 // as the buffer region is attributed as not cachable.
@@ -590,7 +580,7 @@ static void bbUpdateComplete(void)
     // If there is a dshot command loaded up, time it correctly with motor update
 
     if (!dshotCommandQueueEmpty()) {
-        if (!dshotCommandOutputIsEnabled(motorCount)) {
+        if (!dshotCommandOutputIsEnabled(dshotMotorCount)) {
             return;
         }
     }
@@ -697,14 +687,14 @@ dshotBitbangStatus_e dshotBitbangGetStatus(void)
     return bbStatus;
 }
 
-void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig)
+bool dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig)
 {
     dbgPinLo(0);
     dbgPinLo(1);
 
     motorProtocol = motorConfig->motorProtocol;
     device->vTable = &bbVTable;
-    motorCount = device->count;
+    dshotMotorCount = device->count;
 
     bbStatus = DSHOT_BITBANG_STATUS_OK;
 
@@ -732,8 +722,8 @@ void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
             /* not enough motors initialised for the mixer or a break in the motors */
             bbStatus = DSHOT_BITBANG_STATUS_MOTOR_PIN_CONFLICT;
             device->vTable = NULL;
-            motorCount = 0;
-            return;
+            dshotMotorCount = 0;
+            return false;
         }
 
         int pinIndex = IO_GPIOPinIdx(io);
@@ -751,6 +741,7 @@ void dshotBitbangDevInit(motorDevice_t *device, const motorDevConfig_t *motorCon
             IOHi(io);
         }
     }
+    return true;
 }
 
 #endif // USE_DSHOT_BB
