@@ -306,7 +306,7 @@ FAST_CODE_NOINLINE void updateDshotTelemetry(void)
         return;
     }
 
-    const unsigned motorCount = MIN(MAX_SUPPORTED_MOTORS, dshotMotorCount);
+    const unsigned motorCount = dshotMotorCount;
     uint32_t erpmTotal = 0;
     uint32_t rpmSamples = 0;
 

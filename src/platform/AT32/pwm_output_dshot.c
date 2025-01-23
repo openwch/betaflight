@@ -250,7 +250,7 @@ void pwmCompleteDshotMotorUpdate(void)
 {
     // If there is a dshot command loaded up, time it correctly with motor update
     if (!dshotCommandQueueEmpty()) {
-        if (!dshotCommandOutputIsEnabled(motorCount)) {
+        if (!dshotCommandOutputIsEnabled(dshotMotorCount)) {
             return;
         }
     }
