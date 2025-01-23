@@ -693,15 +693,15 @@ static const motorVTable_t vTable = {
 
 };
 
-void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t _idlePulse)
+bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t _idlePulse)
 {
     UNUSED(motorConfig);
 
     if (!device) {
-        return;
+        return false;
     }
     device->vTable = &vTable;
-    uint8_t motorCount = device->count;
+    const uint8_t motorCount = device->count;
     printf("Initialized motor count %d\n", motorCount);
     pwmRawPkt.motorCount = motorCount;
 
@@ -710,6 +710,8 @@ void motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
     for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < pwmMotorCount; motorIndex++) {
         pwmMotors[motorIndex].enabled = true;
     }
+
+    return true;
 }
 
 // ADC part
