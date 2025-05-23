@@ -504,20 +504,20 @@ TARGET_FULLNAME = $(FORKNAME)_$(FC_VER)_$(TARGET_NAME)
 #
 # Things we will build
 #
-TARGET_BIN      = $(BIN_DIR)/$(TARGET_FULLNAME).bin
-TARGET_HEX      = $(BIN_DIR)/$(TARGET_FULLNAME).hex
-TARGET_UF2      = $(BIN_DIR)/$(TARGET_FULLNAME).uf2
-TARGET_EXE      = $(BIN_DIR)/$(TARGET_FULLNAME)
-TARGET_DFU      = $(BIN_DIR)/$(TARGET_FULLNAME).dfu
-TARGET_ZIP      = $(BIN_DIR)/$(TARGET_FULLNAME).zip
-TARGET_OBJ_DIR  = $(OBJECT_DIR)/$(TARGET_NAME)
-TARGET_ELF      = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).elf
-TARGET_EXST_ELF = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_EXST.elf
-TARGET_UNPATCHED_BIN = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_UNPATCHED.bin
-TARGET_LST      = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).lst
-TARGET_OBJS     = $(addsuffix .o,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
-TARGET_DEPS     = $(addsuffix .d,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
-TARGET_MAP      = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).map
+TARGET_BIN      := $(BIN_DIR)/$(TARGET_FULLNAME).bin
+TARGET_HEX      := $(BIN_DIR)/$(TARGET_FULLNAME).hex
+TARGET_UF2      := $(BIN_DIR)/$(TARGET_FULLNAME).uf2
+TARGET_EXE      := $(BIN_DIR)/$(TARGET_FULLNAME)
+TARGET_DFU      := $(BIN_DIR)/$(TARGET_FULLNAME).dfu
+TARGET_ZIP      := $(BIN_DIR)/$(TARGET_FULLNAME).zip
+TARGET_OBJ_DIR  := $(OBJECT_DIR)/$(TARGET_NAME)
+TARGET_ELF      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).elf
+TARGET_EXST_ELF := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_EXST.elf
+TARGET_UNPATCHED_BIN := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_UNPATCHED.bin
+TARGET_LST      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).lst
+TARGET_OBJS     := $(addsuffix .o,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
+TARGET_DEPS     := $(addsuffix .d,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
+TARGET_MAP      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).map
 
 TARGET_EXST_HASH_SECTION_FILE := $(TARGET_OBJ_DIR)/exst_hash_section.bin
 
@@ -783,15 +783,15 @@ TARGETS_ZIP = $(addsuffix _zip,$(HEX_TARGETS))
 $(TARGETS_ZIP):
 	$(V1) $(MAKE) $(MAKE_PARALLEL) zip TARGET=$(subst _zip,,$@)
 
-.PHONY: zip
+.phony: zip
 zip:
 	$(V0) zip $(TARGET_ZIP) $(TARGET_HEX)
 
-.PHONY: binary
+.phony: binary
 binary:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_BIN)
 
-.PHONY: hex
+.phony: hex
 hex:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_HEX)
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_LST)
@@ -799,6 +799,7 @@ hex:
 uf2:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
 
+.phony: uf2
 uf2:
 	$(V0) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
 
@@ -845,6 +846,7 @@ submodules:
 	$(V1) git submodule update --init --recursive || { echo "Failed to update submodules"; exit 1; }
 	@echo "Submodules updated"
 
+.phony: submodules
 submodules:
 	@echo "Updating submodules"
 	$(V1) git submodule update --init --recursive || { echo "Failed to update submodules"; exit 1; }
