@@ -722,15 +722,15 @@ TARGETS_ZIP = $(addsuffix _zip,$(HEX_TARGETS))
 $(TARGETS_ZIP):
 	$(V1) $(MAKE) $(MAKE_PARALLEL) zip TARGET=$(subst _zip,,$@)
 
-.phony: zip
+.PHONY: zip
 zip:
 	$(V0) zip $(TARGET_ZIP) $(TARGET_HEX)
 
-.phony: binary
+.PHONY: binary
 binary:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_BIN)
 
-.phony: hex
+.PHONY: hex
 hex:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_HEX)
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_LST)
@@ -738,11 +738,11 @@ hex:
 uf2:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
 
-.phony: uf2
+.PHONY: uf2
 uf2:
 	$(V0) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
 
-.phony: exe
+.PHONY: exe
 exe: $(TARGET_EXE)
 
 TARGETS_REVISION = $(addsuffix _rev,$(HEX_TARGETS))
@@ -778,7 +778,7 @@ $(DIRECTORIES):
 version:
 	@echo $(FC_VER)
 
-.phony: submodules
+.PHONY: submodules
 submodules:
 	@echo "Updating submodules"
 	$(V1) git submodule update --init --recursive || { echo "Failed to update submodules"; exit 1; }
