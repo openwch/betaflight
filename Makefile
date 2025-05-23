@@ -58,9 +58,7 @@ CFLAGS_DISABLED         :=
 FORKNAME      = betaflight
 
 # Working directories
-# ROOT_DIR is the full path to the directory containing this Makefile
-ROOT_DIR        := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-# ROOT is the relative path to the directory containing this Makefile
+ROOT_DIR        := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ROOT            := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 PLATFORM_DIR	:= $(ROOT)/src/platform
@@ -95,9 +93,15 @@ MAKE_PARALLEL 		     = $(if $(filter -j%, $(MAKEFLAGS)),$(EMPTY),-j$(DEFAULT_PAR
 # pre-build sanity checks
 include $(MAKE_SCRIPT_DIR)/checks.mk
 
+# list of targets that  are executed on host (using exe as goal)
+EXE_TARGETS      := SITL
+UF2_TARGETS      := RP2350
+
 # basic target list
 PLATFORMS        := $(sort $(notdir $(patsubst /%,%, $(wildcard $(PLATFORM_DIR)/*))))
 BASE_TARGETS     := $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(PLATFORM_DIR)/*/target/*/target.mk)))))
+
+HEX_TARGETS      := $(filter-out $(EXE_TARGETS) $(UF2_TARGETS),$(BASE_TARGETS))
 
 # configure some directories that are relative to wherever ROOT_DIR is located
 TOOLS_DIR  ?= $(ROOT)/tools
@@ -235,6 +239,16 @@ endif
 
 # openocd specific includes
 include $(MAKE_SCRIPT_DIR)/openocd.mk
+
+ifeq ($(CONFIG)$(TARGET),)
+.DEFAULT_GOAL := all
+else ifneq ($(filter $(TARGET),$(EXE_TARGETS)),)
+.DEFAULT_GOAL := exe
+else ifneq ($(filter $(TARGET),$(UF2_TARGETS)),)
+.DEFAULT_GOAL := uf2
+else
+.DEFAULT_GOAL := hex
+endif
 
 INCLUDE_DIRS    := $(INCLUDE_DIRS) \
                    $(ROOT)/lib/main/MAVLink
@@ -439,20 +453,20 @@ TARGET_FULLNAME = $(FORKNAME)_$(FC_VER)_$(TARGET_NAME)
 #
 # Things we will build
 #
-TARGET_BIN      := $(BIN_DIR)/$(TARGET_FULLNAME).bin
-TARGET_HEX      := $(BIN_DIR)/$(TARGET_FULLNAME).hex
-TARGET_UF2      := $(BIN_DIR)/$(TARGET_FULLNAME).uf2
-TARGET_EXE      := $(BIN_DIR)/$(TARGET_FULLNAME)
-TARGET_DFU      := $(BIN_DIR)/$(TARGET_FULLNAME).dfu
-TARGET_ZIP      := $(BIN_DIR)/$(TARGET_FULLNAME).zip
-TARGET_OBJ_DIR  := $(OBJECT_DIR)/$(TARGET_NAME)
-TARGET_ELF      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).elf
-TARGET_EXST_ELF := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_EXST.elf
-TARGET_UNPATCHED_BIN := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_UNPATCHED.bin
-TARGET_LST      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).lst
-TARGET_OBJS     := $(addsuffix .o,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
-TARGET_DEPS     := $(addsuffix .d,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
-TARGET_MAP      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).map
+TARGET_BIN      = $(BIN_DIR)/$(TARGET_FULLNAME).bin
+TARGET_HEX      = $(BIN_DIR)/$(TARGET_FULLNAME).hex
+TARGET_UF2      = $(BIN_DIR)/$(TARGET_FULLNAME).uf2
+TARGET_EXE      = $(BIN_DIR)/$(TARGET_FULLNAME)
+TARGET_DFU      = $(BIN_DIR)/$(TARGET_FULLNAME).dfu
+TARGET_ZIP      = $(BIN_DIR)/$(TARGET_FULLNAME).zip
+TARGET_OBJ_DIR  = $(OBJECT_DIR)/$(TARGET_NAME)
+TARGET_ELF      = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).elf
+TARGET_EXST_ELF = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_EXST.elf
+TARGET_UNPATCHED_BIN = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_UNPATCHED.bin
+TARGET_LST      = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).lst
+TARGET_OBJS     = $(addsuffix .o,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
+TARGET_DEPS     = $(addsuffix .d,$(addprefix $(TARGET_OBJ_DIR)/,$(basename $(SRC))))
+TARGET_MAP      = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).map
 
 TARGET_EXST_HASH_SECTION_FILE := $(TARGET_OBJ_DIR)/exst_hash_section.bin
 
@@ -488,6 +502,10 @@ $(TARGET_BIN): $(TARGET_ELF)
 $(TARGET_HEX): $(TARGET_ELF)
 	@echo "Creating HEX $(TARGET_HEX)" "$(STDOUT)"
 	$(V1) $(OBJCOPY) -O ihex --set-start 0x8000000 $< $@
+
+$(TARGET_UF2): $(TARGET_ELF)
+	@echo "Creating UF2 $(TARGET_UF2)" "$(STDOUT)"
+	$(V1) $(PICOTOOL) uf2 convert $< $@
 
 $(TARGET_DFU): $(TARGET_HEX)
 	@echo "Creating DFU $(TARGET_DFU)" "$(STDOUT)"
@@ -606,11 +624,22 @@ $(TARGET_OBJ_DIR)/%.o: %.S
 ## all               : Build all currently built targets
 all: $(CI_TARGETS)
 
-.PHONY: $(BASE_TARGETS)
-$(BASE_TARGETS):
-	$(MAKE) fwo TARGET=$@
+$(HEX_TARGETS):
+	$(V0) @echo "Building hex target $@" && \
+	$(MAKE) hex TARGET=$@ && \
+	echo "Building $@ succeeded."
 
-TARGETS_CLEAN = $(addsuffix _clean,$(BASE_TARGETS))
+$(UF2_TARGETS):
+	$(V0) @echo "Building uf2 target $@" && \
+	$(MAKE) uf2 TARGET=$@ && \
+	echo "Building $@ succeeded."
+
+$(EXE_TARGETS):
+	$(V0) @echo "Building executable target $@" && \
+	$(MAKE) exe TARGET=$@ && \
+	echo "Building $@ succeeded."
+
+TARGETS_CLEAN = $(addsuffix _clean,$(HEX_TARGETS) $(UF2_TARGETS) $(EXE_TARGETS))
 
 CONFIGS_CLEAN = $(addsuffix _clean,$(BASE_CONFIGS))
 
@@ -645,7 +674,7 @@ preview: $(PREVIEW_TARGETS) test
 ## all_configs       : Build all configs
 all_configs: $(BASE_CONFIGS)
 
-TARGETS_FLASH = $(addsuffix _flash,$(BASE_TARGETS))
+TARGETS_FLASH = $(addsuffix _flash,$(HEX_TARGETS))
 
 ## <TARGET>_flash    : build and flash a target
 $(TARGETS_FLASH):
@@ -683,7 +712,7 @@ openocd-gdb: $(TARGET_ELF)
 	$(V0) $(OPENOCD_COMMAND) & $(CROSS_GDB) $(TARGET_ELF) -ex "target remote localhost:3333" -ex "load"
 endif
 
-TARGETS_ZIP = $(addsuffix _zip,$(BASE_TARGETS))
+TARGETS_ZIP = $(addsuffix _zip,$(HEX_TARGETS))
 
 ## <TARGET>_zip    : build target and zip it (useful for posting to GitHub)
 .PHONY: $(TARGETS_ZIP)
@@ -706,21 +735,13 @@ hex:
 uf2:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
 
-.PHONY: exe
+uf2:
+	$(V0) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
+
+.phony: exe
 exe: $(TARGET_EXE)
 
-# FWO (Firmware Output) is the default output for building the firmware
-.PHONY: fwo
-fwo:
-ifeq ($(DEFAULT_OUTPUT),exe)
-	$(V1) $(MAKE) exe
-else ifeq ($(DEFAULT_OUTPUT),uf2)
-	$(V1) $(MAKE) uf2
-else
-	$(V1) $(MAKE) hex
-endif
-
-TARGETS_REVISION = $(addsuffix _rev, $(BASE_TARGETS))
+TARGETS_REVISION = $(addsuffix _rev,$(HEX_TARGETS))
 ## <TARGET>_rev    : build target and add revision to filename
 .PHONY: $(TARGETS_REVISION)
 $(TARGETS_REVISION):
@@ -753,6 +774,11 @@ $(DIRECTORIES):
 version:
 	@echo $(FC_VER)
 
+submodules:
+	@echo "Updating submodules"
+	$(V1) git submodule update --init --recursive
+	@echo "Submodules updated"
+
 ## help              : print this help message and exit
 help: Makefile mk/tools.mk
 	@echo ""
@@ -776,6 +802,8 @@ help: Makefile mk/tools.mk
 targets:
 	@echo "Platforms:           $(PLATFORMS)"
 	@echo "Valid targets:       $(BASE_TARGETS)"
+	@echo "Executable targets:  $(EXE_TARGETS)"
+	@echo "UF2 targets:         $(UF2_TARGETS)"
 	@echo "Built targets:       $(CI_TARGETS)"
 	@echo "Default target:      $(TARGET)"
 	@echo "CI common targets:   $(CI_COMMON_TARGETS)"
