@@ -472,84 +472,42 @@ breakpad_clean:
 	@echo " CLEAN        $(BREAKPAD_DL_FILE)"
 	$(V1) $(RM) -f $(BREAKPAD_DL_FILE)
 
-# Platform-specific tools
-# Each platform tools.mk appends to PLATFORM_SDKS and defines per-SDK properties:
-#   PLATFORM_SDK_<name>_SUBMODULE  - submodule path (e.g. lib/main/pico-sdk)
-#   PLATFORM_SDK_<name>_HYDRATE   - make target to hydrate the SDK
-#   PLATFORM_SDK_<name>_TOOLS     - make targets to install required toolchains and tools
-#
-# 'none' is the default for targets with no toolchain needs (e.g. SITL).
-# 'arm' is for ARM-based targets without a platform-specific SDK submodule.
-# Platform SDKs declare their toolchain in _TOOLS (e.g. arm_sdk_install, esp_tools_install).
-PLATFORM_SDKS :=
-PLATFORM_SDK_arm_TOOLS      := arm_sdk_install
-PLATFORM_SDK_arm_CC         := $(if $(ARM_SDK_PREFIX),$(ARM_SDK_PREFIX)gcc,arm-none-eabi-gcc)
-PLATFORM_SDK_arm_CC_VERSION := $(GCC_REQUIRED_VERSION)
-PLATFORM_SDK_arm_CC_INSTALL := arm_sdk_install
+# Raspberry Pi Pico tools
+PICOTOOL_REPO   := https://github.com/raspberrypi/picotool.git
+PICOTOOL_DL_DIR := $(DL_DIR)/picotool
+PICOTOOL_BUILD_DIR := $(PICOTOOL_DL_DIR)/build
+PICOTOOL_DIR    := $(TOOLS_DIR)/picotool
+PICO_SDK_PATH   := $(ROOT_DIR)/lib/main/pico-sdk
+PICOTOOL        := $(PICOTOOL_DIR)/picotool
 
-include $(PLATFORM_DIR)/STM32/mk/tools.mk
-include $(PLATFORM_DIR)/PICO/mk/tools.mk
-include $(PLATFORM_DIR)/ESP32/mk/tools.mk
-
-## platform-sdk-list-print : list registered SDK names (space-separated)
-.PHONY: platform-sdk-list-print
-platform-sdk-list-print:
-	@echo $(sort arm $(PLATFORM_SDKS))
-
-## platform-sdk-cache-paths-print : print cache paths for SDK specified by SDK= variable
-.PHONY: platform-sdk-cache-paths-print
-platform-sdk-cache-paths-print:
-ifneq ($(PLATFORM_SDK_$(SDK)_SUBMODULE),)
-	@echo "$(PLATFORM_SDK_$(SDK)_SUBMODULE)"
-	@echo ".git/modules/$(PLATFORM_SDK_$(SDK)_SUBMODULE)"
-else
-	@echo "tools"
+ifeq ($(filter uf2,$(MAKECMDGOALS)), uf2)
+    ifeq (,$(wildcard $(PICOTOOL)))
+        PICOTOOL_VERSION := $(shell picotool version)
+        ifneq ($(PICOTOOL_VERSION),)
+            PICOTOOL := picotool
+        else
+            $(error **ERROR** picotool not in the PATH or setup in tools. Run 'make picotool_install' to install automatically in the tools folder)
+        endif
+    endif
 endif
 
-## platform-sdk-cache-key-print : print cache key for SDK specified by SDK= variable
-.PHONY: platform-sdk-cache-key-print
-platform-sdk-cache-key-print:
-ifneq ($(PLATFORM_SDK_$(SDK)_SUBMODULE),)
-	@echo $(shell git rev-parse HEAD:$(PLATFORM_SDK_$(SDK)_SUBMODULE) 2>/dev/null)
-else
-	@echo "base"
-endif
+.PHONY: picotool_install
+picotool_install: | $(DL_DIR) $(TOOLS_DIR)
+picotool_install: picotool_clean
+	@echo "\n CLONE     $(PICOTOOL_REPO)"
+	$(V1) git clone --depth 1 $(PICOTOOL_REPO) "$(PICOTOOL_DL_DIR)"
+	@echo "\n BUILD      $(PICOTOOL_BUILD_DIR)"
+	$(V1) [ -d "$(PICOTOOL_DIR)" ] || mkdir -p $(PICOTOOL_DIR)
+	$(V1) [ -d "$(PICOTOOL_BUILD_DIR)" ] || mkdir -p $(PICOTOOL_BUILD_DIR)
+	$(V1) cmake -S $(PICOTOOL_DL_DIR) -B $(PICOTOOL_BUILD_DIR) -D PICO_SDK_PATH=$(PICO_SDK_PATH)
+	$(V1) $(MAKE) -C $(PICOTOOL_BUILD_DIR)
+	$(V1) cp $(PICOTOOL_BUILD_DIR)/picotool $(PICOTOOL_DIR)/picotool
+	@echo "\n VERSION:"
+	$(V1) $(PICOTOOL_DIR)/picotool version
 
-## platform-sdk-hydrate : hydrate SDK specified by SDK= variable, or all SDKs if SDK is unset
-.PHONY: platform-sdk-hydrate
-platform-sdk-hydrate:
-ifneq ($(PLATFORM_SDK_$(SDK)_HYDRATE),)
-	$(V1) $(MAKE) $(PLATFORM_SDK_$(SDK)_HYDRATE)
-else ifdef SDK
-	@true
-else
-	$(V1) $(MAKE) $(foreach s,$(PLATFORM_SDKS),$(PLATFORM_SDK_$(s)_HYDRATE))
-endif
-
-## platform-tools-install : install tools for SDK specified by SDK= variable, or all if unset
-.PHONY: platform-tools-install
-platform-tools-install:
-ifdef SDK
-	$(V1) $(if $(PLATFORM_SDK_$(SDK)_TOOLS),$(MAKE) $(PLATFORM_SDK_$(SDK)_TOOLS),@true)
-else
-	$(V1) $(MAKE) $(sort $(PLATFORM_SDK_arm_TOOLS) $(foreach s,$(PLATFORM_SDKS),$(PLATFORM_SDK_$(s)_TOOLS)))
-endif
-
-## target-sdk-print : print the SDK name for the current TARGET or CONFIG ('arm' if no platform SDK)
-.PHONY: target-sdk-print
-target-sdk-print:
-	@echo $(PLATFORM_SDK)
-
-## build-sdk-print : print the SDK name for BUILD= (auto-detects TARGET vs CONFIG)
-.PHONY: build-sdk-print
-build-sdk-print:
-ifdef BUILD
-	$(V1) if [ -d "$(PLATFORM_DIR)/*/target/$(BUILD)" ] 2>/dev/null || \
-	      ls $(PLATFORM_DIR)/*/target/$(BUILD)/target.mk >/dev/null 2>&1; then \
-		$(MAKE) -s TARGET=$(BUILD) target-sdk-print; \
-	else \
-		$(MAKE) -s CONFIG=$(BUILD) target-sdk-print; \
-	fi
-else
-	$(error BUILD= variable required)
-endif
+.PHONY: picotool_clean
+picotool_clean:
+	@echo " CLEAN        $(PICOTOOL_DIR)"
+	$(V1) [ ! -d "$(PICOTOOL_DIR)" ] || $(RM) -rf $(PICOTOOL_DIR)
+	@echo " CLEAN        $(PICOTOOL_DL_DIR)"
+	$(V1) [ ! -d "$(PICOTOOL_DL_DIR)" ] || $(RM) -rf $(PICOTOOL_DL_DIR)
