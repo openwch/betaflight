@@ -24,6 +24,7 @@
 #define _ADDRESSMAP_H
 
 #define NVIC_PriorityGroup_2         0x500
+#define PLATFORM_NO_LIBC             0
 
 #define SPI_IO_AF_CFG           0
 #define SPI_IO_AF_SCK_CFG_HIGH  0
