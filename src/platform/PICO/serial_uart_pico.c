@@ -147,7 +147,7 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate, portMode_e mode
     const resourceOwner_e ownerTxRx = serialOwnerTxRx(identifier); // rx is always +1
 
     IOInit(txIO, ownerTxRx, ownerIndex);
-    IOInit(txIO, ownerTxRx, ownerIndex);
+    IOInit(rxIO, ownerTxRx, ownerIndex);
 
     uart_init(hardware->reg, baudRate);
 
