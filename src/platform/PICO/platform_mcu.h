@@ -23,6 +23,9 @@
 
 #define _ADDRESSMAP_H
 
+// Allow for single port, up to 128 GPIO pins, in ioTag_t.
+#define DEFIO_PORT_PINS 128
+
 #define NVIC_PriorityGroup_2         0x500
 #define PLATFORM_NO_LIBC             0
 #define DEFIO_PORT_PINS              64
@@ -80,7 +83,15 @@ typedef enum {DISABLE = 0, ENABLE = !DISABLE} FunctionalState;
 #define STATIC_DMA_DATA_AUTO            static
 
 #define DEFAULT_CPU_OVERCLOCK           0
+
+#ifdef TEST_SLOW_SCHEDULE
+// (testing) allow time for more / all tasks
+#define TASK_GYROPID_DESIRED_PERIOD     30000 // 1000 // 50000 // 125 // 125us = 8kHz
+#else
 #define TASK_GYROPID_DESIRED_PERIOD     125 // 125us = 8kHz
+#endif
+
+
 #define SCHEDULER_DELAY_LIMIT           10
 
 #define IO_CONFIG(mode, speed, pupd) ((mode) | ((speed) << 2) | ((pupd) << 5))
@@ -92,3 +103,27 @@ typedef enum {DISABLE = 0, ENABLE = !DISABLE} FunctionalState;
 #define IOCFG_IPD             IO_CONFIG(GPIO_IN, 0, 0)
 #define IOCFG_IPU             IO_CONFIG(GPIO_IN, 0, 0)
 #define IOCFG_IN_FLOATING     IO_CONFIG(GPIO_IN, 0, 0)
+
+// TODO update these and IOConfigGPIO
+#define SPI_IO_AF_CFG           0
+#define SPI_IO_AF_SCK_CFG_HIGH  0
+#define SPI_IO_AF_SCK_CFG_LOW   0
+#define SPI_IO_AF_SDI_CFG       0
+#define SPI_IO_CS_CFG           IO_CONFIG(GPIO_OUT, 0, 0) // todo pullup/down etc.
+
+
+#define SERIAL_UART_FIRST_INDEX     0
+
+extern uint32_t systemUniqueId[3];
+
+// PICOs have an 8 byte unique identifier.
+#define U_ID_0 (systemUniqueId[0])
+#define U_ID_1 (systemUniqueId[1])
+#define U_ID_2 (systemUniqueId[2])
+
+#define UART_TX_BUFFER_ATTRIBUTE
+#define UART_RX_BUFFER_ATTRIBUTE
+
+#define SERIAL_TRAIT_PIN_CONFIG 1
+
+#define xDMA_GetCurrDataCounter(dma_resource) (((dma_channel_hw_t *)(dma_resource))->transfer_count)
