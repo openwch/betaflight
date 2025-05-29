@@ -25,6 +25,7 @@
 
 #define NVIC_PriorityGroup_2         0x500
 #define PLATFORM_NO_LIBC             0
+#define DEFIO_PORT_PINS              64
 
 #define SPI_IO_AF_CFG           0
 #define SPI_IO_AF_SCK_CFG_HIGH  0
