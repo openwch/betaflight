@@ -17,122 +17,170 @@
  * License along with this software.
  *
  * If not, see <http://www.gnu.org/licenses/>.
- *
- * Minimal USB descriptors for TinyUSB composite CDC + MSC device on PICO
- *
- * Based on TinyUSB examples and adapted for Betaflight.
  */
 
-#include "platform.h"
+/*
+ * This file is based on a file originally part of the
+ * MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+ * Copyright (c) 2019 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-#include "tusb_config.h"
-#include <string.h>
-
-#define _STDIO_H_
 #include "tusb.h"
-
-// Extern flag controlled by MSC start logic
-extern bool pico_msc_active;
+#include "pico/unique_id.h"
+#include "common/utils.h"
 
 #ifndef USBD_VID
-#define USBD_VID 0x2E8A // Raspberry Pi
+ // Raspberry Pi
+#define USBD_VID (0x2E8A)
 #endif
 
 #ifndef USBD_PID
 #if PICO_RP2040
-#define USBD_PID 0x000a // Raspberry Pi Pico SDK CDC for RP2040
+ // Raspberry Pi Pico SDK CDC for RP2040
+#define USBD_PID (0x000a)
 #else
-#define USBD_PID 0x0009 // Raspberry Pi Pico SDK CDC
+ // Raspberry Pi Pico SDK CDC
+#define USBD_PID (0x0009)
 #endif
 #endif
 
-// Device descriptor (keep CDC as it was; MSC uses same device desc)
-static tusb_desc_device_t const desc_device = {
-    .bLength            = sizeof(tusb_desc_device_t),
-    .bDescriptorType    = TUSB_DESC_DEVICE,
-    .bcdUSB             = 0x0200,
-    .bDeviceClass       = TUSB_CLASS_MISC,
-    .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-    .bDeviceProtocol    = MISC_PROTOCOL_IAD,
-    .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
-    .idVendor           = USBD_VID,
-    .idProduct          = USBD_PID,
-    .bcdDevice          = 0x0100,
-    .iManufacturer      = 0x01,
-    .iProduct           = 0x02,
-    .iSerialNumber      = 0x03,
-    .bNumConfigurations = 0x01
+#ifndef USBD_MANUFACTURER
+#define USBD_MANUFACTURER "Betaflight Pico"
+#endif
+
+#ifndef USBD_PRODUCT
+#define USBD_PRODUCT "Pico"
+#endif
+
+#define TUD_RPI_RESET_DESC_LEN  9
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_RPI_RESET_DESC_LEN)
+
+#define USBD_CONFIGURATION_DESCRIPTOR_ATTRIBUTE 0
+#define USBD_MAX_POWER_MA           250
+
+#define USBD_ITF_CDC                0 // needs 2 interfaces
+#define USBD_ITF_MAX                2
+
+#define USBD_CDC_EP_CMD             0x81
+#define USBD_CDC_EP_OUT             0x02
+#define USBD_CDC_EP_IN              0x82
+#define USBD_CDC_CMD_MAX_SIZE       8
+#define USBD_CDC_IN_OUT_MAX_SIZE    64
+
+#define USBD_STR_0                  0x00
+#define USBD_STR_MANUF              0x01
+#define USBD_STR_PRODUCT            0x02
+#define USBD_STR_SERIAL             0x03
+#define USBD_STR_CDC                0x04
+#define USBD_STR_RPI_RESET          0x05
+
+// Note: descriptors returned from callbacks must exist long enough for transfer to complete
+
+static const tusb_desc_device_t usbd_desc_device = {
+    .bLength = sizeof(tusb_desc_device_t),
+    .bDescriptorType = TUSB_DESC_DEVICE,
+    .bcdUSB = 0x0200,
+    .bDeviceClass = TUSB_CLASS_MISC,
+    .bDeviceSubClass = MISC_SUBCLASS_COMMON,
+    .bDeviceProtocol = MISC_PROTOCOL_IAD,
+    .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
+    .idVendor = USBD_VID,
+    .idProduct = USBD_PID,
+    .bcdDevice = 0x0100,
+    .iManufacturer = USBD_STR_MANUF,
+    .iProduct = USBD_STR_PRODUCT,
+    .iSerialNumber = USBD_STR_SERIAL,
+    .bNumConfigurations = 1,
 };
 
-const uint8_t * tud_descriptor_device_cb(void)
+#define TUD_RPI_RESET_DESCRIPTOR(_itfnum, _stridx) \
+  /* Interface */\
+  9, TUSB_DESC_INTERFACE, _itfnum, 0, 0, TUSB_CLASS_VENDOR_SPECIFIC, RESET_INTERFACE_SUBCLASS, RESET_INTERFACE_PROTOCOL, _stridx,
+
+static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
+    TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_MAX, USBD_STR_0, USBD_DESC_LEN,
+        USBD_CONFIGURATION_DESCRIPTOR_ATTRIBUTE, USBD_MAX_POWER_MA),
+
+    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
+        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
+};
+
+static char usbd_serial_str[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
+
+static const char *const usbd_desc_str[] = {
+    [USBD_STR_MANUF] = USBD_MANUFACTURER,
+    [USBD_STR_PRODUCT] = USBD_PRODUCT,
+    [USBD_STR_SERIAL] = usbd_serial_str,
+    [USBD_STR_CDC] = "Board CDC",
+};
+
+const uint8_t *tud_descriptor_device_cb(void)
 {
-  return (const uint8_t *) &desc_device;
+    return (const uint8_t *)&usbd_desc_device;
 }
 
-// CDC-only configuration (match original CDC descriptor: notify 0x81, OUT 0x02, IN 0x82)
-enum {
-  ITF_CDC_ONLY_COMM = 0,
-  ITF_CDC_ONLY_DATA,
-  ITF_CDC_ONLY_TOTAL
-};
-
-#define CDC_ONLY_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
-
-static const uint8_t cdc_only_configuration[] = {
-  TUD_CONFIG_DESCRIPTOR(1, ITF_CDC_ONLY_TOTAL, 0, CDC_ONLY_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 250),
-  TUD_CDC_DESCRIPTOR(ITF_CDC_ONLY_COMM, 4, 0x81, 8, 0x02, 0x82, 64),
-};
-
-// MSC-only configuration (used when MSC mode is active)
-enum {
-  ITF_MSC_ONLY = 0,
-  ITF_MSC_ONLY_TOTAL
-};
-
-#define MSC_ONLY_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_MSC_DESC_LEN)
-
-static const uint8_t msc_only_configuration[] = {
-  TUD_CONFIG_DESCRIPTOR(1, ITF_MSC_ONLY_TOTAL, 0, MSC_ONLY_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 250),
-  TUD_MSC_DESCRIPTOR(ITF_MSC_ONLY, 5, 0x01, 0x81, 64),
-};
-
-const uint8_t * tud_descriptor_configuration_cb(uint8_t index)
+const uint8_t *tud_descriptor_configuration_cb(uint8_t index)
 {
-  (void) index; // single config
-  return pico_msc_active ? msc_only_configuration : cdc_only_configuration;
+    UNUSED(index);
+    return usbd_desc_cfg;
 }
 
-// String descriptors
-static char const* string_desc_arr[] = {
-  (const char[]){ 0x09, 0x04 }, // 0: English (0x0409)
-  FC_FIRMWARE_NAME,             // 1: Manufacturer
-  USBD_PRODUCT_STRING,          // 2: Product
-  "123456",                    // 3: Serial (placeholder)
-  "Betaflight CDC",            // 4: CDC Interface
-  "Betaflight MSC",            // 5: MSC Interface
-};
-
-static uint16_t _desc_str[32];
-
-uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
+const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 {
-  (void) langid;
-  uint8_t chr_count;
+    UNUSED(langid);
 
-  if (index == 0) {
-    memcpy(&_desc_str[1], string_desc_arr[0], 2);
-    chr_count = 1;
-  } else {
-    if (index >= sizeof(string_desc_arr)/sizeof(string_desc_arr[0])) return NULL;
-    const char* str = string_desc_arr[index];
-    chr_count = (uint8_t) strlen(str);
-    if (chr_count > 31) chr_count = 31;
-    for (uint8_t i = 0; i < chr_count; i++) {
-      _desc_str[1 + i] = str[i];
+#ifndef USBD_DESC_STR_MAX
+#define USBD_DESC_STR_MAX (20)
+#elif USBD_DESC_STR_MAX > 127
+#error USBD_DESC_STR_MAX too high (max is 127).
+#elif USBD_DESC_STR_MAX < 17
+#error USBD_DESC_STR_MAX too low (min is 17).
+#endif
+    static uint16_t desc_str[USBD_DESC_STR_MAX];
+
+    // Assign the SN using the unique flash id
+    if (!usbd_serial_str[0]) {
+        pico_get_unique_board_id_string(usbd_serial_str, sizeof(usbd_serial_str));
     }
-  }
-  _desc_str[0] = (TUSB_DESC_STRING << 8) | (2*chr_count + 2);
-  return _desc_str;
+
+    unsigned len;
+    if (index == 0) {
+        desc_str[1] = 0x0409; // supported language is English
+        len = 1;
+    } else {
+        if (index >= ARRAYLEN(usbd_desc_str)) {
+            return NULL;
+        }
+        const char *str = usbd_desc_str[index];
+        for (len = 0; len < USBD_DESC_STR_MAX - 1 && str[len]; ++len) {
+            desc_str[1 + len] = str[len];
+        }
+    }
+
+    // first byte is length (including header), second byte is string type
+    desc_str[0] = (uint16_t)((TUSB_DESC_STRING << 8) | (2 * len + 2));
+
+    return desc_str;
 }
-
-

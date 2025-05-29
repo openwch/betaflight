@@ -63,20 +63,5 @@ STATIC_ASSERT((DEFIO_PORT_PINS & (DEFIO_PORT_PINS - 1)) == 0, "DEFIO_PORT_PINS m
 // TARGET must define used pins
 #include "target.h"
 
-// TODO: hack for the minute
-#ifndef DEFIO_PIN_BITMASK
-#define DEFIO_PIN_BITMASK 0x0f
-#endif
-
-#ifndef DEFIO_PORT_BITSHIFT
-#define DEFIO_PORT_BITSHIFT 4
-#endif
-
-// ioTag_t accessor macros
-#define DEFIO_TAG_MAKE(gpioid, pin) ((ioTag_t)((((gpioid) + 1) << DEFIO_PORT_BITSHIFT) | (pin)))
-#define DEFIO_TAG_ISEMPTY(tag) (!(tag))
-#define DEFIO_TAG_GPIOID(tag) (((tag) >> DEFIO_PORT_BITSHIFT) - 1)
-#define DEFIO_TAG_PIN(tag) ((tag) & DEFIO_PIN_BITMASK)
-
 // include template-generated macros for IO pins
 #include "io_def_generated.h"
