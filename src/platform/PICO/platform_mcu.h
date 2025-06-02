@@ -23,9 +23,6 @@
 
 #define _ADDRESSMAP_H
 
-// Allow for single port, up to 128 GPIO pins, in ioTag_t.
-#define DEFIO_PORT_PINS 128
-
 #define NVIC_PriorityGroup_2         0x500
 #define PLATFORM_NO_LIBC             0
 #define DEFIO_PORT_PINS              64
