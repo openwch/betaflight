@@ -29,6 +29,8 @@
 
 #include "pg/bus_i2c.h"
 
+#include "pg/bus_i2c.h"
+
 #include "hardware/i2c.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
@@ -430,6 +432,8 @@ void i2cInit(i2cDevice_e device)
 
     const IO_t scl = pDev->scl;
     const IO_t sda = pDev->sda;
+    const uint8_t sclPin = IO_Pin(scl);
+    const uint8_t sdaPin = IO_Pin(sda);
 
     if (!hardware || !scl || !sda) {
         return;

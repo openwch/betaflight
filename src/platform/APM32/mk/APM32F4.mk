@@ -184,7 +184,7 @@ MCU_COMMON_SRC = \
         APM32/serial_uart_apm32f4xx.c \
         drivers/adc.c \
         drivers/bus_spi_config.c \
-        common/stm32/bus_i2c_pinconfig.c \
+        common/stm32/bus_i2c_config.c \
         common/stm32/bus_spi_hw.c \
         common/stm32/camera_control.c \
         common/stm32/bus_spi_pinconfig.c \
@@ -228,7 +228,7 @@ SIZE_OPTIMISED_SRC += \
         APM32/usb/vcp/serial_usb_vcp.c \
         drivers/inverter.c \
         drivers/bus_spi_config.c \
-        common/stm32/bus_i2c_pinconfig.c \
+        common/stm32/bus_i2c_config.c \
         common/stm32/bus_spi_pinconfig.c \
         common/stm32/pwm_output_beeper.c \
         common/stm32/serial_uart_pinconfig.c \
