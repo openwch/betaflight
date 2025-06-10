@@ -242,6 +242,17 @@ MCU_COMMON_SRC = \
             drivers/dshot_bitbang_decode.c \
             drivers/inverter.c \
             drivers/bus_spi.c \
+            drivers/bus_spi_config.c \
+            drivers/bus_i2c_utils.c \
+            drivers/serial_pinconfig.c \
+            drivers/serial_uart_pinconfig.c \
+            drivers/usb_io.c \
+            drivers/dshot.c \
+            PICO/dma_pico.c \
+            PICO/dshot_pico.c \
+            PICO/pwm_pico.c \
+            PICO/stdio_pico_stub.c \
+            PICO/debug_pico.c \
             PICO/system.c \
             PICO/io_pico.c \
             PICO/bus_spi_pico.c \
