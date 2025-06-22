@@ -549,6 +549,18 @@ extern uint8_t _dmaram_end__;
 // QUAD SPI
 #if defined(STM32H7) || defined(STM32N6)
 #define MAX_QUADSPI_PIN_SEL 3
+#define PLATFORM_TRAIT_SDIO_INIT 1
+#endif
+
+// F4 has non-8MHz boards
+// G4 for Betaflight allow 8, 16, 24, 26 or 27MHz oscillator
+#if defined(STM32F4) || defined(STM32G4)
+#define PLATFORM_TRAIT_CONFIG_HSE 1
+#endif
+
+#if defined(STM32G4)
+#define MCO_SOURCE_COUNT   8
+#define MCO_DIVIDER_COUNT  5
 #endif
 #if defined(STM32G4)
 #define MAX_QUADSPI_PIN_SEL 4
