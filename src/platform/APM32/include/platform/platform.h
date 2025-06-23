@@ -233,7 +233,6 @@
 #define FLASH_CONFIG_BUFFER_TYPE uint32_t
 
 #define DMA_STCH_STRING    "Stream"
-
 #endif
 
 #ifdef USE_FAST_DATA
