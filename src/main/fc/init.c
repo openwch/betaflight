@@ -725,6 +725,7 @@ void init(void)
         delay(50);
 #endif
     }
+
     LED0_OFF;
     LED1_OFF;
 
