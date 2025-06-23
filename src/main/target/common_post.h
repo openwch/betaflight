@@ -735,32 +735,3 @@ extern struct linker_symbol __config_end;
 #endif
 #endif // USE_PINIO
 
-/*****************************************************
-
- Place any ENABLE_X_FEATURE=0 definitions here for those
- yet to be defined, and also for any backward compatibility
- with USE_ flags.
-
- e.g.
-
- #if !defined(ENABLE_X_FEATURE) && defined(USE_X_FEATURE)
- #define ENABLE_X_FEATURE 1
- #elif !defined(ENABLE_X_FEATURE)
- #define ENABLE_X_FEATURE 0
- #endif
-
-******************************************************/
-
-#if !defined(ENABLE_SERIAL_SKIP_CHECK_TX)
-#define ENABLE_SERIAL_SKIP_CHECK_TX 0
-#endif
-
-#if !defined(ENABLE_SDIO_INIT)
-#define ENABLE_SDIO_INIT 0
-#endif
-
-#if defined(USE_FLIGHT_PLAN) && !defined(ENABLE_FLIGHT_PLAN)
-#define ENABLE_FLIGHT_PLAN 1
-#elif !defined(ENABLE_FLIGHT_PLAN)
-#define ENABLE_FLIGHT_PLAN 0
-#endif
