@@ -156,6 +156,7 @@ MCU_COMMON_SRC = \
         APM32/startup/system_apm32f4xx.c \
         drivers/inverter.c \
         drivers/dshot_bitbang_decode.c \
+        common/stm32/pwm_output_beeper.c \
         common/stm32/pwm_output_dshot_shared.c \
         common/stm32/dshot_dpwm.c \
         common/stm32/dshot_bitbang_shared.c \
