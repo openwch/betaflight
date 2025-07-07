@@ -400,11 +400,12 @@ zip_clean:
 
 ifeq ($(shell [ -d "$(ARM_SDK_DIR)" ] && echo "exists"), exists)
   ARM_SDK_PREFIX := $(ARM_SDK_DIR)/bin/arm-none-eabi-
-else ifeq (,$(filter %_sdk %_install test% clean% %-print checks help configs platform-%, $(MAKECMDGOALS)))
-  # Try to find ARM toolchain in PATH (validated later after platform is known)
-  GCC_VERSION = $(shell arm-none-eabi-gcc -dumpversion 2>/dev/null)
-  ifneq ($(GCC_VERSION),)
-    ARM_SDK_PREFIX ?= arm-none-eabi-
+else ifeq (,$(filter %_sdk %_install test% clean% %-print checks help configs, $(MAKECMDGOALS)))
+  GCC_VERSION = $(shell arm-none-eabi-gcc -dumpversion)
+  ifeq ($(GCC_VERSION),)
+    $(error **ERROR** arm-none-eabi-gcc not in the PATH. Run 'make arm_sdk_install' to install automatically in the tools folder of this repo)
+  else ifneq ($(GCC_VERSION), $(GCC_REQUIRED_VERSION))
+    $(error **ERROR** your arm-none-eabi-gcc is '$(GCC_VERSION)', but '$(GCC_REQUIRED_VERSION)' is expected. Override with 'GCC_REQUIRED_VERSION' in mk/local.mk or run 'make arm_sdk_install' to install the right version automatically in the tools folder of this repo)
   endif
 endif
 
