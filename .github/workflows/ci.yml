@@ -35,6 +35,10 @@ jobs:
         id: get-sdks
         run: echo "sdks=$(make platform-sdk-list-print | jq -R -c 'split(" ")')" >> $GITHUB_OUTPUT
 
+      - name: Build pico tool and install
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        run: make picotool_install
+
       - name: Hydrate configuration
         id: get-config
         run: make configs
