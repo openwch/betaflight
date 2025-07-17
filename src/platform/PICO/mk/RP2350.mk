@@ -577,19 +577,8 @@ MCU_COMMON_SRC = \
             PICO/uart/uart_rx_program.c \
             PICO/uart/uart_tx_program.c \
             PICO/usb/usb_cdc.c \
-            PICO/usb/usb_descriptors.c \
-            PICO/usb/usb_msc_pico.c \
             PICO/multicore.c \
-            PICO/debug_pin.c \
-            PICO/light_ws2811strip_pico.c
-
-# USB MSC support sources (TinyUSB backend on PICO)
-MSC_SRC = \
-            drivers/usb_msc_common.c \
-            msc/usbd_storage.c \
-            msc/usbd_storage_emfat.c \
-            msc/emfat.c \
-            msc/emfat_file.c
+            PICO/debug_pin.c
 
 DEVICE_STDPERIPH_SRC := \
             $(PICO_LIB_SRC) \
