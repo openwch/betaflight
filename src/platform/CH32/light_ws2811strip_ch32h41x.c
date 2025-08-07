@@ -39,6 +39,7 @@
 #include "drivers/timer.h"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "platform/timer.h"
 
 #include "platform/light_ws2811strip_stm32.h"
@@ -55,6 +56,13 @@
 static IO_t ws2811IO = IO_NONE;
 static dmaResource_t *dmaRef = NULL;
 >>>>>>> ab93a2999 (WIP CH32 platform updates)
+=======
+
+#include "drivers/light_ws2811strip.h"
+
+static IO_t ws2811IO = IO_NONE;
+static dmaResource_t *dmaRef = NULL;
+>>>>>>> 5c26dd0a1 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 static TIM_TypeDef *timer = NULL;
 
 static void WS2811_DMA_IRQHandler(dmaChannelDescriptor_t *descriptor)
@@ -85,6 +93,7 @@ static void WS2811_DMA_IRQHandler(dmaChannelDescriptor_t *descriptor)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 bool ws2811LedStripHardwareInit(void)
 {
     if (!ledStripIoTag) {
@@ -98,6 +107,11 @@ bool ws2811LedStripHardwareInit(void)
 {
     if (!ledStripIoTag) {
 >>>>>>> ab93a2999 (WIP CH32 platform updates)
+=======
+bool ws2811LedStripHardwareInit(ioTag_t ioTag)
+{
+    if (!ioTag) {
+>>>>>>> 5c26dd0a1 (dshot 8K,uart4 MSP+DisplayPort function is OK)
         return false;
     }
 
@@ -107,6 +121,7 @@ bool ws2811LedStripHardwareInit(void)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     const timerHardware_t *timerHardware = timerAllocate(ledStripIoTag, OWNER_LED_STRIP, 0);
 =======
     const timerHardware_t *timerHardware = timerAllocate(ioTag, OWNER_LED_STRIP, 0);
@@ -114,6 +129,9 @@ bool ws2811LedStripHardwareInit(void)
 =======
     const timerHardware_t *timerHardware = timerAllocate(ledStripIoTag, OWNER_LED_STRIP, 0);
 >>>>>>> ab93a2999 (WIP CH32 platform updates)
+=======
+    const timerHardware_t *timerHardware = timerAllocate(ioTag, OWNER_LED_STRIP, 0);
+>>>>>>> 5c26dd0a1 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 
     if (timerHardware == NULL) {
         return false;
@@ -149,6 +167,7 @@ bool ws2811LedStripHardwareInit(void)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     ws2811IO = IOGetByTag(ledStripIoTag);
 =======
     ws2811IO = IOGetByTag(ioTag);
@@ -156,6 +175,9 @@ bool ws2811LedStripHardwareInit(void)
 =======
     ws2811IO = IOGetByTag(ledStripIoTag);
 >>>>>>> ab93a2999 (WIP CH32 platform updates)
+=======
+    ws2811IO = IOGetByTag(ioTag);
+>>>>>>> 5c26dd0a1 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     IOInit(ws2811IO, OWNER_LED_STRIP, 0);
 
     IOConfigGPIOAF(ws2811IO, IO_CONFIG(DIR_OUT, GPIO_MODE_OUT_AF_PP, GPIO_SPEED_VERY_HIGH, GPIO_PULL_UP), timerHardware->alternateFunction);
@@ -249,6 +271,7 @@ bool ws2811LedStripHardwareInit(void)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 void ws2811LedStripStartTransfer(void)
 {
     xDMA_Cmd(dmaRef, DISABLE);
@@ -265,6 +288,10 @@ void ws2811LedStripStartTransfer(void)
 =======
     xDMA_Cmd(dmaRef, DISABLE);
 >>>>>>> e00d53f2f (fix timer and led strip drivers bugs)
+=======
+void ws2811LedStripDMAEnable(void)
+{
+>>>>>>> 5c26dd0a1 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     xDMA_SetCurrDataCounter(dmaRef, WS2811_DMA_BUFFER_SIZE);  // load number of bytes to be transferred
     TIM_SetCounter(timer, 0);
     TIM_Cmd(timer, ENABLE);
