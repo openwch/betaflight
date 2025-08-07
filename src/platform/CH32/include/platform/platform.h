@@ -69,7 +69,7 @@
 #define USE_DYN_NOTCH_FILTER
 // #define USE_OVERCLOCK
 #define USE_ADC_INTERNAL
-#define ADC_VOLTAGE_REFERENCE_MV  3300  //maybe better  cali internal
+// #define USE_USB_CDC_HID
 #define USE_USB_MSC
 #define USE_PERSISTENT_MSC_RTC
 // #define USE_MCO
@@ -77,19 +77,17 @@
 #define USE_PERSISTENT_OBJECTS
 #define USE_LATE_TASK_STATISTICS
 
-#define PLATFORM_TRAIT_ADC_DEVICE 1
-
 #endif
 
 
 
-#ifdef CH32H4
-#define TASK_GYROPID_DESIRED_PERIOD     125 // 1000us = 8kHz
-#define SCHEDULER_DELAY_LIMIT           10
-#else
+// #ifdef CH32H4
+// #define TASK_GYROPID_DESIRED_PERIOD     125 // 1000us = 8kHz
+// #define SCHEDULER_DELAY_LIMIT           10
+// #else
 #define TASK_GYROPID_DESIRED_PERIOD     1000 // 1000us = 1kHz
 #define SCHEDULER_DELAY_LIMIT           100
-#endif
+// #endif
 
 #define DEFAULT_CPU_OVERCLOCK 0
 
@@ -101,12 +99,12 @@
 #endif
 
 //load all data to DTCM
-#define DMA_DATA_ZERO_INIT __attribute__((aligned(32)))
-#define DMA_DATA   __attribute__((aligned(32)))
-#define STATIC_DMA_DATA_AUTO      __attribute__((aligned(32)))  static
+#define DMA_DATA_ZERO_INIT
+#define DMA_DATA  
+#define STATIC_DMA_DATA_AUTO        static
 
-#define DMA_RAM      __attribute__((aligned(32)))
-#define DMA_RW_AXI  
+#define DMA_RAM     __attribute__((aligned(4)))
+#define DMA_RW_AXI
 #define DMA_RAM_R
 #define DMA_RAM_W
 #define DMA_RAM_RW
@@ -117,7 +115,7 @@
 
 
 #if defined(CH32H4)
-#define GPIO_PIN_RESET       0
+
 #define DIR_OUT              0x03
 #define DIR_IN               0x00
 
@@ -204,7 +202,6 @@
 #define DMA_TRAIT_MUX 1
 // #define DMA_TRAIT_CHANNEL 1
 
-#define MAX_MSP_PORT_COUNT 4  //default msp count is 3, it would not be enough for us
 
 #endif
 

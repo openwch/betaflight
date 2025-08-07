@@ -53,6 +53,7 @@ __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_nb(uint32_t 
 {
     PFIC_ITHRESDR = basePri & 0xF0;
     asm("fence");
+    asm("fence.i");
 }
 
 __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint32_t basePri)
@@ -60,6 +61,7 @@ __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint3
     uint32_t cur_tmp = PFIC_ITHRESDR & 0xF0;
     if(cur_tmp < (basePri & 0xF0)) PFIC_ITHRESDR = basePri & 0xF0;
     asm("fence");
+    asm("fence.i");
 }
 
 #endif
@@ -149,6 +151,11 @@ static inline void __basepriRestoreMem(uint8_t *val)
 {
     PFIC_ITHRESDR = (*val) & 0xF0;
     asm("fence");
+<<<<<<< HEAD
+=======
+    asm("fence.i");
+
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 }
 
 // set BASEPRI_MAX, with global memory barrier, returns true
@@ -159,6 +166,10 @@ static inline uint8_t __basepriSetMemRetVal(uint8_t prio)
     uint32_t cur_tmp = PFIC_ITHRESDR & 0xF0;
     if(cur_tmp < (prio & 0xF0)) PFIC_ITHRESDR = prio & 0xF0;
     asm("fence");
+<<<<<<< HEAD
+=======
+    asm("fence.i");
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     return 1;
 }
 
@@ -179,6 +190,10 @@ static inline uint32_t  __get_BASEPRI(void)
 {
     uint32_t val = PFIC_ITHRESDR & 0xF0;
     asm("fence");
+<<<<<<< HEAD
+=======
+    asm("fence.i");
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     return val;
 }
 

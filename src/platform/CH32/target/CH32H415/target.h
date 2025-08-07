@@ -109,9 +109,12 @@
 #define USE_GPS_UBLOX
 #define USE_GPS_RESCUE
 
+<<<<<<< HEAD
 #define USE_ALTITUDE_HOLD
 #define USE_POSITION_HOLD
 
+=======
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 #undef USE_RX_PPM
 #undef USE_RX_PWM
 #undef USE_RX_SPI

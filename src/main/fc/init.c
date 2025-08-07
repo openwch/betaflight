@@ -274,6 +274,11 @@ static void sdCardAndFSInit(void)
 
 void initPhase1(void)
 {
+#if SERIAL_PORT_COUNT > 0
+    printfSerialInit();
+#endif
+
+    systemInit();
     // Initialize task data as soon as possible. Has to be done before tasksInit(),
     // and any init code that may try to modify task behaviour before tasksInit().
     tasksInitData();
@@ -1028,6 +1033,9 @@ void initPhase3(void)
     debugInit();
     unusedPinsInit();
     tasksInit();
+    
+        //  while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+        //  USART_SendData(USART1, 0xB6);
 
     systemState |= SYSTEM_STATE_READY;
 }

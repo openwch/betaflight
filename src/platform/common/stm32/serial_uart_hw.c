@@ -72,12 +72,20 @@ static void enableRxIrq(const uartHardware_t *hardware) {
   nvic_irq_enable(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority),
                   NVIC_PRIORITY_SUB(hardware->rxPriority));
 #elif defined(APM32F4)
+<<<<<<< HEAD
   DAL_NVIC_SetPriority(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority),
                        NVIC_PRIORITY_SUB(hardware->rxPriority));
   DAL_NVIC_EnableIRQ(hardware->irqn);
 #elif defined(CH32H4)
   NVIC_SetPriority(hardware->irqn, hardware->rxPriority);
   NVIC_EnableIRQ(hardware->irqn);
+=======
+        DAL_NVIC_SetPriority(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority), NVIC_PRIORITY_SUB(hardware->rxPriority));
+        DAL_NVIC_EnableIRQ(hardware->irqn);
+#elif defined(CH32H4)
+        NVIC_SetPriority(hardware->irqn,hardware->rxPriority);
+        NVIC_EnableIRQ(hardware->irqn);
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 #else
 #error "Unhandled MCU type"
 #endif
@@ -161,6 +169,7 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
         pushPull ? GPIO_MODE_AF_PP : GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_HIGH,
         ((const unsigned[]){GPIO_NOPULL, GPIO_PULLDOWN, GPIO_PULLUP})[pull]);
 #elif defined(AT32F4)
+<<<<<<< HEAD
     const ioConfig_t ioCfg =
         IO_CONFIG(GPIO_MODE_MUX, GPIO_DRIVE_STRENGTH_STRONGER,
                   pushPull ? GPIO_OUTPUT_PUSH_PULL : GPIO_OUTPUT_OPEN_DRAIN,
@@ -170,6 +179,16 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
     const ioConfig_t ioCfg = IOCFG_AF_PP;
     UNUSED(pull);
     UNUSED(pushPull);
+=======
+        const ioConfig_t ioCfg = IO_CONFIG(
+            GPIO_MODE_MUX,
+            GPIO_DRIVE_STRENGTH_STRONGER,
+            pushPull ? GPIO_OUTPUT_PUSH_PULL : GPIO_OUTPUT_OPEN_DRAIN,
+            ((const gpio_pull_type[]){GPIO_PULL_NONE, GPIO_PULL_DOWN, GPIO_PULL_UP})[pull]
+        );
+#elif defined(CH32H4)
+const ioConfig_t ioCfg = IOCFG_AF_PP;
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 #elif defined(STM32F4)
     // UART inverter is not supproted on F4, but keep it in line with other CPUs
     // External inverter in bidir mode would be quite problematic anyway

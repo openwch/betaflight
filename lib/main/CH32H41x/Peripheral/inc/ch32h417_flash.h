@@ -124,7 +124,7 @@ void FLASH_LP_Cmd(FunctionalState NewState);
 void SystemReset_StartMode(uint32_t Mode);
 FLASH_Status FLASH_ROM_ERASE(uint32_t StartAddr, uint32_t Length);
 FLASH_Status FLASH_ROM_WRITE(uint32_t StartAddr, uint32_t *pbuf, uint32_t Length);
-uint32_t FLASH_BOOT_GetMode( void );
+
 
 #ifdef __cplusplus
 }

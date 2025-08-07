@@ -14,7 +14,8 @@
 
 # Things that the user might override on the commandline
 #
-
+ARCH      ?= RISC_V
+#ARCH      ?= ARM
 # The target or config to build
 TARGET    ?=
 CONFIG    ?=
@@ -304,6 +305,35 @@ endif
 # Things that might need changing to use different tools
 #
 
+# Find out if ccache is installed on the system
+CCACHE := ccache
+RESULT = $(shell (which $(CCACHE) > /dev/null 2>&1; echo $$?) )
+ifneq ($(RESULT),0)
+CCACHE :=
+endif
+
+# Tool names
+#ifeq ($(ARCH),RISC_V)
+
+CROSS_CC 	:= $(RISCV_SDK_PREFIX)gcc
+CROSS_CXX   := $(CCACHE) $(RISCV_SDK_PREFIX)g++
+CROSS_GDB   := $(RISCV_SDK_PREFIX)gdb
+OBJCOPY     := $(RISCV_SDK_PREFIX)objcopy
+OBJDUMP     := $(RISCV_SDK_PREFIX)objdump
+READELF     := $(RISCV_SDK_PREFIX)readelf
+SIZE        := $(RISCV_SDK_PREFIX)size
+DFUSE-PACK  := src/utils/dfuse-pack.py
+#else
+#CROSS_CC    := $(CCACHE) $(ARM_SDK_PREFIX)gcc
+#CROSS_CXX   := $(CCACHE) $(ARM_SDK_PREFIX)g++
+#CROSS_GDB   := $(ARM_SDK_PREFIX)gdb
+#OBJCOPY     := $(ARM_SDK_PREFIX)objcopy
+#OBJDUMP     := $(ARM_SDK_PREFIX)objdump
+#READELF     := $(ARM_SDK_PREFIX)readelf
+#SIZE        := $(ARM_SDK_PREFIX)size
+#DFUSE-PACK  := src/utils/dfuse-pack.py
+#endif
+
 #
 # Tool options.
 #
@@ -366,7 +396,7 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               $(DEBUG_FLAGS) \
               -std=gnu17 \
-              -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
+              -Wunused -Wuninitialized \
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
@@ -386,6 +416,8 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(EXTRA_FLAGS)
 endif
 
+
+
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
 $(info $(CFLAGS))
 ASFLAGS     = $(ARCH_FLAGS) \
@@ -394,6 +426,25 @@ ASFLAGS     = $(ARCH_FLAGS) \
               $(addprefix -I,$(INCLUDE_DIRS)) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               -MMD -MP
+
+#ifeq ($(LD_FLAGS),)
+#LD_FLAGS     = -lm \
+#              -nostartfiles \
+#              --specs=nano.specs \
+#              -lc \
+#              -lnosys \
+#              $(ARCH_FLAGS) \
+#              $(LTO_FLAGS) \
+#              $(DEBUG_FLAGS) \
+#              -static \
+#              -Wl,-gc-sections,-Map,$(TARGET_MAP) \
+#              -Wl,-L$(LINKER_DIR) \
+#              -Wl,--cref \
+#              -Wl,--no-wchar-size-warning \
+#              -Wl,--print-memory-usage \
+#              -T$(LD_SCRIPT) \
+#               $(EXTRA_LD_FLAGS)
+#endif
 
 ifeq ($(LD_FLAGS),)
 ifeq ("$(TARGET)","CH32H415")
@@ -425,7 +476,6 @@ LD_FLAGS     = -lm \
               -Wl,-gc-sections,-Map,$(TARGET_MAP) \
               -Wl,-L$(LINKER_DIR) \
               -Wl,--cref \
-              -Wl,--no-wchar-size-warning \
               -Wl,--print-memory-usage \
               -T$(LD_SCRIPT) \
                $(EXTRA_LD_FLAGS)
@@ -501,7 +551,7 @@ $(TARGET_OBJ_DIR)/build/version.o : $(SRC)
 # It would be nice to compute these lists, but that seems to be just beyond make.
 
 $(TARGET_LST): $(TARGET_ELF)
-	$(V0) $(OBJDUMP) -S --disassemble $< > $@
+	$(V1) $(OBJDUMP) -S --disassemble $< > $@
 
 ifeq ($(EXST),no)
 $(TARGET_BIN): $(TARGET_ELF)
@@ -741,7 +791,7 @@ binary:
 .PHONY: hex
 hex:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_HEX)
-
+	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_LST)
 .PHONY: uf2
 uf2:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)

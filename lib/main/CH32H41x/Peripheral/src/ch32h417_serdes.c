@@ -75,8 +75,6 @@ void SDS_DMA_Tx_CFG(SDS_TypeDef *sds, uint32_t DMAaddr, uint32_t DataLen, uint32
  */
 ErrorStatus SDS_DMA_Rx_CFG(SDS_TypeDef *sds, uint32_t DMAaddr0, uint32_t DataLen0, uint32_t DMAaddr1, uint32_t DataLen1)
 {
-    (void) DataLen0;
-    (void) DataLen1;
     if ((DMAaddr0 & 0xf) || (DMAaddr1 & 0xf))
     {
         return NoREADY;

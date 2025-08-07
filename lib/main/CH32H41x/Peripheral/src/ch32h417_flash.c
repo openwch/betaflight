@@ -777,7 +777,6 @@ void FLASH_EraseBlock_Fast(uint32_t Block_Address)
 void FLASH_ProgramPage_Fast(uint32_t Page_Address, uint32_t *pbuf)
 {
     uint8_t size = 64;
-    __disable_irq( );    //it would be important!
 
     Page_Address &= 0xFFFFFF00;
 
@@ -804,8 +803,6 @@ void FLASH_ProgramPage_Fast(uint32_t Page_Address, uint32_t *pbuf)
     while(FLASH->STATR & SR_BSY)
         ;
     FLASH->CTLR &= ~CR_PAGE_PG;
-    
-    __enable_irq( );
 }
 
 /*********************************************************************
@@ -1245,24 +1242,3 @@ FLASH_Status FLASH_ROM_WRITE(uint32_t StartAddr, uint32_t *pbuf, uint32_t Length
 
     return status;
 }
-
-/*********************************************************************
- * @fn      FLASH_BOOT_GetMode
- *
- * @brief   Returns the BOOT mode.
- *
- * @return BOOT mode identifier.
- *          BOOT mode List-
- *  0x00FFFFFF - UART-enable USBHS-enable USBSS-enable
- *  0x06FFFFF9 - UART-enable USBHS-Disable USBSS-disable
- *  0x05FFFFFA - UART-Disable USBHS-enable USBSS-disable
- *  0x03FFFFFC - UART-Disable USBHS-disable USBSS-enable
- *  0x04FFFFFB - UART-enable USBHS-enable USBSS-disable
- *  0x01FFFFFE - UART-disable USBHS-enable USBSS-enable
- *  0x02FFFFFD - UART-enable USBHS-Disable USBSS-enable 
- */
-__attribute__((optimize("O0"))) uint32_t FLASH_BOOT_GetMode( void )
-{
-    return( *( uint32_t * )0x08000018 );
-}
-
