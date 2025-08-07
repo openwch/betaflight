@@ -70,7 +70,9 @@
 #define STATIC_ASSERT(condition, name) static_assert((condition), #name)
 #endif
 
+#ifndef BIT
 #define BIT(x) (1 << (x))
+#endif
 
 /*
 http://resnet.uoregon.edu/~gurney_j/jmpc/bitwise.html

@@ -269,7 +269,6 @@ void init(void)
 #endif
 
     systemInit();
-
     // Initialize task data as soon as possible. Has to be done before tasksInit(),
     // and any init code that may try to modify task behaviour before tasksInit().
     tasksInitData();
@@ -391,10 +390,10 @@ void init(void)
     initEEPROM();
 
     ensureEEPROMStructureIsValid();
-
+    
     bool readSuccess = readEEPROM();
 
-#if defined(USE_BOARD_INFO)
+    #if defined(USE_BOARD_INFO)
     initBoardInformation();
 #endif
 
@@ -488,7 +487,6 @@ void init(void)
     // G4 for Betaflight allow 8, 16, 24, 26 or 27MHz oscillator
     systemClockSetHSEValue(systemConfig()->hseMhz * 1000000U);
 #endif
-
 #ifdef USE_OVERCLOCK
     OverclockRebootIfNecessary(systemConfig()->cpu_overclock);
 #endif
@@ -666,7 +664,8 @@ void init(void)
 
     initBoardAlignment(boardAlignment());
 
-    if (!sensorsAutodetect()) {
+    if (!sensorsAutodetect()) 
+    {
         // if gyro was not detected due to whatever reason, notify and don't arm.
         if (isSystemConfigured()) {
             indicateFailure(FAILURE_MISSING_ACC, 2);
@@ -687,7 +686,7 @@ void init(void)
 
 #if defined(USE_DSHOT_TELEMETRY) || defined(USE_ESC_SENSOR)
     // Initialize the motor frequency filter now that we have a target looptime
-    initDshotTelemetry(gyro.targetLooptime);
+    initDshotTelemetry(gyro.targetLooptime);  
 #endif
 
     // Finally initialize the gyro filtering
@@ -775,7 +774,6 @@ void init(void)
 #ifdef USE_USB_DETECT
     usbCableDetectInit();
 #endif
-
 #ifdef USE_TRANSPONDER
     if (featureIsEnabled(FEATURE_TRANSPONDER)) {
         transponderInit();
@@ -825,7 +823,7 @@ void init(void)
 
 #ifdef USE_VTX_CONTROL
     vtxControlInit();
-
+ 
 #if defined(USE_VTX_COMMON)
     vtxCommonInit();
 #endif
@@ -863,7 +861,6 @@ void init(void)
 #ifdef USE_PERSISTENT_STATS
     statsInit();
 #endif
-
     // Initialize MSP
     mspInit();
     mspSerialInit();
@@ -1009,10 +1006,11 @@ void init(void)
 #endif
 
     debugInit();
-
     unusedPinsInit();
-
     tasksInit();
+    
+        //  while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+        //  USART_SendData(USART1, 0xB6);
 
     systemState |= SYSTEM_STATE_READY;
 }

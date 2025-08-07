@@ -296,12 +296,10 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
     gyroSensor->gyroDev.gyroAlign = config->alignment;
     buildRotationMatrixFromAngles(&gyroSensor->gyroDev.rotationMatrix, &config->customAlignment);
     gyroSensor->gyroDev.mpuIntExtiTag = config->extiTag;
-    gyroSensor->gyroDev.hardware_lpf = gyroConfig()->gyro_hardware_lpf;
-
+    gyroSensor->gyroDev.hardware_lpf = gyroConfig()->gyro_hardware_lpf;                     
     // The targetLooptime gets set later based on the active sensor's gyroSampleRateHz and pid_process_denom
     gyroSensor->gyroDev.gyroSampleRateHz = gyroSetSampleRate(&gyroSensor->gyroDev);
     gyroSensor->gyroDev.initFn(&gyroSensor->gyroDev);
-
     // As new gyros are supported, be sure to add them below based on whether they are subject to the overflow/inversion bug
     // Any gyro not explicitly defined will default to not having built-in overflow protection as a safe alternative.
     switch (gyroSensor->gyroDev.gyroHardware) {
@@ -338,7 +336,6 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
         gyroSensor->gyroDev.gyroHasOverflowProtection = false;  // default catch for newly added gyros until proven to be unaffected
         break;
     }
-
     gyroInitSensorFilters(gyroSensor);
 }
 
@@ -692,7 +689,6 @@ bool gyroInit(void)
         gyro.gyroHasOverflowProtection =  gyro.gyroHasOverflowProtection && gyro.gyroSensor1.gyroDev.gyroHasOverflowProtection;
         detectedSensors[SENSOR_INDEX_GYRO] = gyro.gyroSensor1.gyroDev.gyroHardware;
     }
-
     // Copy the sensor's scale to the high-level gyro object. If running in "BOTH" mode
     // then logic above requires both sensors to be the same so we'll use sensor1's scale.
     // This will need to be revised if we ever allow different sensor types to be used simultaneously.
@@ -713,7 +709,6 @@ bool gyroInit(void)
         gyro.sampleRateHz = 0;
         gyro.accSampleRateHz = 0;
     }
-
     return true;
 }
 

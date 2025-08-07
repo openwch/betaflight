@@ -520,8 +520,7 @@ void tasksInit(void)
 #ifdef USE_STACK_CHECK
     setTaskEnabled(TASK_STACK_CHECK, true);
 #endif
-
-    if (sensors(SENSOR_GYRO)) {
+    if (sensors(SENSOR_GYRO)) { 
         rescheduleTask(TASK_GYRO, gyro.sampleLooptime);
         rescheduleTask(TASK_FILTER, gyro.targetLooptime);
         rescheduleTask(TASK_PID, gyro.targetLooptime);
@@ -532,7 +531,7 @@ void tasksInit(void)
     }
 
 #if defined(USE_ACC)
-    if (sensors(SENSOR_ACC) && acc.sampleRateHz) {
+    if (sensors(SENSOR_ACC) && acc.sampleRateHz) { 
         setTaskEnabled(TASK_ACCEL, true);
         rescheduleTask(TASK_ACCEL, TASK_PERIOD_HZ(acc.sampleRateHz));
         setTaskEnabled(TASK_ATTITUDE, true);

@@ -14,7 +14,8 @@
 
 # Things that the user might override on the commandline
 #
-
+ARCH      ?= RISC_V
+#ARCH      ?= ARM
 # The target or config to build
 TARGET    ?=
 CONFIG    ?=
@@ -176,7 +177,8 @@ else
 ifeq ($(DEBUG),INFO)
 DEBUG_FLAGS            = -ggdb2
 endif
-OPTIMISATION_BASE     := -flto=auto -fuse-linker-plugin -ffast-math -fmerge-all-constants
+# OPTIMISATION_BASE     := -flto=auto -fuse-linker-plugin -ffast-math -fmerge-all-constants
+OPTIMISATION_BASE     := -fuse-linker-plugin -ffast-math -fmerge-all-constants
 OPTIMISE_DEFAULT      := -O2
 OPTIMISE_SPEED        := -Ofast
 OPTIMISE_SIZE         := -Os
@@ -266,14 +268,26 @@ CCACHE :=
 endif
 
 # Tool names
-CROSS_CC    := $(CCACHE) $(ARM_SDK_PREFIX)gcc
-CROSS_CXX   := $(CCACHE) $(ARM_SDK_PREFIX)g++
-CROSS_GDB   := $(ARM_SDK_PREFIX)gdb
-OBJCOPY     := $(ARM_SDK_PREFIX)objcopy
-OBJDUMP     := $(ARM_SDK_PREFIX)objdump
-READELF     := $(ARM_SDK_PREFIX)readelf
-SIZE        := $(ARM_SDK_PREFIX)size
+#ifeq ($(ARCH),RISC_V)
+
+CROSS_CC 	:= $(RISCV_SDK_PREFIX)gcc
+CROSS_CXX   := $(CCACHE) $(RISCV_SDK_PREFIX)g++
+CROSS_GDB   := $(RISCV_SDK_PREFIX)gdb
+OBJCOPY     := $(RISCV_SDK_PREFIX)objcopy
+OBJDUMP     := $(RISCV_SDK_PREFIX)objdump
+READELF     := $(RISCV_SDK_PREFIX)readelf
+SIZE        := $(RISCV_SDK_PREFIX)size
 DFUSE-PACK  := src/utils/dfuse-pack.py
+#else
+#CROSS_CC    := $(CCACHE) $(ARM_SDK_PREFIX)gcc
+#CROSS_CXX   := $(CCACHE) $(ARM_SDK_PREFIX)g++
+#CROSS_GDB   := $(ARM_SDK_PREFIX)gdb
+#OBJCOPY     := $(ARM_SDK_PREFIX)objcopy
+#OBJDUMP     := $(ARM_SDK_PREFIX)objdump
+#READELF     := $(ARM_SDK_PREFIX)readelf
+#SIZE        := $(ARM_SDK_PREFIX)size
+#DFUSE-PACK  := src/utils/dfuse-pack.py
+#endif
 
 #
 # Tool options.
@@ -295,7 +309,33 @@ CC_NO_OPTIMISATION      := $(filter-out $(CFLAGS_DISABLED), $(CC_NO_OPTIMISATION
 #
 TEMPORARY_FLAGS :=
 
-EXTRA_WARNING_FLAGS := -Wold-style-definition
+#EXTRA_WARNING_FLAGS := -Wold-style-definition
+#
+#CFLAGS     += $(ARCH_FLAGS) \
+#              $(addprefix -D,$(OPTIONS)) \
+#              $(addprefix -I,$(INCLUDE_DIRS)) \
+#              $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
+#              $(DEBUG_FLAGS) \
+#              -std=gnu17 \
+#              -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion \
+#              $(EXTRA_WARNING_FLAGS) \
+#              -ffunction-sections \
+#              -fdata-sections \
+#              -fno-common \
+#              $(TEMPORARY_FLAGS) \
+#              $(DEVICE_FLAGS) \
+#              -D_GNU_SOURCE \
+#              -D$(TARGET) \
+#              $(TARGET_FLAGS) \
+#              -D'__FORKNAME__="$(FORKNAME)"' \
+#              -D'__TARGET__="$(TARGET)"' \
+#              -D'__REVISION__="$(REVISION)"' \
+#              $(CONFIG_REVISION_DEFINE) \
+#              -pipe \
+#              -MMD -MP \
+#              $(EXTRA_FLAGS)
+
+EXTRA_WARNING_FLAGS := 
 
 CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -D,$(OPTIONS)) \
@@ -303,7 +343,7 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               $(DEBUG_FLAGS) \
               -std=gnu17 \
-              -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
+              -Wunused -Wuninitialized \
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
@@ -321,6 +361,8 @@ CFLAGS     += $(ARCH_FLAGS) \
               -MMD -MP \
               $(EXTRA_FLAGS)
 
+
+
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
 
 ASFLAGS     = $(ARCH_FLAGS) \
@@ -329,6 +371,25 @@ ASFLAGS     = $(ARCH_FLAGS) \
               $(addprefix -I,$(INCLUDE_DIRS)) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               -MMD -MP
+
+#ifeq ($(LD_FLAGS),)
+#LD_FLAGS     = -lm \
+#              -nostartfiles \
+#              --specs=nano.specs \
+#              -lc \
+#              -lnosys \
+#              $(ARCH_FLAGS) \
+#              $(LTO_FLAGS) \
+#              $(DEBUG_FLAGS) \
+#              -static \
+#              -Wl,-gc-sections,-Map,$(TARGET_MAP) \
+#              -Wl,-L$(LINKER_DIR) \
+#              -Wl,--cref \
+#              -Wl,--no-wchar-size-warning \
+#              -Wl,--print-memory-usage \
+#              -T$(LD_SCRIPT) \
+#               $(EXTRA_LD_FLAGS)
+#endif
 
 ifeq ($(LD_FLAGS),)
 LD_FLAGS     = -lm \
@@ -343,7 +404,6 @@ LD_FLAGS     = -lm \
               -Wl,-gc-sections,-Map,$(TARGET_MAP) \
               -Wl,-L$(LINKER_DIR) \
               -Wl,--cref \
-              -Wl,--no-wchar-size-warning \
               -Wl,--print-memory-usage \
               -T$(LD_SCRIPT) \
                $(EXTRA_LD_FLAGS)
@@ -418,7 +478,7 @@ $(TARGET_OBJ_DIR)/build/version.o : $(SRC)
 # It would be nice to compute these lists, but that seems to be just beyond make.
 
 $(TARGET_LST): $(TARGET_ELF)
-	$(V0) $(OBJDUMP) -S --disassemble $< > $@
+	$(V1) $(OBJDUMP) -S --disassemble $< > $@
 
 ifeq ($(EXST),no)
 $(TARGET_BIN): $(TARGET_ELF)
@@ -641,7 +701,7 @@ binary:
 .PHONY: hex
 hex:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_HEX)
-
+	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_LST)
 .PHONY: uf2
 uf2:
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)

@@ -10,6 +10,72 @@
 #
 ###############################################################
 
+#############################
+# 
+# addr risc-v environmental
+#
+#############################
+RISCV_GCC_REQUIRED_VERSION ?= 12.2.0
+
+.PHONY: riscv_sdk_install
+#ifeq ($(OSFAMILY)-$(ARCHFAMILY), linux-x86_64)
+#	RISCV_SDK_URL := https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.05.08/riscv64-unknown-elf-toolchain-13.2.0-2024.05.08-x86_64-linux-centos7.tar.gz
+#	RISCV_DL_CHECKSUM = 5a2f5d0e0d2d4e0d2c6a8b1d8e3f0a7b9
+#else ifeq ($(OSFAMILY)-$(ARCHFAMILY), macosx-x86_64)
+#	RISCV_SDK_URL := https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.05.08/riscv64-unknown-elf-toolchain-13.2.0-2024.05.08-x86_64-apple-darwin.tar.gz
+#	RISCV_DL_CHECKSUM = 8c1d9e3a0b6d4f7a8b9c0d1e2f3a4b5c
+#else ifeq ($(OSFAMILY)-$(ARCHFAMILY), macosx-arm64)
+#	RISCV_SDK_URL := https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.05.08/riscv64-unknown-elf-toolchain-13.2.0-2024.05.08-arm64-apple-darwin.tar.gz
+#	RISCV_DL_CHECKSUM = d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2
+#else ifeq ($(OSFAMILY), windows)
+#	RISCV_SDK_URL := https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.05.08/riscv-gun-toolchain-12.2.0-x86_64-w64-mingw32-riscv-wch-elf.zip
+#	RISCV_DL_CHECKSUM = 3b4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9
+#else
+#	$(error No RISC-V toolchain URL defined for $(OSFAMILY)-$(ARCHFAMILY))
+#endif
+
+RISCV_SDK_FILE := $(notdir $(RISCV_SDK_URL))
+#RISCV_SDK_DIR := $(TOOLS_DIR)/$(patsubst %.zip,%, \
+#                $(patsubst %.tar.gz,%, \
+#                $(notdir $(RISCV_SDK_URL))))
+RISCV_SDK_DIR := $(TOOLS_DIR)/riscv-gun-toolchain-12.2.0-x86_64-w64-mingw32-riscv-wch-elf
+RISCV_INSTALL_MARKER := $(RISCV_SDK_DIR)/.installed
+
+.PHONY: riscv_sdk_version
+riscv_sdk_version: | $(RISCV_SDK_DIR)
+	$(V1) $(RISCV_SDK_DIR)/bin/riscv-wch-elf-gcc --version
+
+riscv_sdk_install: | $(TOOLS_DIR)
+riscv_sdk_install: riscv_sdk_download $(RISCV_INSTALL_MARKER)
+
+$(RISCV_INSTALL_MARKER): $(DL_DIR)/$(RISCV_SDK_FILE)
+
+	@checksum=$$(md5sum "$<" | awk '{print $$1}'); \
+	if [ "$$checksum" != "$(RISCV_DL_CHECKSUM)" ]; then \
+		echo "$@ Checksum mismatch! Expected $(RISCV_DL_CHECKSUM), got $$checksum."; \
+		exit 1; \
+	fi
+	@echo "Installing RISC-V toolchain..."
+ifeq ($(OSFAMILY), windows)
+	$(V1) unzip -q -d $(TOOLS_DIR) "$<"
+else
+	$(V1) tar -C $(TOOLS_DIR) -xzf "$<"
+endif
+	$(V1) touch $(RISCV_INSTALL_MARKER)
+
+.PHONY: riscv_sdk_download
+riscv_sdk_download: | $(DL_DIR)
+riscv_sdk_download: $(DL_DIR)/$(RISCV_SDK_FILE)
+$(DL_DIR)/$(RISCV_SDK_FILE):
+	$(V1) curl -L -o "$@" $(if $(wildcard $@), -z "$@",) "$(RISCV_SDK_URL)"
+
+## riscv_sdk_clean    
+.PHONY: riscv_sdk_clean
+riscv_sdk_clean:
+	$(V1) [ ! -d "$(RISCV_SDK_DIR)" ] || $(RM) -r $(RISCV_SDK_DIR)
+	$(V1) [ ! -f "$(DL_DIR)/$(RISCV_SDK_FILE)" ] || $(RM) "$(DL_DIR)/$(RISCV_SDK_FILE)"
+
+
 ##############################
 #
 # Check that environmental variables are sane
@@ -273,6 +339,7 @@ zip_clean:
 #
 ##############################
 
+
 ifeq ($(shell [ -d "$(ARM_SDK_DIR)" ] && echo "exists"), exists)
   ARM_SDK_PREFIX := $(ARM_SDK_DIR)/bin/arm-none-eabi-
 else ifeq (,$(filter %_install test% clean% %-print checks help configs, $(MAKECMDGOALS)))
@@ -286,6 +353,25 @@ else ifeq (,$(filter %_install test% clean% %-print checks help configs, $(MAKEC
   # ARM toolchain is in the path, and the version is what's required.
   ARM_SDK_PREFIX ?= arm-none-eabi-
 endif
+
+ifeq ($(shell [ -d "$(RISCV_SDK_DIR)" ] && echo "exists"), exists)
+	RISCV_SDK_PREFIX := $(RISCV_SDK_DIR)/bin/riscv-wch-elf-
+else
+	RISCV_GCC_VERSION := $(shell which riscv-wch-elf-gcc > /dev/null && riscv-wch-elf-gcc -dumpversion)
+
+	ifeq ($(RISCV_GCC_VERSION),)
+	$(info **WARNING** riscv-wch-elf-gcc not found. Run 'make riscv_sdk_install' to install)
+	RISCV_SDK_PREFIX := riscv-wch-elf-  
+	else ifneq ($(RISCV_GCC_VERSION), $(RISCV_GCC_REQUIRED_VERSION))
+    $(info **WARNING** Your riscv-wch-elf-gcc is '$(RISCV_GCC_VERSION)', but '$(RISCV_GCC_REQUIRED_VERSION)' is recommended)
+    RISCV_SDK_PREFIX := riscv-wch-elf-
+	else
+	RISCV_SDK_PREFIX := riscv-wch-elf-
+	endif
+
+endif
+
+
 
 ifeq ($(shell [ -d "$(ZIP_DIR)" ] && echo "exists"), exists)
   export ZIPBIN := $(ZIP_DIR)/zip

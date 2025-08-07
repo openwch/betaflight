@@ -34,7 +34,7 @@
 #define DEBUG_COUNT_INTERRUPT
 #define DEBUG_MONITOR_PACER
 
-#define MAX_SUPPORTED_MOTOR_PORTS 4 // Max direct dshot port groups, limited by number of usable timer (TIM1 and TIM8) x number of channels per timer (4), 3 is enough to cover motor pins on GPIOA, GPIOB and GPIOC.
+#define MAX_SUPPORTED_MOTOR_PORTS 4     // Max direct dshot port groups, limited by number of usable timer (TIM1 and TIM8) x number of channels per timer (4), 3 is enough to cover motor pins on GPIOA, GPIOB and GPIOC.
 
 #define DSHOT_BITBANG_TELEMETRY_OVER_SAMPLE 3
 
@@ -85,7 +85,7 @@
 #ifdef USE_HAL_DRIVER
 #define BB_GPIO_PULLDOWN GPIO_PULLDOWN
 #define BB_GPIO_PULLUP   GPIO_PULLUP
-#elif defined(AT32F435)
+#elif defined(AT32F435) || defined(CH32H415)
 #define BB_GPIO_PULLDOWN GPIO_PULL_DOWN
 #define BB_GPIO_PULLUP GPIO_PULL_UP
 #else
@@ -112,6 +112,12 @@ typedef struct dmaRegCache_s {
     uint32_t NDATA;
     uint32_t PADDR;
     uint32_t M0ADDR;
+#elif defined(CH32H415)
+    uint32_t CFGR;
+    uint32_t CNTR;
+    uint32_t PADDR;
+    uint32_t MADDR;
+    uint32_t M1ADDR;
 #else
 #error No MCU dependent code here
 #endif
