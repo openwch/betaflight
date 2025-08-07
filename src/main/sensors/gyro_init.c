@@ -721,6 +721,18 @@ bool gyroInit(void)
         gyro.scale = 1.0f;
         gyro.rawSensorDev = NULL;
     }
+    // Copy the sensor's scale to the high-level gyro object. If running in "BOTH" mode
+    // then logic above requires both sensors to be the same so we'll use sensor1's scale.
+    // This will need to be revised if we ever allow different sensor types to be used simultaneously.
+    // Likewise determine the appropriate raw data for use in DEBUG_GYRO_RAW
+    gyro.scale = gyro.gyroSensor1.gyroDev.scale;
+    gyro.rawSensorDev = &gyro.gyroSensor1.gyroDev;
+#if defined(USE_MULTI_GYRO)
+    if (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_2) {
+        gyro.scale = gyro.gyroSensor2.gyroDev.scale;
+        gyro.rawSensorDev = &gyro.gyroSensor2.gyroDev;
+    }
+#endif
 
     if (gyro.rawSensorDev) {
         gyro.sampleRateHz = gyro.rawSensorDev->gyroSampleRateHz;

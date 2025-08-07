@@ -530,8 +530,3 @@ typedef struct  __attribute__((packed))
   __IO uint32_t ROOT_BC_CTRL;
 } USBHSH_TypeDef;
 
-typedef void (*usb_rxsof_handler_t)(void);
-
-extern usb_rxsof_handler_t usb_rxsof_handler;
-
-

@@ -321,6 +321,35 @@ endif
 # Things that might need changing to use different tools
 #
 
+# Find out if ccache is installed on the system
+CCACHE := ccache
+RESULT = $(shell (which $(CCACHE) > /dev/null 2>&1; echo $$?) )
+ifneq ($(RESULT),0)
+CCACHE :=
+endif
+
+# Tool names
+#ifeq ($(ARCH),RISC_V)
+
+CROSS_CC 	:= $(RISCV_SDK_PREFIX)gcc
+CROSS_CXX   := $(CCACHE) $(RISCV_SDK_PREFIX)g++
+CROSS_GDB   := $(RISCV_SDK_PREFIX)gdb
+OBJCOPY     := $(RISCV_SDK_PREFIX)objcopy
+OBJDUMP     := $(RISCV_SDK_PREFIX)objdump
+READELF     := $(RISCV_SDK_PREFIX)readelf
+SIZE        := $(RISCV_SDK_PREFIX)size
+DFUSE-PACK  := src/utils/dfuse-pack.py
+#else
+#CROSS_CC    := $(CCACHE) $(ARM_SDK_PREFIX)gcc
+#CROSS_CXX   := $(CCACHE) $(ARM_SDK_PREFIX)g++
+#CROSS_GDB   := $(ARM_SDK_PREFIX)gdb
+#OBJCOPY     := $(ARM_SDK_PREFIX)objcopy
+#OBJDUMP     := $(ARM_SDK_PREFIX)objdump
+#READELF     := $(ARM_SDK_PREFIX)readelf
+#SIZE        := $(ARM_SDK_PREFIX)size
+#DFUSE-PACK  := src/utils/dfuse-pack.py
+#endif
+
 #
 # Tool options.
 #
@@ -403,6 +432,8 @@ CFLAGS     += $(ARCH_FLAGS) \
               -MMD -MP \
               $(EXTRA_FLAGS)
 endif
+
+
 
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
 $(info $(CFLAGS))

@@ -11,7 +11,6 @@
 *******************************************************************************/
 #include "ch32h417_adc.h"
 #include "ch32h417_rcc.h"
-#include "ch32h417_flash.h"
 /* ADC DISCNUM mask */
 #define CTLR1_DISCNUM_Reset              ((uint32_t)0xFFFF1FFF)
 
@@ -317,6 +316,7 @@ void ADC_StartCalibration(ADC_TypeDef *ADCx)
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     ADCx->SAMPTR1 |= (7<<27);     //set cali channel sample rate
 =======
 >>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
@@ -328,6 +328,11 @@ void ADC_StartCalibration(ADC_TypeDef *ADCx)
 =======
     ADCx->SAMPTR1 |= (7<<27);     //set cali channel sample rate
 >>>>>>> 55ed3dbff (1.修改USB驱动)
+=======
+    ADCx->SAMPTR1 |= (7<<27);     //set cali channel sample rate
+=======
+>>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
+>>>>>>> 54ab928e8 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     ADCx->CTLR2 |= CTLR2_CAL_Set;
 }
 
@@ -1118,10 +1123,14 @@ s32 TempSensor_Volt_To_Temper(s32 Value)
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 54ab928e8 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     FLASH_BOOT_GetMode( );
 =======
 
 >>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
+<<<<<<< HEAD
 =======
     FLASH_BOOT_GetMode( );
 >>>>>>> 591a8671e (1.修改USB驱动)
@@ -1131,6 +1140,8 @@ s32 TempSensor_Volt_To_Temper(s32 Value)
 =======
     FLASH_BOOT_GetMode( );
 >>>>>>> 55ed3dbff (1.修改USB驱动)
+=======
+>>>>>>> 54ab928e8 (dshot 8K,uart4 MSP+DisplayPort function is OK)
     Refer_Volt = (s32)((*(u32 *)0x1FFFF76C) & 0x0000FFFF);
     Refer_Temper = (s32)(((*(u32 *)0x1FFFF76C) >> 16) & 0x0000FFFF);
 

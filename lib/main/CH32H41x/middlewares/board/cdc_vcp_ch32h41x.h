@@ -32,9 +32,7 @@ extern volatile uint16_t ep_rx_length ;
 
 
 void cdc_acm_init(uint8_t busid, uintptr_t reg_base);
-uint16_t usb_vcp_rx_available(void);
-// uint16_t usb_vcp_get_rx_data(uint8_t busid,uint8_t *buffer);
-uint16_t usb_vcp_get_rx_data(uint8_t busid, uint8_t *buffer, uint32_t len);
+uint16_t usb_vcp_get_rx_data(uint8_t busid,uint8_t *buffer);
 uint16_t usb_vcp_send_data(uint8_t busid,uint8_t *buffer,uint16_t len);
 
 #endif
