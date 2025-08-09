@@ -32,7 +32,6 @@
 
 #include "build/debug.h"
 
-#include "drivers/exti.h"
 #include "drivers/io.h"
 #include "drivers/dma.h"
 #include "drivers/motor_impl.h"

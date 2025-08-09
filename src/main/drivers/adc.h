@@ -26,8 +26,11 @@
 #include "drivers/io_types.h"
 #include "drivers/time.h"
 
-#if PLATFORM_TRAIT_ADC_DEVICE
-typedef enum {
+#ifndef ADC_INSTANCE
+#define ADC_INSTANCE                ADC1
+#endif
+
+typedef enum ADCDevice {
     ADCINVALID = -1,
     ADCDEV_1   = 0,
 #if defined(ADC2)
@@ -72,7 +75,19 @@ typedef struct adcOperatingConfig_s {
 #else
     ADC_SOURCE_COUNT = ADC_EXTERNAL_COUNT
 #endif
-} adcSource_e;
+    ADC_CHANNEL_COUNT
+} AdcChannel;
+
+typedef struct adcOperatingConfig_s {
+    ioTag_t tag;
+#if PLATFORM_TRAIT_ADC_DEVICE
+    ADCDevice adcDevice;        // ADCDEV_x for this input
+#endif
+    uint32_t adcChannel;        // Channel number for this input. Note that H7 and G4 HAL requires this to be 32-bit encoded number.
+    uint8_t dmaIndex;           // index into DMA buffer in case of sparse channels
+    bool enabled;
+    uint8_t sampleTime;
+} adcOperatingConfig_t;
 
 struct adcConfig_s;
 void adcInit(const struct adcConfig_s *config);
@@ -84,3 +99,5 @@ void adcInternalStartConversion(void);
 uint16_t adcInternalCompensateVref(uint16_t vrefAdcValue);
 int16_t adcInternalComputeTemperature(uint16_t tempAdcValue, uint16_t vrefValue);
 #endif
+
+ADCDevice adcDeviceByInstance(const ADC_TypeDef *instance);
