@@ -151,10 +151,6 @@
 #define CONFIG_IN_RAM
 
 #undef USE_SERVOS
-#undef USE_LED_STRIP
-#undef USE_OSD
-#undef USE_OSD_SD
-#undef USE_OSD_HD
 #undef USE_OSD_QUICK_MENU
 #undef USE_POSITION_HOLD
 

@@ -142,7 +142,7 @@ bool ws2811LedStripHardwareInit(void)
 
     // This will find a free pio and state machine for our program and load it for us
     // TODO somehow configure which PIO block to use for LED STRIP? pio2 for now.
-    const PIO pio = PIO_INSTANCE(PIO_LEDSTRIP_INDEX);
+    const PIO pio = pio2;
 
     int pinIndex = DEFIO_TAG_PIN(ledStripIoTag);
     if (pinIndex >= 32) {
@@ -162,11 +162,11 @@ bool ws2811LedStripHardwareInit(void)
 
     // --- DMA Configuration ---
     const dmaIdentifier_e dma_id = dmaGetFreeIdentifier();
-    if (dma_id == DMA_NONE || !dmaAllocate(dma_id, OWNER_LED_STRIP, 0)) {
-        return false;
+    if (dma_id == DMA_NONE) {
+        return false; // No free DMA channel available
     }
-    dma_chan = DMA_IDENTIFIER_TO_CHANNEL(dma_id);
 
+    dma_chan = DMA_IDENTIFIER_TO_CHANNEL(dma_id);
     dma_channel_config c = dma_channel_get_default_config(dma_chan);
     channel_config_set_transfer_data_size(&c, DMA_SIZE_32);
     channel_config_set_read_increment(&c, true);
@@ -184,6 +184,9 @@ bool ws2811LedStripHardwareInit(void)
 
     // --- Interrupt Configuration ---
     dmaSetHandler(dma_id, ws2811LedStripDmaHandler, NVIC_PRIO_WS2811_DMA, 0);
+    if (!dmaAllocate(dma_id, OWNER_LED_STRIP, 0)) {
+        return false;
+    }
 
     IOInit(io, OWNER_LED_STRIP, 0);
     IOConfigGPIO(io, IOCFG_OUT_PP);

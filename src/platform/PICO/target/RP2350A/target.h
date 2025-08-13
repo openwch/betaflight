@@ -73,7 +73,74 @@
 #undef USE_TIMER
 #undef USE_RCC
 
-// Assume on-board flash (see linker files)
+#undef USE_RX_PWM
+#undef USE_RX_PPM
+#undef USE_RX_SPI
+#undef USE_RX_CC2500
+#undef USE_SERIAL_4WAY_BLHELI_INTERFACE
+#undef USE_SERIAL_4WAY_BLHELI_BOOTLOADER
+#undef USE_SERIAL_4WAY_SK_BOOTLOADER
+#undef USE_MULTI_GYRO
+#undef USE_BARO
+#undef USE_SERIAL_PASSTHROUGH
+
+#undef USE_RANGEFINDER_HCSR04
+#undef USE_CRSF
+#undef USE_TELEMETRY_CRSF
+#undef USE_RX_EXPRESSLRS
+#undef USE_MAX7456
+#undef USE_MAG
+#undef USE_MAG_HMC5883
+#undef USE_MAG_SPI_HMC5883
+#undef USE_VTX_RTC6705
+#undef USE_VTX_RTC6705_SOFTSPI
+#undef USE_RX_SX1280
+#undef USE_SRXL
+#undef USE_TELEMETRY
+#undef USE_OSD
+#undef USE_SPEKTRUM
+#undef USE_SPEKTRUM_BIND
+
+#undef USE_MSP_UART
+#undef USE_MSP_DISPLAYPORT
+#undef USE_GPS
+#undef USE_GPS_UBLOX
+#undef USE_GPS_MTK
+#undef USE_GPS_NMEA
+#undef USE_GPS_SERIAL
+#undef USE_GPS_SONAR
+#undef USE_GPS_UBLOX7
+#undef USE_GPS_UBLOX8
+#undef USE_GPS_RESCUE
+
+#undef USE_VTX
+#undef USE_VTX_TRAMP
+#undef USE_VTX_SMARTAUDIO
+#undef USE_SPEKTRUM_VTX_CONTROL
+#undef USE_VTX_COMMON
+#undef USE_FLASH
+#undef USE_FLASH_CHIP
+#undef USE_FLASH_M25P16
+#undef USE_FLASH_W25N01G
+#undef USE_FLASH_W25N02K
+#undef USE_FLASH_W25M
+#undef USE_FLASH_W25M512
+#undef USE_FLASH_W25M02G
+#undef USE_FLASH_W25Q128FV
+#undef USE_FLASH_PY25Q128HA
+#undef USE_FLASH_W25Q64FV
+
+#undef USE_RPM_LIMIT
+
+#undef USE_SERVOS
+#undef USE_OSD
+#undef USE_OSD_SD
+#undef USE_OSD_HD
+#undef USE_OSD_QUICK_MENU
+#undef USE_GPS
+#undef USE_POSITION_HOLD
+
+//#define FLASH_PAGE_SIZE                     0x1
 #define CONFIG_IN_FLASH
 
 // Pico flash writes are all aligned and in batches of FLASH_PAGE_SIZE (256)
