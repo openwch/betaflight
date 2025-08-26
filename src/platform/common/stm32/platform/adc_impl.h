@@ -114,7 +114,7 @@ typedef struct adcDevice_s {
 #endif
 
 typedef struct adcOperatingConfig_s {
-    uint32_t adcChannel;        // Channel number for this input. Note that H7, G4, and N6 HAL requires this to be 32-bit encoded number.
+    uint32_t adcChannel;        // Channel number for this input. Note that H7 and G4 HAL requires this to be 32-bit encoded number.
     ioTag_t tag;
     uint8_t dmaIndex;           // index into DMA buffer in case of sparse channels
     uint8_t sampleTime;
@@ -138,8 +138,6 @@ extern int32_t adcVREFINTCAL; // ADC value (12-bit) of band gap with Vref = VREF
 extern int32_t adcTSCAL1;
 extern int32_t adcTSCAL2;
 extern int32_t adcTSSlopeK;
-
-uint16_t adcInternalRead(adcSource_e source);
 #endif
 
 uint32_t adcChannelByTag(ioTag_t ioTag);

@@ -498,7 +498,8 @@ void adcGetChannelValues(void)
 {
     // Transfer values in conversion buffer into adcValues[]
     // Cache coherency should be maintained by MPU facility
-    for (unsigned i = 0; i < ADC_EXTERNAL_COUNT; i++) {
+
+    for (int i = 0; i < ADC_SOURCE_INTERNAL_FIRST_ID; i++) {
         if (adcOperatingConfig[i].enabled) {
             adcValues[adcOperatingConfig[i].dmaIndex] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
         }

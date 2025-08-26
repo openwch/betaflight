@@ -309,9 +309,9 @@ void adcInit(const adcConfig_t *config)
     adcInitCalibrationValues();
 #endif
 
-    for (unsigned i = 0; i < ADC_SOURCE_COUNT; i++) {
-        int map = -1;
-        int dev = -1;
+    for (int i = 0; i < ADC_SOURCE_COUNT; i++) {
+        int map;
+        int dev;
 
 #ifdef USE_ADC_INTERNAL
         if (i >= ADC_EXTERNAL_COUNT) {
@@ -562,7 +562,7 @@ void adcGetChannelValues(void)
 {
     // Transfer values in conversion buffer into adcValues[]
     SCB_InvalidateDCache_by_Addr((uint32_t*)adcConversionBuffer, ADC_BUF_CACHE_ALIGN_BYTES);
-    for (unsigned i = 0; i < ADC_EXTERNAL_COUNT; i++) {
+    for (int i = 0; i < ADC_SOURCE_INTERNAL_FIRST_ID; i++) {
         if (adcOperatingConfig[i].enabled) {
             adcValues[adcOperatingConfig[i].dmaIndex] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
         }

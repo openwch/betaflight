@@ -26,11 +26,8 @@
 #include "drivers/io_types.h"
 #include "drivers/time.h"
 
-#ifndef ADC_INSTANCE
-#define ADC_INSTANCE                ADC1
-#endif
-
-typedef enum ADCDevice {
+#if PLATFORM_TRAIT_ADC_DEVICE
+typedef enum {
     ADCINVALID = -1,
     ADCDEV_1   = 0,
 #if defined(ADC2)
@@ -55,39 +52,19 @@ typedef enum {
     ADC_CURRENT,
     ADC_EXTERNAL1,
     ADC_RSSI,
+    ADC_EXTERNAL_COUNT,
 #ifdef USE_ADC_INTERNAL
     // For certain processors internal sensors are treated in the similar fashion as regular ADC inputs
-    ADC_SOURCE_INTERNAL_FIRST_ID,
-    ADC_TEMPSENSOR = ADC_SOURCE_INTERNAL_FIRST_ID,
+    ADC_TEMPSENSOR = ADC_EXTERNAL_COUNT,
     ADC_VREFINT,
 #if ADC_INTERNAL_VBAT4_ENABLED
     ADC_VBAT4,
 #endif
-#endif
-    ADC_CHANNEL_COUNT
-} AdcChannel;
-
-typedef struct adcOperatingConfig_s {
-    ioTag_t tag;
-#if PLATFORM_TRAIT_ADC_DEVICE
-    ADCDevice adcDevice;        // ADCDEV_x for this input
-    uint32_t adcChannel;        // Channel number for this input. Note that H7 and G4 HAL requires this to be 32-bit encoded number.
+    ADC_SOURCE_COUNT
 #else
     ADC_SOURCE_COUNT = ADC_EXTERNAL_COUNT
 #endif
-    ADC_CHANNEL_COUNT
-} AdcChannel;
-
-typedef struct adcOperatingConfig_s {
-    ioTag_t tag;
-#if PLATFORM_TRAIT_ADC_DEVICE
-    ADCDevice adcDevice;        // ADCDEV_x for this input
-#endif
-    uint32_t adcChannel;        // Channel number for this input. Note that H7 and G4 HAL requires this to be 32-bit encoded number.
-    uint8_t dmaIndex;           // index into DMA buffer in case of sparse channels
-    bool enabled;
-    uint8_t sampleTime;
-} adcOperatingConfig_t;
+} adcSource_e;
 
 struct adcConfig_s;
 void adcInit(const struct adcConfig_s *config);
@@ -99,5 +76,3 @@ void adcInternalStartConversion(void);
 uint16_t adcInternalCompensateVref(uint16_t vrefAdcValue);
 int16_t adcInternalComputeTemperature(uint16_t tempAdcValue, uint16_t vrefValue);
 #endif
-
-ADCDevice adcDeviceByInstance(const ADC_TypeDef *instance);
