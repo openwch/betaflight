@@ -72,20 +72,12 @@ static void enableRxIrq(const uartHardware_t *hardware) {
   nvic_irq_enable(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority),
                   NVIC_PRIORITY_SUB(hardware->rxPriority));
 #elif defined(APM32F4)
-<<<<<<< HEAD
   DAL_NVIC_SetPriority(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority),
                        NVIC_PRIORITY_SUB(hardware->rxPriority));
   DAL_NVIC_EnableIRQ(hardware->irqn);
 #elif defined(CH32H4)
   NVIC_SetPriority(hardware->irqn, hardware->rxPriority);
   NVIC_EnableIRQ(hardware->irqn);
-=======
-        DAL_NVIC_SetPriority(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority), NVIC_PRIORITY_SUB(hardware->rxPriority));
-        DAL_NVIC_EnableIRQ(hardware->irqn);
-#elif defined(CH32H4)
-        NVIC_SetPriority(hardware->irqn,hardware->rxPriority);
-        NVIC_EnableIRQ(hardware->irqn);
->>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
 #else
 #error "Unhandled MCU type"
 #endif
