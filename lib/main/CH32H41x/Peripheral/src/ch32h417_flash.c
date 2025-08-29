@@ -777,6 +777,7 @@ void FLASH_EraseBlock_Fast(uint32_t Block_Address)
 void FLASH_ProgramPage_Fast(uint32_t Page_Address, uint32_t *pbuf)
 {
     uint8_t size = 64;
+    __disable_irq( );    //it would be important!
 
     Page_Address &= 0xFFFFFF00;
 
@@ -803,6 +804,8 @@ void FLASH_ProgramPage_Fast(uint32_t Page_Address, uint32_t *pbuf)
     while(FLASH->STATR & SR_BSY)
         ;
     FLASH->CTLR &= ~CR_PAGE_PG;
+    
+    __enable_irq( );
 }
 
 /*********************************************************************

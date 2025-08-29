@@ -789,6 +789,9 @@ static bool SCSI_CBWDecode(uint8_t busid, uint32_t nbytes)
             case SCSI_CMD_READCAPACITY10:
                 ret = SCSI_readCapacity10(busid, &buf2send, &len2send);
                 break;
+            case SCSI_CMD_READCAPACITY16:
+                ret = SCSI_readFormatCapacity(busid, &buf2send, &len2send);
+                break; 
             case SCSI_CMD_READ10:
                 ret = SCSI_read10(busid, NULL, 0);
                 break;

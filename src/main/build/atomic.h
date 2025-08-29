@@ -53,7 +53,6 @@ __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_nb(uint32_t 
 {
     PFIC_ITHRESDR = basePri & 0xF0;
     asm("fence");
-    asm("fence.i");
 }
 
 __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint32_t basePri)
@@ -61,7 +60,6 @@ __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint3
     uint32_t cur_tmp = PFIC_ITHRESDR & 0xF0;
     if(cur_tmp < (basePri & 0xF0)) PFIC_ITHRESDR = basePri & 0xF0;
     asm("fence");
-    asm("fence.i");
 }
 
 #endif
