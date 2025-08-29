@@ -538,6 +538,7 @@ handle_reset:
     li t0, 0x345933E0
     csrw 0xBC0, t0
 
+
     csrwi 0xBD0, 0x4
 	fence.i
 	li t0, (1<<1 | 3<<24)
@@ -553,6 +554,14 @@ handle_reset:
     li t0, (1<<12)
     csrw 0xbc3, t0
 
+
+
+    /* config dma and cpu priority */
+    # li t0, (3<<18)
+    # csrc 0xbc5, t0    /* DMA C0 > C1 */
+
+    # li t0, 0x0A0A0A0A
+    # csrw 0xbc6, t0
 
 
 /* Configure nesting level */

@@ -110,6 +110,7 @@ MCU_COMMON_SRC = \
         CH32/timer_ch32bsp.c \
         CH32/timer_ch32h41x.c \
         CH32/usb_msc_ch32h41x.c \
+        CH32/usb_msc_sdcard_spi_ch32h41x.c \
         drivers/accgyro/accgyro_mpu.c \
         drivers/dshot_bitbang_decode.c \
         drivers/inverter.c \
@@ -132,8 +133,10 @@ MCU_COMMON_SRC = \
         msc/usbd_storage.c \
         msc/usbd_storage_emfat.c \
         msc/emfat.c \
-        msc/emfat_file.c \
-        msc/usbd_storage_sd_spi.c
+        msc/emfat_file.c
+        
+#         \
+#         msc/usbd_storage_sd_spi.c
 
 SPEED_OPTIMISED_SRC += \
             common/stm32/system.c \

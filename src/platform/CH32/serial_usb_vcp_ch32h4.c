@@ -124,8 +124,8 @@ static void TxTimerConfig(void)
     RCC_HB2PeriphClockCmd(RCC_HB2Periph_TIM12, ENABLE );
     
     TIM_TimeBaseInitStructure.TIM_Period = CDC_POLLING_INTERVAL - 1;
-    TIM_TimeBaseInitStructure.TIM_Prescaler = HCLKClock / 1000  - 1;
-    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseInitStructure.TIM_Prescaler = HCLKClock / 4 / 1000  - 1;
+    TIM_TimeBaseInitStructure.TIM_ClockDivision =  TIM_CKD_DIV4; //TIM_CKD_DIV1;
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM9_12_TimeBaseInit( TIM12, &TIM_TimeBaseInitStructure);
     

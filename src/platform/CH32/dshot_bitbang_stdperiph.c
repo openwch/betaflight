@@ -210,7 +210,7 @@ void bbSwitchToOutput(bbPort_t * bbPort)
 #ifdef USE_DMA_REGISTER_CACHE
     bbLoadDMARegs(dmaResource, &bbPort->dmaRegOutput);
 #else
-    xDMA_DeInit(dmaResource);
+    // xDMA_DeInit(dmaResource);
     xDMA_Init(dmaResource, &bbPort->outputDmaInit);
     // Needs this, as it is DeInit'ed above...
     xDMA_ITConfig(dmaResource, DMA_IT_TC, ENABLE);
@@ -303,7 +303,7 @@ void bbSwitchToInput(bbPort_t *bbPort)
 #ifdef USE_DMA_REGISTER_CACHE
     bbLoadDMARegs(dmaResource, &bbPort->dmaRegInput);
 #else
-    xDMA_DeInit(dmaResource);
+    // xDMA_DeInit(dmaResource);
     xDMA_Init(dmaResource, &bbPort->inputDmaInit);
     // Needs this, as it is DeInit'ed above...
     xDMA_ITConfig(dmaResource, DMA_IT_TC, ENABLE);

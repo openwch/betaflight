@@ -62,12 +62,12 @@
 
 #include "drivers/usb_io.h"
 
-
+//0xE205 -- DFU
 #define MSC_IN_EP  0x81
 #define MSC_OUT_EP 0x01
 
 #define USBD_VID           0x1A86
-#define USBD_PID           0xE205
+#define USBD_PID           0xFE10 
 #define USBD_MAX_POWER     100
 #define USBD_LANGID_STRING 1033
 
@@ -170,6 +170,8 @@ static struct usbd_interface intf0;
 
 void msc_ram_init(uint8_t busid, uintptr_t reg_base)
 {
+    USBD_STORAGE_fops->Init(0);
+
     usbd_desc_register(busid, &msc_ram_descriptor);
     usbd_add_interface(busid, usbd_msc_init_intf(busid, &intf0, MSC_OUT_EP, MSC_IN_EP));
     usbd_initialize(busid, reg_base, usbd_event_handler);
@@ -279,5 +281,9 @@ int usbd_msc_sector_read(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *b
 }
 
 
-
+int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length)
+{
+   (void)busid;
+   return  USBD_STORAGE_fops->Write(lun, buffer, sector, length / g_block_size);
+}
 #endif

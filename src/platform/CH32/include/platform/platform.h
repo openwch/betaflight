@@ -69,7 +69,6 @@
 #define USE_DYN_NOTCH_FILTER
 // #define USE_OVERCLOCK
 #define USE_ADC_INTERNAL
-// #define USE_USB_CDC_HID
 #define USE_USB_MSC
 #define USE_PERSISTENT_MSC_RTC
 // #define USE_MCO
@@ -81,13 +80,13 @@
 
 
 
-// #ifdef CH32H4
-// #define TASK_GYROPID_DESIRED_PERIOD     125 // 1000us = 8kHz
-// #define SCHEDULER_DELAY_LIMIT           10
-// #else
+#ifdef CH32H4
+#define TASK_GYROPID_DESIRED_PERIOD     125 // 1000us = 8kHz
+#define SCHEDULER_DELAY_LIMIT           10
+#else
 #define TASK_GYROPID_DESIRED_PERIOD     1000 // 1000us = 1kHz
 #define SCHEDULER_DELAY_LIMIT           100
-// #endif
+#endif
 
 #define DEFAULT_CPU_OVERCLOCK 0
 
@@ -99,12 +98,12 @@
 #endif
 
 //load all data to DTCM
-#define DMA_DATA_ZERO_INIT
-#define DMA_DATA  
-#define STATIC_DMA_DATA_AUTO        static
+#define DMA_DATA_ZERO_INIT __attribute__((aligned(32)))
+#define DMA_DATA   __attribute__((aligned(32)))
+#define STATIC_DMA_DATA_AUTO      __attribute__((aligned(32)))  static
 
-#define DMA_RAM     __attribute__((aligned(4)))
-#define DMA_RW_AXI
+#define DMA_RAM      __attribute__((aligned(32)))
+#define DMA_RW_AXI  
 #define DMA_RAM_R
 #define DMA_RAM_W
 #define DMA_RAM_RW
