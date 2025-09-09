@@ -38,20 +38,12 @@
 
 #include "pg/bus_quadspi.h"
 #include "drivers/bus_quadspi_impl.h"
-
-static struct qspiHalHandle_s qspiHalHandles[QUADSPIDEV_COUNT];
-
-#define QUADSPI_IO_AF_BK_IO_CFG           IO_CONFIG(GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL)
-#define QUADSPI_IO_AF_CLK_CFG             IO_CONFIG(GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL)
-#define QUADSPI_IO_AF_BK_CS_CFG           IO_CONFIG(GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP)
-#define QUADSPI_IO_BK_CS_CFG              IO_CONFIG(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_FREQ_HIGH, GPIO_PULLUP)
-
 // Provide platform-specific hardware table for STM32
 const quadSpiHardware_t quadSpiHardware[QUADSPIDEV_COUNT] = {
 #ifdef STM32H7
     {
         .device = QUADSPIDEV_1,
-        .reg = (quadSpiResource_t *)QUADSPI,
+        .reg = QUADSPI,
         .clkPins = {
             { DEFIO_TAG_E(PB2),  GPIO_AF9_QUADSPI },
         },
@@ -101,64 +93,6 @@ const quadSpiHardware_t quadSpiHardware[QUADSPIDEV_COUNT] = {
         .rcc = RCC_AHB3(QSPI),
     },
 #endif
-#ifdef STM32G4
-    {
-        .device = QUADSPIDEV_1,
-        .reg = (quadSpiResource_t *)QUADSPI,
-        .clkPins = {
-            { DEFIO_TAG_E(PA3), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PB10), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PE10), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PF10), GPIO_AF10_QUADSPI },
-        },
-        .bk1IO0Pins = {
-            { DEFIO_TAG_E(PB1), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PE12), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PF8), GPIO_AF10_QUADSPI },
-        },
-        .bk1IO1Pins = {
-            { DEFIO_TAG_E(PB0), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PE13), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PF9), GPIO_AF10_QUADSPI },
-        },
-        .bk1IO2Pins = {
-            { DEFIO_TAG_E(PA7), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PE14), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PF7), GPIO_AF10_QUADSPI },
-        },
-        .bk1IO3Pins = {
-            { DEFIO_TAG_E(PA6), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PE15), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PF6), GPIO_AF10_QUADSPI },
-        },
-        .bk1CSPins = {
-            { DEFIO_TAG_E(PA2), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PB11), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PE11), GPIO_AF10_QUADSPI },
-        },
-        .bk2IO0Pins = {
-            { DEFIO_TAG_E(PC1), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PD4), GPIO_AF10_QUADSPI },
-        },
-        .bk2IO1Pins = {
-            { DEFIO_TAG_E(PB2), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PC2), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PD5), GPIO_AF10_QUADSPI },
-        },
-        .bk2IO2Pins = {
-            { DEFIO_TAG_E(PC3), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PD6), GPIO_AF10_QUADSPI },
-        },
-        .bk2IO3Pins = {
-            { DEFIO_TAG_E(PC4), GPIO_AF10_QUADSPI },
-            { DEFIO_TAG_E(PD7), GPIO_AF10_QUADSPI },
-        },
-        .bk2CSPins = {
-            { DEFIO_TAG_E(PD3), GPIO_AF10_QUADSPI },
-        },
-        .rcc = RCC_AHB3(QSPI),
-    },
-#endif
 };
 
 // Provide platform-specific pin configuration for STM32
@@ -177,7 +111,6 @@ void quadSpiPinConfigure(const quadSpiConfig_t *pConfig)
         for (int pindex = 0; pindex < MAX_QUADSPI_PIN_SEL; pindex++) {
             if (pConfig[device].ioTagClk == hw->clkPins[pindex].pin) {
                 pDev->clk = hw->clkPins[pindex].pin;
-                pDev->clkAF = hw->clkPins[pindex].af;
             }
             //
             // BK1

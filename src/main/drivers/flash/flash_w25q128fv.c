@@ -403,83 +403,6 @@ enum {READ_STATUS, WRITE_ENABLE, PAGE_PROGRAM, DATA1, DATA2};
 
 MMFLASH_CODE static uint32_t w25q128fv_pageProgramContinue(flashDevice_t *fdevice, uint8_t const **buffers, const uint32_t *bufferSizes, uint32_t bufferCount)
 {
-#if defined(USE_QUADSPI)
-    if (bufferCount == 0) {
-        if (fdevice->callback) fdevice->callback(0);
-        return 0;
-    }
-
-    // The segment list cannot be in automatic storage as this routine is non-blocking
-    STATIC_DMA_DATA_AUTO uint8_t readStatus[2] = { W25Q128FV_INSTRUCTION_READ_STATUS1_REG};
-    STATIC_DMA_DATA_AUTO uint8_t readyStatus[2];
-    STATIC_DMA_DATA_AUTO uint8_t writeEnable[] = { W25Q128FV_INSTRUCTION_WRITE_ENABLE };
-
-#ifdef USE_FLASH_WRITES_USING_4LINES
-    STATIC_DMA_DATA_AUTO uint8_t pageProgram[1 + 3] = { W25Q128FV_INSTRUCTION_QUAD_PAGE_PROGRAM };
-#else
-    STATIC_DMA_DATA_AUTO uint8_t pageProgram[1 + 3] = { W25Q128FV_INSTRUCTION_PAGE_PROGRAM };
-#endif
-    static busSegment_t segments[] = {
-        {.u.buffers = {readStatus, readyStatus}, .len = sizeof(readStatus), .negateCS = true, w25q128fv_callbackReady},
-        {.u.buffers = {writeEnable, NULL}, .len = sizeof(writeEnable), .negateCS = true, w25q128fv_callbackWriteEnable},
-        {.u.buffers = {pageProgram, NULL}, .len = sizeof(pageProgram), .negateCS = false, NULL},
-        {.u.link = {NULL, NULL}, .len = 0, .negateCS = true, NULL},
-        {.u.link = {NULL, NULL}, .len = 0, .negateCS = true, NULL},
-        {.u.link = {NULL, NULL}, .len = 0, .negateCS = true, NULL},
-    };
-
-    // Ensure any prior DMA has completed before continuing
-    quadSpiWait(fdevice->io.handle.dev);
-
-    // Patch command/address
-    pageProgram[1] = (fdevice->currentWriteAddress >> 16) & 0xFF;
-    pageProgram[2] = (fdevice->currentWriteAddress >> 8) & 0xFF;
-    pageProgram[3] = (fdevice->currentWriteAddress >> 0) & 0xFF;
-
-    // Patch the data segments
-    segments[DATA1].u.buffers.txData = (uint8_t *)buffers[0];
-#ifdef USE_FLASH_WRITES_USING_4LINES
-    segments[DATA1].len = bufferSizes[0] | BUS_SEGMENT_LEN_WIDTH_X4;
-#else
-    segments[DATA1].len = bufferSizes[0];
-#endif
-    fdevice->bytesWritten = bufferSizes[0];
-
-    /* As the DATA2 segment may be used as the terminating segment, the rxData and txData may be overwritten
-     * with a link to the following transaction (u.link.dev and u.link.segments respectively) so ensure that
-     * rxData is reinitialised otherwise it will remain pointing at a chained u.link.segments structure which
-     * would result in it being corrupted.
-     */
-    segments[DATA2].u.buffers.rxData = (uint8_t *)NULL;
-
-    if (bufferCount == 1) {
-        segments[DATA1].negateCS = true;
-        segments[DATA1].callback = w25q128fv_callbackWriteComplete;
-        // Mark segment following data as being of zero length
-        segments[DATA2].u.buffers.txData = (uint8_t *)NULL;
-        segments[DATA2].len = 0;
-    } else if (bufferCount == 2) {
-        segments[DATA1].negateCS = false;
-        segments[DATA1].callback = NULL;
-        segments[DATA2].u.buffers.txData = (uint8_t *)buffers[1];
-#ifdef USE_FLASH_WRITES_USING_4LINES
-        segments[DATA2].len = bufferSizes[1] | BUS_SEGMENT_LEN_WIDTH_X4;
-#else
-        segments[DATA2].len = bufferSizes[1];
-#endif
-        fdevice->bytesWritten += bufferSizes[1];
-        segments[DATA2].negateCS = true;
-        segments[DATA2].callback = w25q128fv_callbackWriteComplete;
-    } else {
-        return 0;
-    }
-
-    quadSpiSequence(fdevice->io.handle.dev, &segments[0]);
-
-    if (fdevice->callback == NULL) {
-        quadSpiWait(fdevice->io.handle.dev);
-    }
-#else
     fdevice->bytesWritten = 0;
     for (uint32_t i = 0; i < bufferCount; i++) {
         w25q128fv_waitForReady(fdevice);
@@ -499,6 +422,10 @@ MMFLASH_CODE static uint32_t w25q128fv_pageProgramContinue(flashDevice_t *fdevic
         fdevice->callback(fdevice->bytesWritten);
     }
 #endif
+
+    if (fdevice->callback) {
+        fdevice->callback(fdevice->bytesWritten);
+    }
 
     return fdevice->bytesWritten;
 }

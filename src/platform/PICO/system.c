@@ -22,7 +22,10 @@
 #include "platform.h"
 #include <stdint.h>
 #include "hardware/timer.h"
-#include "hardware/clocks.h"
+#include "hardware/watchdog.h"
+#include "pico/bootrom.h"
+#include "pico/unique_id.h"
+// flash.h used by PICO QSPI helpers is included where needed in PICO bus/flash code
 
 int main(int argc, char * argv[]);
 
@@ -88,6 +91,32 @@ void systemReset(void)
 void systemInit(void)
 {
     //TODO: implement
+
+    SystemInit();
+
+    cycleCounterInit();
+
+    // load the unique id into a local array
+    pico_unique_board_id_t id;
+    pico_get_unique_board_id(&id);
+    memcpy(&systemUniqueId, &id.id, MIN(sizeof(systemUniqueId), PICO_UNIQUE_BOARD_ID_SIZE_BYTES));
+
+
+#ifdef USE_MULTICORE
+    multicoreStart();
+#endif // USE_MULTICORE
+}
+
+void systemResetToBootloader(bootloaderRequestType_e requestType)
+{
+    switch (requestType) {
+    case BOOTLOADER_REQUEST_ROM:
+        rom_reset_usb_boot_extra(-1, 0, false);
+        break;
+    case BOOTLOADER_REQUEST_FLASH:
+    default:
+        systemReset();
+    }
 }
 
 // Return system uptime in milliseconds (rollover in 49 days)
