@@ -1,4 +1,4 @@
-/*
+h/*
  * This file is part of Cleanflight and Betaflight.
  *
  * Cleanflight and Betaflight are free software. You can redistribute
@@ -13,7 +13,7 @@
  * See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this software.
+ * along with this software.&& !defined(CH32H415) 
  *
  * If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,14 +25,12 @@
 #include "platform.h"
 #include "common/time.h"
 
-#if !(defined(PICO))
 #ifdef USE_HAL_DRIVER
 #include "usbd_msc.h"
 #else
 #include "usbd_msc_mem.h"
-#if !defined(AT32F435) && !defined(CH32H415) 
+#if !defined(AT32F435) && !defined(PICO)
 #include "usbd_msc_core.h"
-#endif
 #endif
 #endif
 
