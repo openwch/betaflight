@@ -840,18 +840,6 @@ $(DIRECTORIES):
 version:
 	@echo '$(FC_VER)'
 
-.PHONY: submodules
-submodules:
-	@echo "Updating submodules"
-	$(V1) git submodule update --init --recursive || { echo "Failed to update submodules"; exit 1; }
-	@echo "Submodules updated"
-
-.PHONY: submodules
-submodules:
-	@echo "Updating submodules"
-	$(V1) git submodule update --init --recursive || { echo "Failed to update submodules"; exit 1; }
-	@echo "Submodules updated"
-
 ## help              : print this help message and exit
 help: Makefile mk/tools.mk
 	@echo ""
