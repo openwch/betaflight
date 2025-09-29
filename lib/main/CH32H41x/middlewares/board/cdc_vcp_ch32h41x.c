@@ -38,7 +38,7 @@ static const char *string_descriptors[] = {
     (const char[]){ 0x09, 0x04 }, /* Langid */
     "Betaflight",                  /* Manufacturer */
     "Betaflight CH32H415",         /* Product */
-    "2022123456",                  /* Serial Number */
+    "2025123456",                  /* Serial Number */
     "WCH HS Virtual COM Port",     /* interface */
 };
 
@@ -72,14 +72,24 @@ const struct usb_descriptor cdc_descriptor = {
     .string_descriptor_callback = string_descriptor_callback
 };
 
+#define RX_BUFFER_SIZE 2048
+#define TX_BUFFER_SIZE 512
 //ep DMA addr
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[CDC_MAX_MPS*8]; /* 2048 is only for test speed , please use CDC_MAX_MPS for common*/
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[CDC_MAX_MPS*8];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t usb_drivers_buffer[CDC_MAX_MPS]; 
+
+//ep DMA addr
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[RX_BUFFER_SIZE]; 
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[TX_BUFFER_SIZE];
 
 volatile uint8_t  ep_tx_busy_flag = 0;
 volatile uint8_t  usbd_cdc_info = 0;
 volatile uint8_t  ep_rx_finish = 0;
 volatile uint16_t ep_rx_length =0;
+
+static volatile uint16_t rx_head = 0;   // write p
+static volatile uint16_t rx_tail = 0;   // read p
+
+
 
 static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
@@ -104,7 +114,7 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
             ep_tx_busy_flag = 0;
             ep_rx_finish = 0;
             /* setup first out ep read transfer */
-            usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, CDC_MAX_MPS);
+            usbd_ep_start_read(busid, CDC_OUT_EP, usb_drivers_buffer, CDC_MAX_MPS);
             break;
         case USBD_EVENT_SET_REMOTE_WAKEUP:
             // usbd_cdc_info = (uint8_t)USBD_EVENT_SET_REMOTE_WAKEUP;
@@ -121,16 +131,23 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
 //ep receive call
 void usbd_cdc_acm_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
-    // for(int i=0;i<nbytes;i++)
-    // {  
-    //             while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == 0);
-    //     USART_SendData(USART1, read_buffer[i]);    
-    // }
-    // /* setup next out ep read transfer */
-    // usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, CDC_MAX_MPS);
+    #if 0
     ep_rx_finish = 1;
     ep_rx_length = nbytes;
-
+    #else
+    for (uint32_t i = 0; i < nbytes; i++) 
+    {
+        uint16_t next_head = (rx_head + 1) % RX_BUFFER_SIZE;
+        if (next_head == rx_tail) 
+        {
+            // if full ,disard the neww data
+            break;
+        }
+        read_buffer[rx_head] = usb_drivers_buffer[i];
+        rx_head = next_head;
+    }
+    usbd_ep_start_read(busid, CDC_OUT_EP, usb_drivers_buffer, CDC_MAX_MPS);  //resume receive
+    #endif
 }
 
 //ep send call
@@ -196,20 +213,45 @@ void usbd_cdc_acm_get_line_coding(uint8_t busid, uint8_t intf, struct cdc_line_c
 }
 
 
-
-uint16_t usb_vcp_get_rx_data(uint8_t busid,uint8_t *buffer)
+uint16_t usb_vcp_rx_available(void)
 {
-    //receiving
-    uint16_t tmp_len = 0;
-    if(ep_rx_finish == 0)  return 0;
-    ep_rx_finish = 0;
-    tmp_len = ep_rx_length;
-    // USB_MCPY( buffer, read_buffer, read_buffer+tmp_len-1);
-    memcpy(buffer,read_buffer,tmp_len);
-
-    usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, CDC_MAX_MPS);  //resume receive
-    return tmp_len;
+    if (rx_head >= rx_tail)
+        return rx_head - rx_tail;
+    else
+        return RX_BUFFER_SIZE - rx_tail + rx_head;
 }
+
+
+// uint16_t usb_vcp_get_rx_data(uint8_t busid,uint8_t *buffer)
+// {
+//     //receiving
+//     uint16_t tmp_len = 0;
+//     if(ep_rx_finish == 0)  return 0;
+//     ep_rx_finish = 0;
+//     tmp_len = ep_rx_length;
+//     memcpy(buffer,read_buffer,tmp_len);
+//     usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, CDC_MAX_MPS);  //resume receive
+//     return tmp_len;
+// }
+
+uint16_t usb_vcp_get_rx_data(uint8_t busid, uint8_t *buffer, uint32_t len)
+{
+    uint32_t count = 0;
+
+    count = usb_vcp_rx_available();
+
+    if (count > len) count = len;
+
+    for (uint32_t i = 0; i < count; i++) {
+        buffer[i] = read_buffer[rx_tail];
+        rx_tail++;
+        if (rx_tail >= RX_BUFFER_SIZE)
+            rx_tail = 0;
+    }
+    return count;
+}
+
+
 
 
 uint16_t usb_vcp_send_data(uint8_t busid,uint8_t *buffer,uint16_t len)
@@ -217,7 +259,6 @@ uint16_t usb_vcp_send_data(uint8_t busid,uint8_t *buffer,uint16_t len)
     if(ep_tx_busy_flag == 0)
     {
         ep_tx_busy_flag = 1;
-        // USB_MCPY( write_buffer, buffer, read_buffer+len-1);
         memcpy(write_buffer,buffer,len);
         usbd_ep_start_write(busid, CDC_IN_EP, write_buffer, len);
     }

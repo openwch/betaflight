@@ -202,17 +202,10 @@ void adcInit(const adcConfig_t *config) {
       // Since ADC1 can do all channels this will only ever return adc1 and is
       // unnecessary
 
-      // Find an ADC instance that can be used for the given TagMap index.
-      // for (dev = 0; dev < ADCDEV_COUNT; dev++) {
-      //     #ifndef USE_DMA_SPEC
-      //     if (!adcDevice[dev].ADCx || !adcDevice[dev].dmaResource) {
-      //         continue;
-      //     }
-      //     #else
-      //     if (!adcDevice[dev].ADCx) {
-      //         continue;
-      //     }
-      //     #endif
+        adcOperatingConfig[i].adcDevice = dev;
+        adcOperatingConfig[i].adcChannel = adcTagMap[map].channel;
+        adcOperatingConfig[i].sampleTime = ADC_SampleTime_CyclesMode7;
+        adcOperatingConfig[i].enabled = true;
 
       //     if (adcTagMap[map].devices & (1 << dev)) {
       //         break;
@@ -230,12 +223,37 @@ void adcInit(const adcConfig_t *config) {
 
     nChannelsUsed[dev] += 1; // increase the active channel count for this device
 
-    // Enable the gpio for analog input
-    if (adcOperatingConfig[i].tag) {
-      IOInit(IOGetByTag(adcOperatingConfig[i].tag), OWNER_ADC_BATT + i, 0);
-      IOConfigGPIO(IOGetByTag(adcOperatingConfig[i].tag),
-                   IO_CONFIG(DIR_IN, GPIO_MODE_IN_AN, GPIO_SPEED_VERY_HIGH,
-                             GPIO_PULL_NONE));
+        #endif //end of USE_DMA_SPEC
+
+        // set each channel into the auto sequence for this ADC device
+        for (int adcChan = 0; adcChan < ADC_CHANNEL_COUNT; adcChan++)
+        {
+            // only add enabled channels for the current dev (can be simplified if we drop the pretense at handling adc2 and 3)
+            if (adcOperatingConfig[adcChan].enabled && adcOperatingConfig[adcChan].adcDevice == dev)
+            {
+                adcOperatingConfig[adcChan].dmaIndex = dmaBufferIndex++;
+                ADC_RegularChannelConfig(adc->ADCx,
+                    adcOperatingConfig[adcChan].adcChannel,
+                    adcOperatingConfig[adcChan].dmaIndex+1, // This is the sequence number for the adc conversion
+                    adcOperatingConfig[adcChan].sampleTime );
+            }
+        }
+
+        adc->ADCx->CTLR1 |= (1<<31);
+        ADC_Cmd(adc->ADCx, ENABLE);
+        ADC_BufferCmd(adc->ADCx, ENABLE);
+
+        // ADC_ResetCalibration(adc->ADCx);
+        // while(ADC_GetResetCalibrationStatus(adc->ADCx));
+        // ADC_StartCalibration(adc->ADCx);
+        // while(ADC_GetCalibrationStatus(adc->ADCx));
+
+	    // RCC_ADCHCLKCLKAsSourceConfig(RCC_PPRE2_DIV0,RCC_HCLK_ADCPRE_DIV8);
+        ADC_LowPowerModeCmd(adc->ADCx,DISABLE); 
+#ifdef USE_ADC_INTERNAL
+        ADC_TempSensorVrefintCmd(ENABLE);  //only ADC1
+#endif
+        ADC_SoftwareStartConvCmd(adc->ADCx, ENABLE);  // start sampling
     }
   } // for each channel
 

@@ -11,6 +11,7 @@
 *******************************************************************************/
 #include "ch32h417_adc.h"
 #include "ch32h417_rcc.h"
+#include "ch32h417_flash.h"
 /* ADC DISCNUM mask */
 #define CTLR1_DISCNUM_Reset              ((uint32_t)0xFFFF1FFF)
 
@@ -313,9 +314,13 @@ FlagStatus ADC_GetResetCalibrationStatus(ADC_TypeDef *ADCx)
 void ADC_StartCalibration(ADC_TypeDef *ADCx)
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
     ADCx->SAMPTR1 |= (7<<27);     //set cali channel sample rate
 =======
 >>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
+=======
+    ADCx->SAMPTR1 |= (7<<27);     //set cali channel sample rate
+>>>>>>> 591a8671e (1.修改USB驱动)
     ADCx->CTLR2 |= CTLR2_CAL_Set;
 }
 
@@ -1103,10 +1108,14 @@ s32 TempSensor_Volt_To_Temper(s32 Value)
     s32 Temper, Refer_Volt, Refer_Temper;
     s32 k = 43;
 <<<<<<< HEAD
+<<<<<<< HEAD
     FLASH_BOOT_GetMode( );
 =======
 
 >>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
+=======
+    FLASH_BOOT_GetMode( );
+>>>>>>> 591a8671e (1.修改USB驱动)
     Refer_Volt = (s32)((*(u32 *)0x1FFFF76C) & 0x0000FFFF);
     Refer_Temper = (s32)(((*(u32 *)0x1FFFF76C) >> 16) & 0x0000FFFF);
 

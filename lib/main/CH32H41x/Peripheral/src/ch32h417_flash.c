@@ -1245,3 +1245,24 @@ FLASH_Status FLASH_ROM_WRITE(uint32_t StartAddr, uint32_t *pbuf, uint32_t Length
 
     return status;
 }
+
+/*********************************************************************
+ * @fn      FLASH_BOOT_GetMode
+ *
+ * @brief   Returns the BOOT mode.
+ *
+ * @return BOOT mode identifier.
+ *          BOOT mode List-
+ *  0x00FFFFFF - UART-enable USBHS-enable USBSS-enable
+ *  0x06FFFFF9 - UART-enable USBHS-Disable USBSS-disable
+ *  0x05FFFFFA - UART-Disable USBHS-enable USBSS-disable
+ *  0x03FFFFFC - UART-Disable USBHS-disable USBSS-enable
+ *  0x04FFFFFB - UART-enable USBHS-enable USBSS-disable
+ *  0x01FFFFFE - UART-disable USBHS-enable USBSS-enable
+ *  0x02FFFFFD - UART-enable USBHS-Disable USBSS-enable 
+ */
+__attribute__((optimize("O0"))) uint32_t FLASH_BOOT_GetMode( void )
+{
+    return( *( uint32_t * )0x08000018 );
+}
+
