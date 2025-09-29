@@ -25,6 +25,8 @@
 #include "build/debug.h"
 #include "drivers/io.h"
 
+#include "build/debug_pin.h"
+
 void debugInit(void)
 {
     // IO_t io = IOGetByTag(DEFIO_TAG_E(PB9)); // SWDIO
@@ -36,3 +38,12 @@ void debugInit(void)
     //     IOInit(io, OWNER_SWD, 0);
     // }
 }
+
+#ifdef USE_DEBUG_PIN
+
+dbgPin_t dbgPins[DEBUG_PIN_COUNT] = {
+    { .tag = IO_TAG(DEBUG_PIN0) },
+    { .tag = IO_TAG(DEBUG_PIN1)},
+};
+
+#endif

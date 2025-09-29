@@ -65,6 +65,10 @@ __WEAK void usb_dc_low_level_deinit(void)
 {
 }
 
+
+usb_rxsof_handler_t usb_rxsof_handler = NULL;
+
+
 /**
  * @brief            USB initialization
  * @pre              None
@@ -75,7 +79,7 @@ int usb_dc_init(uint8_t busid)
 {
     usb_dc_low_level_init( );
     CH32H41x_USBHS_DEV->CONTROL = USBHS_UD_RST_LINK | USBHS_UD_PHY_SUSPENDM;
-    CH32H41x_USBHS_DEV->INT_EN = USBHS_UDIE_BUS_RST | USBHS_UDIE_SUSPEND | USBHS_UDIE_BUS_SLEEP | USBHS_UDIE_LPM_ACT | USBHS_UDIE_TRANSFER | USBHS_UDIE_LINK_RDY;
+    CH32H41x_USBHS_DEV->INT_EN = USBHS_UDIE_SOF_ACT|USBHS_UDIE_BUS_RST | USBHS_UDIE_SUSPEND | USBHS_UDIE_BUS_SLEEP | USBHS_UDIE_LPM_ACT | USBHS_UDIE_TRANSFER | USBHS_UDIE_LINK_RDY;
     /* Enable all end points */
     CH32H41x_USBHS_DEV->UEP_TX_EN = 0xffff;
     CH32H41x_USBHS_DEV->UEP_RX_EN = 0xffff;
@@ -482,6 +486,7 @@ static inline void usb_trans_end_process(void)
     }
 }
 
+
 /**
  * @brief            USB interrupt processing function
  * @pre              None
@@ -518,6 +523,11 @@ void USBD_IRQHandler(uint8_t busid)
         }
         CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIF_SUSPEND;
     } 
+    else if(intflag & USBHS_UDIE_SOF_ACT)
+    {
+        if(usb_rxsof_handler!=NULL)  usb_rxsof_handler( );
+        CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIE_SOF_ACT;
+    }
     else {
         CH32H41x_USBHS_DEV->INT_FG = intflag;
     }

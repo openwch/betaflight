@@ -218,7 +218,7 @@ void adcInit(const adcConfig_t *config)
 
         adcOperatingConfig[i].adcDevice = dev;
         adcOperatingConfig[i].adcChannel = adcTagMap[map].channel;
-        adcOperatingConfig[i].sampleTime = ADC_SampleTime_CyclesMode4;
+        adcOperatingConfig[i].sampleTime = ADC_SampleTime_CyclesMode7;
         adcOperatingConfig[i].enabled = true;
 
         nChannelsUsed[dev] += 1;    // increase the active channel count for this device
@@ -324,6 +324,8 @@ void adcInit(const adcConfig_t *config)
         // ADC_StartCalibration(adc->ADCx);
         // while(ADC_GetCalibrationStatus(adc->ADCx));
 
+	    // RCC_ADCHCLKCLKAsSourceConfig(RCC_PPRE2_DIV0,RCC_HCLK_ADCPRE_DIV8);
+        ADC_LowPowerModeCmd(adc->ADCx,DISABLE); 
 #ifdef USE_ADC_INTERNAL
         ADC_TempSensorVrefintCmd(ENABLE);  //only ADC1
 #endif

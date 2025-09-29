@@ -109,6 +109,9 @@
 #define USE_GPS_UBLOX
 #define USE_GPS_RESCUE
 
+#define USE_ALTITUDE_HOLD
+#define USE_POSITION_HOLD
+
 #undef USE_RX_PPM
 #undef USE_RX_PWM
 #undef USE_RX_SPI

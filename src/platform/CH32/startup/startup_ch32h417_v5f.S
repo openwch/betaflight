@@ -531,11 +531,12 @@ handle_reset:
 	bltu a0, a1, 1b
 2:
 /* config hardware push/pop addr */
-    li t0, 0x200D8000
+    li t0, 0x200E0000
     csrw 0xBC4, t0
 /* Configure Prefetch */
     # li t0, 0x123733E0
     li t0, 0x345933E0
+    # li t0, 0x233833E0
     csrw 0xBC0, t0
 
 

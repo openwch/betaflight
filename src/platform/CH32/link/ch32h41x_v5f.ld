@@ -24,8 +24,8 @@ MEMORY
     FLASH1 (rx)        : ORIGIN = 0x08018000, LENGTH = 864K
     SYSTEM_MEMORY (rx) : ORIGIN = 0x1FFF0000, LENGTH = 56K
     SRAM (xrw)         : ORIGIN = 0x20118000, LENGTH = 415K 
-    DTCM (xrw)         : ORIGIN = (0x200D8000+512), LENGTH = (160K-512)  /* reserve 512B for hardware PUSH/POP, reserve 64KB for ITCM */
-    ITCM (xrw)         : ORIGIN = 0x200A0000, LENGTH = 224K 
+    DTCM (xrw)         : ORIGIN = (0x200E0000+512), LENGTH = (128K-512)  /* reserve 512B for hardware PUSH/POP, reserve 64KB for ITCM */
+    ITCM (xrw)         : ORIGIN = 0x200A0000, LENGTH = 256K 
 }
 
 REGION_ALIAS("STACKRAM", DTCM)

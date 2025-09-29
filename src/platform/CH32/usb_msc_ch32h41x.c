@@ -62,6 +62,8 @@
 
 #include "drivers/usb_io.h"
 
+#include "usb_ch32h41x_usbhs_reg.h"
+
 //0xE205 -- DFU
 #define MSC_IN_EP  0x81
 #define MSC_OUT_EP 0x01
@@ -252,7 +254,7 @@ uint8_t mscStart(void)
 
     //usb clk init
     msc_usb_clk_config( ); 
-
+    usb_rxsof_handler = NULL;
     msc_ram_init(0, 0);
 
     NVIC_SetPriority(USBHS_IRQn,NVIC_PRIO_USB) ;

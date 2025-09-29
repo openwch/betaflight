@@ -40,7 +40,7 @@
 #include "cdc_vcp_ch32h41x.h"
 #include "usbd_core.h"
 #include "usbd_cdc_acm.h"
-
+#include "usb_ch32h41x_usbhs_reg.h"
 
 #include "drivers/time.h"
 #include "drivers/serial.h"
@@ -51,12 +51,12 @@
 
 static vcpPort_t vcpPort = {0};
 
-#define APP_RX_DATA_SIZE  2048
+// #define APP_RX_DATA_SIZE  2048
 #define APP_TX_DATA_SIZE  2048
 
 #define APP_TX_BLOCK_SIZE 512
 
-volatile uint8_t UserRxBuffer[APP_RX_DATA_SIZE];/* Received Data over USB are stored in this buffer */
+// volatile uint8_t UserRxBuffer[APP_RX_DATA_SIZE];/* Received Data over USB are stored in this buffer */
 volatile uint8_t UserTxBuffer[APP_TX_DATA_SIZE];/* Received Data over UART (CDC interface) are stored in this buffer */
 uint32_t BuffLength;
 
@@ -65,11 +65,12 @@ volatile uint32_t UserTxBufPtrIn = 0;
 /* Increment this pointer or roll it back to start address when data are sent over USB */
 volatile uint32_t UserTxBufPtrOut = 0;
 
-volatile uint32_t APP_Rx_ptr_out = 0;
-volatile uint32_t APP_Rx_ptr_in = 0;
-static uint8_t APP_Rx_Buffer[APP_RX_DATA_SIZE];
+// volatile uint32_t APP_Rx_ptr_out = 0;
+// volatile uint32_t APP_Rx_ptr_in = 0;
+// static uint8_t APP_Rx_Buffer[APP_RX_DATA_SIZE];
 
-#define  CDC_POLLING_INTERVAL 5
+
+// #define  CDC_POLLING_INTERVAL 5
 
 
 
@@ -118,6 +119,7 @@ uint32_t CDC_Send_DATA(const uint8_t *ptrBuffer, uint32_t sendLength)
 }
 
 
+#if 0
 static void TxTimerConfig(void)
 {
     TIM9_12_TimeBaseInitTypeDef TIM_TimeBaseInitStructure={0};
@@ -178,6 +180,54 @@ void TIM12_IRQHandler(void)
     }
    TIM12->INTFR = (uint16_t)~TIM_IT_Update;
 }
+#else
+    static volatile uint32_t lastBuffsize = 0;
+    void usb_int_rxsof_handler(void) //1ms
+    {
+        static uint8_t FrameCount = 0;
+
+        if(FrameCount++ == 16) //
+        {
+            FrameCount = 0;
+
+            uint32_t buffsize;
+            if (ep_tx_busy_flag == 0) //pre finish
+            {
+                if (lastBuffsize) 
+                {
+                    bool needZeroLengthPacket = lastBuffsize % 64 == 0;
+                    UserTxBufPtrOut += lastBuffsize;
+                    if (UserTxBufPtrOut == APP_TX_DATA_SIZE) 
+                    {
+                        UserTxBufPtrOut = 0;
+                    }
+                    lastBuffsize = 0;
+                    if (needZeroLengthPacket) 
+                    {
+                        usb_vcp_send_data(0, (uint8_t*)&UserTxBuffer[UserTxBufPtrOut], 0);
+                        return;
+                    }
+                }
+                if (UserTxBufPtrOut != UserTxBufPtrIn) 
+                {
+                    if (UserTxBufPtrOut > UserTxBufPtrIn) {
+                        buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOut;
+                    } else {
+                        buffsize = UserTxBufPtrIn - UserTxBufPtrOut;
+                    }
+                    if (buffsize > APP_TX_BLOCK_SIZE) {
+                        buffsize = APP_TX_BLOCK_SIZE;
+                    }
+                    uint32_t txed = usb_vcp_send_data(0,(uint8_t*)&UserTxBuffer[UserTxBufPtrOut], buffsize);
+                    if (txed == 0) 
+                    {
+                        lastBuffsize = buffsize;
+                    }
+                }
+            }
+        }
+    }
+#endif
 
 uint8_t usbIsConnected(void)
 {
@@ -229,31 +279,42 @@ static bool isUsbVcpTransmitBufferEmpty(const serialPort_t *instance)
 static uint32_t usbVcpAvailable(const serialPort_t *instance)
 {
     UNUSED(instance);
-    uint32_t available = APP_Rx_ptr_in-APP_Rx_ptr_out;
 
-    // Return the sum of the bytes in the APP_Rx_Buffer buffer and those received by the VCP driver
-  if(ep_rx_finish == 1)
-    {
-        available += ep_rx_length;
-    }
+//     uint32_t available = APP_Rx_ptr_in-APP_Rx_ptr_out;
 
-    return available;
+//     // Return the sum of the bytes in the APP_Rx_Buffer buffer and those received by the VCP driver
+//   if(ep_rx_finish == 1)
+//     {
+//         available += ep_rx_length;
+//     }
+
+//     return available;
+
+    return usb_vcp_rx_available( ); 
 }
 
 static uint8_t usbVcpRead(serialPort_t *instance)
 {
     UNUSED(instance);
 
-   if ((APP_Rx_ptr_in == 0) || (APP_Rx_ptr_out == APP_Rx_ptr_in))
-   {
-        APP_Rx_ptr_out = 0;
-        APP_Rx_ptr_in = usb_vcp_get_rx_data(0, APP_Rx_Buffer);
-        if(APP_Rx_ptr_in == 0) {
-            // We've drained the input buffer
-            return 0;
-        }
+//    if ((APP_Rx_ptr_in == 0) || (APP_Rx_ptr_out == APP_Rx_ptr_in))
+//    {
+//         APP_Rx_ptr_out = 0;
+//         APP_Rx_ptr_in = usb_vcp_get_rx_data(0, APP_Rx_Buffer);
+//         if(APP_Rx_ptr_in == 0) {
+//             // We've drained the input buffer
+//             return 0;
+//         }
+//     }
+//     return APP_Rx_Buffer[APP_Rx_ptr_out++];
+
+    uint8_t buf[1];
+    while(true)
+    {
+            if (usb_vcp_get_rx_data(0, buf, 1))
+            return buf[0];
     }
-    return APP_Rx_Buffer[APP_Rx_ptr_out++];
+
 }
 
 static void usbVcpWriteBuf(serialPort_t *instance, const void *data, int count)
@@ -374,12 +435,13 @@ serialPort_t *usbVcpOpen(void)
 	/* Enable USBHS Clock */
 	RCC_HBPeriphClockCmd(RCC_HBPeriph_USBHS, ENABLE);
 
+    usb_rxsof_handler = usb_int_rxsof_handler;
     cdc_acm_init( 0, 0);   
 
     NVIC_SetPriority(USBHS_IRQn, NVIC_PRIO_USB);
     NVIC_EnableIRQ(USBHS_IRQn);
 
-    TxTimerConfig();
+    // TxTimerConfig();
 
     vcpPort_t *s = &vcpPort;
     s->port.vTable = usbVTable;

@@ -69,6 +69,7 @@
 #define USE_DYN_NOTCH_FILTER
 // #define USE_OVERCLOCK
 #define USE_ADC_INTERNAL
+#define ADC_VOLTAGE_REFERENCE_MV  3300  //maybe better  cali internal
 #define USE_USB_MSC
 #define USE_PERSISTENT_MSC_RTC
 // #define USE_MCO
