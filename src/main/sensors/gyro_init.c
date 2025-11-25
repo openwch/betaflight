@@ -53,6 +53,7 @@
 #include "drivers/accgyro/accgyro_spi_l3gd20.h"
 #include "drivers/accgyro/accgyro_spi_lsm6dso.h"
 #include "drivers/accgyro/accgyro_spi_lsm6dsv16x.h"
+#include "drivers/accgyro/accgyro_spi_lsm6dsk320x.h"
 
 #include "drivers/accgyro/accgyro_spi_mpu6000.h"
 #include "drivers/accgyro/accgyro_spi_mpu6500.h"
@@ -517,6 +518,14 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
         FALLTHROUGH;
 #endif
 
+#ifdef USE_ACCGYRO_LSM6DSK320X
+    case GYRO_LSM6DSK320X:
+        if (lsm6dsk320xSpiGyroDetect(dev)){
+            gyroHardware = GYRO_LSM6DSK320X;
+            break;
+        }    
+        FALLTHROUGH;
+#endif
 
 #ifdef USE_ACCGYRO_ICM40609D
     case GYRO_ICM40609D:

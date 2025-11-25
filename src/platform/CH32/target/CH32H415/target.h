@@ -55,8 +55,8 @@
 // #define TARGET_IO_PORTE         0x7879
 // #define TARGET_IO_PORTF         0x0038
 
-#define TARGET_IO_PORTA         0xffff
-#define TARGET_IO_PORTB         0xffff
+#define TARGET_IO_PORTA         0xff1f
+#define TARGET_IO_PORTB         0xff7c
 #define TARGET_IO_PORTC         0xffff
 #define TARGET_IO_PORTD         0xffff
 #define TARGET_IO_PORTE         0xffff

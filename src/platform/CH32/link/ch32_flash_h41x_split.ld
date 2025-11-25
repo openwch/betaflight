@@ -62,7 +62,7 @@ SECTIONS
 		obj/main/CH32H415*/drivers/accgyro/*.o(.text .text.*)
 		obj/main/CH32H415*/drivers/barometer/*.o(.text .text.*)
 		obj/main/CH32H415*/drivers/compass/*.o(.text .text.*)
-		obj/main/CH32H4158*/drivers/flash/*.o(.text .text.*) 
+		obj/main/CH32H415*/drivers/flash/*.o(.text .text.*) 
 		obj/main/CH32H415*/drivers/opticalflow/*.o(.text .text.*)
 		obj/main/CH32H415*/drivers/rangefinder/*.o(.text .text.*)		
 		obj/main/CH32H415*/drivers/rx/*.o(.text .text.*)
@@ -88,7 +88,11 @@ SECTIONS
         *(.ram_code*)
         *(.text)
         *(.text.*)
-        . = ALIGN(4);
+		
+		*(.rodata)
+		*(.rodata*)
+        
+		. = ALIGN(4);
         ram_code_end = .;
     } >SRAM AT >MOVABLE_FLASH
 
@@ -99,8 +103,10 @@ SECTIONS
 		*(.text)
 		*(.text.*)
 */
+/*
 		*(.rodata)
 		*(.rodata*)
+*/		
 		*(.gnu.linkonce.t.*)
 		. = ALIGN(4);
 	} >FLASH1 AT>MOVABLE_FLASH 

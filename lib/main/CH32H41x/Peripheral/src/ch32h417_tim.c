@@ -117,8 +117,8 @@ void TIM_TimeBaseInit(TIM_TypeDef *TIMx, TIM_TimeBaseInitTypeDef *TIM_TimeBaseIn
 {
     uint16_t tmpcr1 = 0;
 
-    if((TIMx == TIM1) || (TIMx == TIM8)|| (TIMx == TIM2)|| (TIMx == TIM3)\
-       || (TIMx == TIM4)|| (TIMx == TIM5))
+    // if((TIMx == TIM1) || (TIMx == TIM8)|| (TIMx == TIM2)|| (TIMx == TIM3)\
+    //    || (TIMx == TIM4)|| (TIMx == TIM5))
     {
         tmpcr1 = TIMx->CTLR1;
         tmpcr1 &= (uint16_t)(~((uint16_t)(TIM_DIR | TIM_CMS)));
@@ -128,7 +128,15 @@ void TIM_TimeBaseInit(TIM_TypeDef *TIMx, TIM_TimeBaseInitTypeDef *TIM_TimeBaseIn
         TIMx->CTLR1 = tmpcr1;
     }
 
-    TIMx->ATRLR = TIM_TimeBaseInitStruct->TIM_Period;
+    if(TIMx==TIM9 || TIMx==TIM10 || TIMx==TIM11 || TIMx==TIM12)  
+    {
+        TIMx->ATRLR_32 = TIM_TimeBaseInitStruct->TIM_Period;
+    } 
+    else
+    {
+        TIMx->ATRLR = TIM_TimeBaseInitStruct->TIM_Period;
+    }
+
     TIMx->PSC = TIM_TimeBaseInitStruct->TIM_Prescaler;
 
     if((TIMx == TIM1) || (TIMx == TIM8))
@@ -183,7 +191,14 @@ void TIM_OC1Init(TIM_TypeDef *TIMx, TIM_OCInitTypeDef *TIM_OCInitStruct)
 
     TIMx->CTLR2 = tmpcr2;
     TIMx->CHCTLR1 = tmpccmrx;
-    TIMx->CH1CVR = TIM_OCInitStruct->TIM_Pulse;
+    if(TIMx==TIM9 || TIMx==TIM10 || TIMx==TIM11 || TIMx==TIM12)  
+    {
+        TIMx->CH1CVR_32 = TIM_OCInitStruct->TIM_Pulse;
+    }
+    else
+    { 
+        TIMx->CH1CVR = TIM_OCInitStruct->TIM_Pulse;
+    }
     TIMx->CCER = tmpccer;
 }
 
@@ -228,7 +243,14 @@ void TIM_OC2Init(TIM_TypeDef *TIMx, TIM_OCInitTypeDef *TIM_OCInitStruct)
 
     TIMx->CTLR2 = tmpcr2;
     TIMx->CHCTLR1 = tmpccmrx;
-    TIMx->CH2CVR = TIM_OCInitStruct->TIM_Pulse;
+    if(TIMx==TIM9 || TIMx==TIM10 || TIMx==TIM11 || TIMx==TIM12)  
+    {
+        TIMx->CH2CVR_32 = TIM_OCInitStruct->TIM_Pulse;
+    }
+    else
+    {
+        TIMx->CH2CVR = TIM_OCInitStruct->TIM_Pulse;
+    }
     TIMx->CCER = tmpccer;
 }
 
@@ -272,7 +294,14 @@ void TIM_OC3Init(TIM_TypeDef *TIMx, TIM_OCInitTypeDef *TIM_OCInitStruct)
 
     TIMx->CTLR2 = tmpcr2;
     TIMx->CHCTLR2 = tmpccmrx;
-    TIMx->CH3CVR = TIM_OCInitStruct->TIM_Pulse;
+    if(TIMx==TIM9 || TIMx==TIM10 || TIMx==TIM11 || TIMx==TIM12)  
+    {   
+        TIMx->CH3CVR_32 = TIM_OCInitStruct->TIM_Pulse;        
+    }
+    else
+    {   
+        TIMx->CH3CVR = TIM_OCInitStruct->TIM_Pulse;
+    }
     TIMx->CCER = tmpccer;
 }
 
@@ -310,7 +339,14 @@ void TIM_OC4Init(TIM_TypeDef *TIMx, TIM_OCInitTypeDef *TIM_OCInitStruct)
 
     TIMx->CTLR2 = tmpcr2;
     TIMx->CHCTLR2 = tmpccmrx;
-    TIMx->CH4CVR = TIM_OCInitStruct->TIM_Pulse;
+    if(TIMx==TIM9 || TIMx==TIM10 || TIMx==TIM11 || TIMx==TIM12) 
+    {
+        TIMx->CH4CVR_32 = TIM_OCInitStruct->TIM_Pulse;        
+    }
+    else
+    {
+        TIMx->CH4CVR = TIM_OCInitStruct->TIM_Pulse;
+    }
     TIMx->CCER = tmpccer;
 }
 
@@ -1813,7 +1849,14 @@ void TIM_SelectMasterSlaveMode(TIM_TypeDef *TIMx, uint16_t TIM_MasterSlaveMode)
  */
 void TIM_SetCounter(TIM_TypeDef *TIMx, uint16_t Counter)
 {
-    TIMx->CNT = Counter;
+    if(TIMx == TIM9 || TIMx == TIM10 || TIMx == TIM11 || TIMx == TIM12)
+    {   
+        TIMx->CNT_32 = Counter;
+    }
+    else
+    {
+        TIMx->CNT = Counter;
+    }
 }
 
 /*********************************************************************
@@ -1828,7 +1871,14 @@ void TIM_SetCounter(TIM_TypeDef *TIMx, uint16_t Counter)
  */
 void TIM_SetAutoreload(TIM_TypeDef *TIMx, uint16_t Autoreload)
 {
-    TIMx->ATRLR = Autoreload;
+    if(TIMx == TIM9 || TIMx == TIM10 || TIMx == TIM11 || TIMx == TIM12)
+    {
+        TIMx->ATRLR_32 = Autoreload;        
+    }
+    else
+    {   
+        TIMx->ATRLR = Autoreload;
+    }
 }
 
 /*********************************************************************
@@ -1843,7 +1893,14 @@ void TIM_SetAutoreload(TIM_TypeDef *TIMx, uint16_t Autoreload)
  */
 void TIM_SetCompare1(TIM_TypeDef *TIMx, uint16_t Compare1)
 {
-    TIMx->CH1CVR = Compare1;
+    if(TIMx == TIM9 || TIMx == TIM10 || TIMx == TIM11 || TIMx == TIM12)
+    {
+        TIMx->CH1CVR_32 = Compare1;        
+    }
+    else
+    {
+        TIMx->CH1CVR = Compare1;
+    }
 }
 
 /*********************************************************************
@@ -1858,7 +1915,14 @@ void TIM_SetCompare1(TIM_TypeDef *TIMx, uint16_t Compare1)
  */
 void TIM_SetCompare2(TIM_TypeDef *TIMx, uint16_t Compare2)
 {
-    TIMx->CH2CVR = Compare2;
+    if(TIMx == TIM9 || TIMx == TIM10 || TIMx == TIM11 || TIMx == TIM12)
+    {
+        TIMx->CH2CVR_32 = Compare2;
+    }
+    else
+    {
+        TIMx->CH2CVR = Compare2;
+    }
 }
 
 /*********************************************************************
@@ -1873,7 +1937,14 @@ void TIM_SetCompare2(TIM_TypeDef *TIMx, uint16_t Compare2)
  */
 void TIM_SetCompare3(TIM_TypeDef *TIMx, uint16_t Compare3)
 {
-    TIMx->CH3CVR = Compare3;
+    if(TIMx == TIM9 || TIMx == TIM10 || TIMx == TIM11 || TIMx == TIM12)
+    {
+        TIMx->CH3CVR_32 = Compare3;
+    }
+    else
+    { 
+        TIMx->CH3CVR = Compare3;
+    }
 }
 
 /*********************************************************************
@@ -1888,7 +1959,14 @@ void TIM_SetCompare3(TIM_TypeDef *TIMx, uint16_t Compare3)
  */
 void TIM_SetCompare4(TIM_TypeDef *TIMx, uint16_t Compare4)
 {
-    TIMx->CH4CVR = Compare4;
+    if(TIMx == TIM9 || TIMx == TIM10 || TIMx == TIM11 || TIMx == TIM12)
+    {
+        TIMx->CH4CVR_32 = Compare4;        
+    }
+    else
+    {
+        TIMx->CH4CVR = Compare4;
+    }
 }
 
 /*********************************************************************

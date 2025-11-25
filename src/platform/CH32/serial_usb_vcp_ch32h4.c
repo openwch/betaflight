@@ -416,8 +416,8 @@ serialPort_t *usbVcpOpen(void)
     RCC_HB2PeriphClockCmd(RCC_HB2Periph_AFIO | RCC_HB2Periph_GPIOB, ENABLE);
     GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
     
-    IOInit(IOGetByTag(IO_TAG(PB6)), OWNER_USB, 0);
-    IOInit(IOGetByTag(IO_TAG(PB7)), OWNER_USB, 0);
+    IOInit(IOGetByTag(IO_TAG(PB8)), OWNER_USB, 0);
+    IOInit(IOGetByTag(IO_TAG(PB9)), OWNER_USB, 0);
 
     usbGenerateDisconnectPulse();
 

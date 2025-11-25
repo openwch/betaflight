@@ -37,7 +37,9 @@
 
 #ifdef CH32H4
 
-#define V5_V3_CLOCK_RATE  4
+#ifndef V5_V3_CLOCK_RATE
+#define V5_V3_CLOCK_RATE  2
+#endif
 
     uint32_t __get_MCYCLE(void)
     {

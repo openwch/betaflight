@@ -220,8 +220,8 @@ uint8_t mscStart(void)
 
     usbGenerateDisconnectPulse();
 
-    IOInit(IOGetByTag(IO_TAG(PB6)), OWNER_USB, 0);
-    IOInit(IOGetByTag(IO_TAG(PB7)), OWNER_USB, 0);
+    IOInit(IOGetByTag(IO_TAG(PB8)), OWNER_USB, 0);
+    IOInit(IOGetByTag(IO_TAG(PB9)), OWNER_USB, 0);
 
     switch (blackboxConfig()->device) {
 #ifdef USE_SDCARD
