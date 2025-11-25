@@ -1033,9 +1033,6 @@ void initPhase3(void)
     debugInit();
     unusedPinsInit();
     tasksInit();
-    
-        //  while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
-        //  USART_SendData(USART1, 0xB6);
 
     systemState |= SYSTEM_STATE_READY;
 }

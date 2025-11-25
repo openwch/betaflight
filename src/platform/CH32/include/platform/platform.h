@@ -201,6 +201,7 @@
 #define DMA_TRAIT_MUX 1
 // #define DMA_TRAIT_CHANNEL 1
 
+#define MAX_MSP_PORT_COUNT 4  //default msp count is 3, it would not be enough for us
 
 #endif
 
