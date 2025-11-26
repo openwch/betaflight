@@ -175,6 +175,22 @@ uint32_t SysTick_Config(uint32_t ticks)
   return (0UL);                                                     /* Function successful */
 }
 
+// void ipcInterruptInit(void)
+// {
+//     IPC_InitTypeDef  IPC_InitStructure = {0};
+//     IPC_InitStructure.IPC_CH = IPC_CH0;
+//     IPC_InitStructure.TxCID = IPC_TxCID0;
+//     IPC_InitStructure.RxCID = IPC_RxCID1;   //V5 receive
+//     IPC_InitStructure.TxIER = DISABLE;
+//     IPC_InitStructure.RxIER = ENABLE;
+//     IPC_InitStructure.AutoEN = ENABLE;
+// 	IPC_Init(&IPC_InitStructure);     
+// 	IPC_CH0_Lock();
+//     IPC->CLR = 0x1; //clear flag;
+//     NVIC_SetPriority(IPC_CH0_IRQn, 0x10); 
+// 	NVIC_EnableIRQ(IPC_CH0_IRQn);
+// }
+
 
 void systemInit(void)
 {
@@ -202,4 +218,18 @@ void systemInit(void)
     SysTick_Config(HCLKClock / 1000);
 
     SWPMI->OR |= 1;  //disable SWPMI, enable GPIO input 
+
+
+    // ipcInterruptInit( );
 }
+
+// void IPC_CH0_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+// void IPC_CH0_Handler(void)
+// {
+//     if (IPC_GetITStatus(IPC_CH0,IPC_CH_Sta_Bit0) != RESET) 
+// 	{
+
+//         __disable_irq( );
+//         while(1);
+// 	}
+// }
