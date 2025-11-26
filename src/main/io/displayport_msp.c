@@ -229,14 +229,14 @@ static bool writeFontCharacter(displayPort_t *displayPort, uint16_t addr, const 
 
 	buf[0] = MSP_DP_CHAR_WRITE;
     buf[1] = addr&0xff;
-    buf[2] = (addr > 8)&0xff;
+    buf[2] = (addr >> 8)&0xff;
 	buf[3] = 0;
 
 	memcpy(&buf[4], (char *)chr, OSD_CHAR_BYTES);
 
 	res = output(displayPort, MSP_DISPLAYPORT, buf, OSD_CHAR_BYTES + 4);
 
-	delay(100);
+	delay(10);
 
 	return res;
 }
