@@ -89,7 +89,7 @@ static void pwmWriteUnused(uint8_t index, float value)
 static void pwmWriteStandard(uint8_t index, float value)
 {
     /* TODO: move value to be a number between 0-1 (i.e. percent throttle from mixer) */
-    *pwmMotors[index].channel.ccr = lrintf((value * pwmMotors[index].pulseScale) + pwmMotors[index].pulseOffset);
+    *motors[index].channel.ccr = lrintf((value * motors[index].pulseScale) + motors[index].pulseOffset);
 }
 
 void pwmShutdownPulsesForAllMotors(void)
@@ -261,7 +261,7 @@ motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idl
 
 pwmOutputPort_t *pwmGetMotors(void)
 {
-    return pwmMotors;
+     return motors;
 }
 
 #ifdef USE_SERVOS

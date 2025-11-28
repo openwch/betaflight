@@ -48,12 +48,12 @@ static SPI_InitTypeDef defaultInit = {
     .SPI_NSS = SPI_NSS_Soft,
     .SPI_FirstBit = SPI_FirstBit_MSB,
     .SPI_CRCPolynomial = 7,
-    .SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_Mode2,
+    .SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_Mode3,
     .SPI_CPOL = SPI_CPOL_High,
     .SPI_CPHA = SPI_CPHA_2Edge
 };
 
-static uint16_t spiDivisorToBRbits(const SPI_TypeDef *instance, uint16_t divisor)
+static uint16_t spiDivisorToBRbits(SPI_TypeDef *instance, uint16_t divisor)
 {
     UNUSED(instance);
     divisor = constrain(divisor, 2, 256);
@@ -99,7 +99,7 @@ void spiInitDevice(SPIDevice device)
 
 void spiInternalResetDescriptors(busDevice_t *bus)
 {
-    DMA_InitTypeDef *dmaInitTx = bus->dmaInitTx;
+    DMA_InitTypeDef *dmaInitTx = bus->initTx;
 
     //init default TX DMA
     DMA_StructInit(dmaInitTx);
@@ -115,7 +115,7 @@ void spiInternalResetDescriptors(busDevice_t *bus)
     dmaInitTx->DMA_M2M = DMA_M2M_Disable;
 
     if (bus->dmaRx) {
-        DMA_InitTypeDef *dmaInitRx = bus->dmaInitRx;
+        DMA_InitTypeDef *dmaInitRx = bus->initRx;
         //init default RX DMA
         DMA_StructInit(dmaInitRx);
         // dmaInitRx->DMA_Channel = bus->dmaRx->channel;
@@ -180,7 +180,7 @@ void spiInternalInitStream(const extDevice_t *dev, bool preInit)
     int len = segment->len;
 
     uint8_t *txData = segment->u.buffers.txData;
-    DMA_InitTypeDef *dmaInitTx = bus->dmaInitTx;
+    DMA_InitTypeDef *dmaInitTx = bus->initTx;
 
     if (txData) {
         dmaInitTx->DMA_Memory0BaseAddr = (uint32_t)txData;
@@ -194,7 +194,7 @@ void spiInternalInitStream(const extDevice_t *dev, bool preInit)
 
     if (dev->bus->dmaRx) {
         uint8_t *rxData = segment->u.buffers.rxData;
-        DMA_InitTypeDef *dmaInitRx = bus->dmaInitRx;
+        DMA_InitTypeDef *dmaInitRx = bus->initRx;
 
         if (rxData) {
             dmaInitRx->DMA_Memory0BaseAddr = (uint32_t)rxData;
@@ -242,8 +242,8 @@ void spiInternalStartDMA(const extDevice_t *dev)
         DMA_ITConfig(streamRegsRx, DMA_IT_TC, ENABLE);
 
         // Update streams
-        DMA_Init(streamRegsTx, dev->bus->dmaInitTx);
-        DMA_Init(streamRegsRx, dev->bus->dmaInitRx);
+        DMA_Init(streamRegsTx, dev->bus->initTx);
+        DMA_Init(streamRegsRx, dev->bus->initRx);
 
         /* Note from AN4031
          *
@@ -272,7 +272,7 @@ void spiInternalStartDMA(const extDevice_t *dev)
         DMA_ITConfig(streamRegsTx, DMA_IT_TC, ENABLE);
 
         // Update stream
-        DMA_Init(streamRegsTx, dev->bus->dmaInitTx);
+        DMA_Init(streamRegsTx, dev->bus->initTx);
 
         /* Note from AN4031
          *

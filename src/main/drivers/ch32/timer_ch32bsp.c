@@ -300,7 +300,7 @@ uint8_t timerLookupChannelIndex(const uint16_t channel)
     return lookupChannelIndex(channel);
 }
 
-rccPeriphTag_t timerRCC(const TIM_TypeDef *tim)
+rccPeriphTag_t timerRCC(TIM_TypeDef *tim)
 {
     for (int i = 0; i < HARDWARE_TIMER_DEFINITION_COUNT; i++) {
         if (timerDefinitions[i].TIMx == tim) {
@@ -310,7 +310,7 @@ rccPeriphTag_t timerRCC(const TIM_TypeDef *tim)
     return 0;
 }
 
-uint8_t timerInputIrq(const TIM_TypeDef *tim)
+uint8_t timerInputIrq(TIM_TypeDef *tim)
 {
     for (int i = 0; i < HARDWARE_TIMER_DEFINITION_COUNT; i++) {
         if (timerDefinitions[i].TIMx == tim) {
@@ -763,12 +763,12 @@ _TIM_IRQ_HANDLER(TIM4_IRQHandler, 4);
 #if USED_TIMERS & TIM_N(5)
 _TIM_IRQ_HANDLER(TIM5_IRQHandler, 5);
 #endif
-#if USED_TIMERS & TIM_N(6)
-_TIM_IRQ_HANDLER(TIM6_IRQHandler, 6);
-#endif
-#if USED_TIMERS & TIM_N(7)
-_TIM_IRQ_HANDLER(TIM7_IRQHandler, 7);
-#endif
+// #if USED_TIMERS & TIM_N(6)
+// _TIM_IRQ_HANDLER(TIM6_IRQHandler, 6);
+// #endif
+// #if USED_TIMERS & TIM_N(7)
+// _TIM_IRQ_HANDLER(TIM7_IRQHandler, 7);
+// #endif
 #if USED_TIMERS & TIM_N(8)
 _TIM_IRQ_HANDLER(TIM8_CC_IRQHandler, 8);
 _TIM_IRQ_HANDLER(TIM8_UP_IRQHandler, 8);

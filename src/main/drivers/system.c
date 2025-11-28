@@ -88,6 +88,19 @@ static uint32_t cpuClockFrequency = 0;
 
 void cycleCounterInit(void)
 {
+#ifdef RISC_V
+    #if defined(CH32H41x)
+    cpuClockFrequency =  HCLKClock;       
+    
+    usTicks = HCLKClock / 1000000;
+    usTicksInv = 1e6f / cpuClockFrequency;    
+
+      //only can operate under M mode
+    __set_MCOUNT_INHIBIT(0x5);  //disable mcycle
+    __set_MCYCLE(0);          
+    __set_MCOUNT_INHIBIT(0x0);  //enable mcycle
+    #endif
+#else
 #if defined(USE_HAL_DRIVER)
     cpuClockFrequency = HAL_RCC_GetSysClockFreq();
 #elif defined(USE_ATBSP_DRIVER)
@@ -119,6 +132,7 @@ void cycleCounterInit(void)
 
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+#endif
 }
 
 // SysTick

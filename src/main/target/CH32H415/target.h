@@ -71,6 +71,7 @@
 #define USE_SPI_DEVICE_3
 #define USE_SPI_DEVICE_4
 #define USE_SPI_DMA_ENABLE_EARLY
+// #define USE_SPI_DMA_ENABLE_LATE
 
 #define USE_EXTI
 #define USE_GYRO_EXTI

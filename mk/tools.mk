@@ -341,6 +341,24 @@ else ifeq (,$(filter %_install test% clean% %-print checks help configs, $(MAKEC
   ARM_SDK_PREFIX ?= arm-none-eabi-
 endif
 
+
+ifeq ($(shell [ -d "$(RISCV_SDK_DIR)" ] && echo "exists"), exists)
+  RISCV_SDK_PREFIX := $(RISCV_SDK_DIR)/bin/riscv-wch-elf-
+else ifeq (,$(filter %_install test% clean% %-print checks help configs, $(MAKECMDGOALS)))
+  GCC_VERSION = $(shell risc-wch-elf-gcc -dumpversion)
+  ifeq ($(GCC_VERSION),)
+    $(error **ERROR** risc-wch-elf-gcc not in the PATH. Run 'make riscv_sdk_install' to install automatically in the tools folder of this repo)
+  else ifneq ($(GCC_VERSION), $(RISCV_GCC_REQUIRED_VERSION))
+    $(error **ERROR** your risc-wch-elf-gcc is '$(GCC_VERSION)', but '$(GCC_REQUIRED_VERSION)' is expected. Override with 'GCC_REQUIRED_VERSION' in mk/local.mk or run 'make arm_sdk_install' to install the right version automatically in the tools folder of this repo)
+  endif
+
+  # ARM toolchain is in the path, and the version is what's required.
+  RISCV_SDK_PREFIX ?= riscv-wch-elf-
+endif
+
+
+
+
 ifeq ($(shell [ -d "$(ZIP_DIR)" ] && echo "exists"), exists)
   export ZIPBIN := $(ZIP_DIR)/zip
 else

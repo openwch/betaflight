@@ -157,7 +157,7 @@ void cameraControlInit(void)
         NVIC_SetPriority(TIM7_IRQn,NVIC_PRIO_TIMER);
         NVIC_EnableIRQ(TIM7_IRQn);
 
-        RCC->HB1ENR |= RCC_HB1Periph_TIM6 | RCC_HB1Periph_TIM7;
+        RCC->HB1PCENR |= RCC_HB1Periph_TIM6 | RCC_HB1Periph_TIM7;
         TIM6->PSC = 0;
         TIM7->PSC = 0;
 #endif

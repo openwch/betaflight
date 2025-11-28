@@ -47,7 +47,7 @@
 #include "drivers/serial_uart_impl.h"
 
 static void usartConfigurePinInversion(uartPort_t *uartPort) {
-#if !defined(USE_INVERTER) && !defined(STM32F303xC)
+#if !defined(USE_INVERTER) && !defined(STM32F303xC) 
     UNUSED(uartPort);
 #else
     bool inverted = uartPort->port.options & SERIAL_INVERTED;
@@ -81,9 +81,9 @@ static void uartConfigurePinSwap(uartPort_t *uartPort)
         return;
     }
 
-    if (uartDevice->pinSwap) {
-        // usart_transmit_receive_pin_swap(uartDevice->port.USARTx, TRUE);
-    }
+    // if (uartDevice->pinSwap) {
+    //     // usart_transmit_receive_pin_swap(uartDevice->port.USARTx, TRUE);
+    // }
 }
 
 
@@ -114,7 +114,12 @@ void uartReconfigure(uartPort_t *uartPort)
 
     USART_Init(uartPort->USARTx, &USART_InitStructure);
     // config external pin inverter (no internal pin inversion available)
-    uartConfigureExternalPinInversion(uartPort);
+    
+    // uartConfigureExternalPinInversion(uartPort);
+    usartConfigurePinInversion(uartPort);
+    //config pin swap
+    uartConfigurePinSwap(uartPort);
+
 
     if (uartPort->port.options & SERIAL_BIDIR)
         USART_HalfDuplexCmd(uartPort->USARTx, ENABLE);
