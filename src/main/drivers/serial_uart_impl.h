@@ -87,6 +87,19 @@
 #define UART_TX_BUFFER_SIZE     256
 #endif
 #endif
+#elif defined(CH32H4)
+#define UARTDEV_COUNT_MAX 8  
+#define UARTHARDWARE_MAX_PINS 5
+#ifndef UART_RX_BUFFER_SIZE
+#define UART_RX_BUFFER_SIZE     256
+#endif
+#ifndef UART_TX_BUFFER_SIZE
+#ifdef USE_MSP_DISPLAYPORT
+#define UART_TX_BUFFER_SIZE     1280
+#else
+#define UART_TX_BUFFER_SIZE     256
+#endif
+#endif
 #else
 #error unknown MCU family
 #endif
@@ -163,7 +176,7 @@
 
 typedef struct uartPinDef_s {
     ioTag_t pin;
-#if defined(STM32F7) || defined(STM32H7) || defined(STM32G4) || defined(AT32F43x)
+#if defined(STM32F7) || defined(STM32H7) || defined(STM32G4) || defined(AT32F43x) || defined(CH32H415)
     uint8_t af;
 #endif
 } uartPinDef_t;
@@ -181,7 +194,7 @@ typedef struct uartHardware_s {
 #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32G4) 
     uint32_t txDMAChannel;
     uint32_t rxDMAChannel;
-#elif defined(AT32F4)
+#elif defined(AT32F4) || defined(CH32H4)
     uint32_t txDMAMuxId;//for dmaspec->dmamux  and using dmaMuxEnable(dmax,muxid)
     uint32_t rxDMAMuxId;
 #endif 
@@ -230,7 +243,7 @@ typedef struct uartDevice_s {
     uartPinDef_t tx;
     volatile uint8_t *rxBuffer;
     volatile uint8_t *txBuffer;
-#if !defined(STM32F4) // Don't support pin swap.
+#if !defined(STM32F4) && !defined(CH32H4)  // Don't support pin swap.
     bool pinSwap;
 #endif
     txPinState_t txPinState;
@@ -264,6 +277,9 @@ void uartTxMonitor(uartPort_t *s);
 #elif defined(AT32F43x)
 #define UART_REG_RXD(base) ((base)->dt)
 #define UART_REG_TXD(base) ((base)->dt)
+#elif defined(CH32H4)
+#define UART_REG_RXD(base) ((base)->DATAR)
+#define UART_REG_TXD(base) ((base)->DATAR)
 #endif
 
 #define UART_BUFFER(type, n, rxtx) type volatile uint8_t uart ## n ## rxtx ## xBuffer[UART_ ## rxtx ## X_BUFFER_SIZE]

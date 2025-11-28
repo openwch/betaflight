@@ -24,6 +24,8 @@
 
 #if defined(USE_ATBSP_DRIVER)
 #include "drivers/at32/dma_atbsp.h"
+#elif defined(USE_CHBSP_DRIVER)
+#include "drivers/ch32/dma_chbsp.h"
 #endif
 
 #define CACHE_LINE_SIZE 32
@@ -66,14 +68,14 @@ typedef struct dmaChannelDescriptor_s {
     resourceOwner_t             owner;
     uint8_t                     resourceIndex;
     uint32_t                    completeFlag;
-#if defined(USE_ATBSP_DRIVER)
+#if defined(USE_ATBSP_DRIVER) || defined(USE_CHBSP_DRIVER)
     dmamux_channel_type         *dmamux;
 #endif
 } dmaChannelDescriptor_t;
 
 #define DMA_IDENTIFIER_TO_INDEX(x) ((x) - 1)
 
-#if defined(USE_ATBSP_DRIVER)
+#if defined(USE_ATBSP_DRIVER) || defined(USE_CHBSP_DRIVER)
 
 #elif defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
@@ -248,6 +250,9 @@ typedef enum {
 #elif defined(AT32F4)
 #define DMA_CCR_EN 1 
 #define IS_DMA_ENABLED(reg) (((DMA_ARCH_TYPE *)(reg))->ctrl_bit.chen & DMA_CCR_EN)
+#elif defined(CH32H4)
+#define DMA_CCR_EN 1U
+#define IS_DMA_ENABLED(reg) (((DMA_ARCH_TYPE *)(reg))->CFGR & DMA_CCR_EN)
 #else
 #define IS_DMA_ENABLED(reg) (((DMA_ARCH_TYPE *)(reg))->CCR & DMA_CCR_EN)
 #define DMAx_SetMemoryAddress(reg, address) ((DMA_ARCH_TYPE *)(reg))->CMAR = (uint32_t)&s->port.txBuffer[s->port.txBufferTail]
@@ -278,7 +283,7 @@ uint32_t dmaGetChannel(const uint8_t channel);
 #define xLL_EX_DMA_SetDataLength(dmaResource, length) LL_EX_DMA_SetDataLength((DMA_ARCH_TYPE *)(dmaResource), length)
 #define xLL_EX_DMA_EnableIT_TC(dmaResource) LL_EX_DMA_EnableIT_TC((DMA_ARCH_TYPE *)(dmaResource))
 
-#elif defined(USE_ATBSP_DRIVER)
+#elif defined(USE_ATBSP_DRIVER) || defined(USE_CHBSP_DRIVER)
 
 #else
 

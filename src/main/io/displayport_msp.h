@@ -35,6 +35,7 @@ typedef enum {
     MSP_DP_DRAW_SCREEN = 4,     // Trigger a screen draw
     MSP_DP_OPTIONS = 5,         // Not used by Betaflight. Reserved by Ardupilot and INAV
     MSP_DP_SYS = 6,             // Display system element displayportSystemElement_e at given coordinates
+    MSP_DP_CHAR_WRITE = 7,
     MSP_DP_COUNT,
 } displayportMspCommand_e;
 

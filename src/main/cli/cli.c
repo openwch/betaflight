@@ -277,7 +277,8 @@ static const char *mcuTypeNames[] = {
     "H723/H725",
     "G474",
     "H730",
-    "AT32F435"
+    "AT32F435",
+    "CH32H415"
 };
 
 static const char *configurationStates[] = {
@@ -5331,7 +5332,7 @@ dmaoptEntry_t dmaoptEntryTable[] = {
 #define DMA_OPT_UI_INDEX(i) ((i) + 1)
 #define DMA_OPT_STRING_BUFSIZE 5
 
-#if defined(STM32H7) || defined(STM32G4) || defined(AT32F435)
+#if defined(STM32H7) || defined(STM32G4) || defined(AT32F435) || defined(CH32H415) 
 #define DMA_CHANREQ_STRING "Request"
 #else
 #define DMA_CHANREQ_STRING "Channel"

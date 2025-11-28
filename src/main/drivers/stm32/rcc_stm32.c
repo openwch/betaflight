@@ -149,6 +149,36 @@ void RCC_ClockCmd(rccPeriphTag_t periphTag, FunctionalState NewState)
         __AT_RCC_CLK(apb2, NOSUFFIX, mask, NewState);
         break;
     }
+#elif defined(USE_CHBSP_DRIVER)
+#define NOSUFFIX // Empty
+
+#define __RCC_CLK_ENABLE(bus, suffix, enbit)   do {      \
+        __IO uint32_t tmpreg;                                \
+        SET_BIT(RCC->bus ## PCENR ## suffix, enbit);            \
+        tmpreg = READ_BIT(RCC->bus ## PCENR ## suffix, enbit);  \
+        UNUSED(tmpreg);                                      \
+    } while(0)
+
+#define __RCC_CLK_DISABLE(bus, suffix, enbit) (RCC->bus ## PCENR ## suffix &= ~(enbit))
+
+#define __RCC_CLK(bus, suffix, enbit, newState) \
+    if (newState == ENABLE) {                       \
+        __RCC_CLK_ENABLE(bus, suffix, enbit);   \
+    } else {                                        \
+        __RCC_CLK_DISABLE(bus, suffix, enbit);  \
+    }
+
+    switch (tag) {
+        case RCC_HB:
+            __RCC_CLK(HB, NOSUFFIX, mask, NewState);
+            break;
+        case RCC_HB2:
+            __RCC_CLK(HB2, NOSUFFIX, mask, NewState);
+            break;
+        case RCC_HB1:
+            __RCC_CLK(HB1, NOSUFFIX, mask, NewState);
+            break;
+    }
 #else
     switch (tag) {
     case RCC_APB2:
@@ -268,6 +298,29 @@ void RCC_ResetCmd(rccPeriphTag_t periphTag, FunctionalState NewState)
     case RCC_APB2:
         __AT_RCC_RESET(apb2, NOSUFFIX, mask, NewState);
         break;
+    }
+#elif defined(USE_CHBSP_DRIVER)
+#define __RCC_FORCE_RESET(bus, suffix, enbit) (RCC->bus ## PRSTR ## suffix |= (enbit))
+#define __RCC_RELEASE_RESET(bus, suffix, enbit) (RCC->bus ## PRSTR ## suffix &= ~(enbit))
+#define __RCC_RESET(bus, suffix, enbit, NewState) \
+    if (NewState == ENABLE) {                         \
+        __RCC_RELEASE_RESET(bus, suffix, enbit);  \
+    } else {                                          \
+        __RCC_FORCE_RESET(bus, suffix, enbit);    \
+    }
+
+    switch (tag) {
+        case RCC_HB:
+            __RCC_RESET(HB, NOSUFFIX, mask, NewState);
+            break;
+
+        case RCC_HB2:
+            __RCC_RESET(HB2, NOSUFFIX, mask, NewState);
+            break;
+
+        case RCC_HB1:
+            __RCC_RESET(HB1, NOSUFFIX, mask, NewState);
+            break;
     }
 #else
 

@@ -52,6 +52,10 @@ enum rcc_reg {
     RCC_AHB3,
     RCC_APB2,
     RCC_APB1,
+#elif defined(CH32H4)
+    RCC_HB,
+    RCC_HB2,
+    RCC_HB1,    
 #else
     RCC_AHB,
     RCC_APB2,
@@ -101,6 +105,10 @@ enum rcc_reg {
 #define RCC_AHB3(periph) RCC_ENCODE(RCC_AHB3,   CRM_AHB3_ ## periph ## _PER_MASK)
 #define RCC_APB1(periph) RCC_ENCODE(RCC_APB1,   CRM_APB1_ ## periph ## _PER_MASK)
 #define RCC_APB2(periph) RCC_ENCODE(RCC_APB2,   CRM_APB2_ ## periph ## _PER_MASK)
+#elif defined(CH32H4)
+#define RCC_HB(periph)  RCC_ENCODE(RCC_HB,    RCC_HBPeriph_ ## periph)
+#define RCC_HB2(periph) RCC_ENCODE(RCC_HB2,   RCC_HB2Periph_ ## periph)
+#define RCC_HB1(periph) RCC_ENCODE(RCC_HB1,   RCC_HB1Periph_ ## periph)
 #endif
 
 void RCC_ClockCmd(rccPeriphTag_t periphTag, FunctionalState NewState);

@@ -123,6 +123,40 @@ void hard_fault_handler_c(unsigned long *hardfault_args)
 }
 
 #else
+
+#ifdef CH32H4
+__FAST_INTERRUPT
+void HardFault_Handler(void)
+{
+    LED0_ON;
+    LED1_ON;
+    LED2_ON;
+    // fall out of the sky
+    uint8_t requiredStateForMotors = SYSTEM_STATE_CONFIG_LOADED | SYSTEM_STATE_MOTORS_READY;
+    if ((systemState & requiredStateForMotors) == requiredStateForMotors) {
+        stopMotors();
+    }
+
+#ifdef USE_TRANSPONDER
+    // prevent IR LEDs from burning out.
+    uint8_t requiredStateForTransponder = SYSTEM_STATE_CONFIG_LOADED | SYSTEM_STATE_TRANSPONDER_ENABLED;
+    if ((systemState & requiredStateForTransponder) == requiredStateForTransponder) {
+        transponderIrDisable();
+    }
+#endif
+
+    LED0_OFF;
+    LED1_OFF;
+    LED2_OFF;
+
+    while (1) {
+        delay(50);
+        LED0_TOGGLE;
+        LED1_TOGGLE;
+        LED2_TOGGLE;
+    }
+}
+#else
 void HardFault_Handler(void)
 {
     LED0_ON;
@@ -154,4 +188,6 @@ void HardFault_Handler(void)
         LED2_TOGGLE;
     }
 }
+#endif
+
 #endif

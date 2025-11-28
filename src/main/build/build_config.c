@@ -70,6 +70,8 @@ mcuTypeId_e getMcuTypeId(void)
     return MCU_TYPE_G474;
 #elif defined(AT32F435)
     return MCU_TYPE_AT32;
+#elif defined(CH32H415)
+    return MCU_TYPE_CH32H415;   
 #else
     return MCU_TYPE_UNKNOWN;
 #endif

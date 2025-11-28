@@ -88,6 +88,52 @@
 #define IOCFG_IN_FLOATING    IO_CONFIG(GPIO_MODE_INPUT  , GPIO_DRIVE_STRENGTH_MODERATE, 0,             GPIO_PULL_NONE)
 #define IOCFG_IPU_25         IO_CONFIG(GPIO_MODE_INPUT  , GPIO_DRIVE_STRENGTH_MODERATE , 0, GPIO_PULL_UP)
 
+#elif defined(CH32H4)
+#define DIR_OUT              0x03
+#define DIR_IN               0x00
+
+#define GPIO_MODE_IN_AN      0x00
+#define GPIO_MODE_IN_FLOAT   0x01
+#define GPIO_MODE_IN_PULL    0x02
+
+#define GPIO_MODE_OUT_PP     0x00
+#define GPIO_MODE_OUT_OD     0x01
+#define GPIO_MODE_OUT_AF_PP  0x02
+#define GPIO_MODE_OUT_AF_OD  0x03
+
+#define GPIO_SPEED_LOW          0x00
+#define GPIO_SPEED_Medium       0x01
+#define GPIO_SPEED_HIGH         0x02
+#define GPIO_SPEED_VERY_HIGH    0x03
+
+#define GPIO_PULL_NONE       0x00          
+#define GPIO_PULL_DOWN       0x01          
+#define GPIO_PULL_UP         0x02          
+
+//bit 0   1      2   3      4    5       6  7  
+//  DIR[1:0]   MODE[1:0]   SPEED[1:0]   PD=0,PU=1  
+#define IO_CONFIG(dir, mode, speed, pupd) ((dir) | ((mode) << 2) | ((speed) << 4) | ((pupd) << 6))
+
+
+#define IOCFG_OUT_PP         IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_PP , GPIO_SPEED_VERY_HIGH , GPIO_PULL_NONE )  // TODO
+#define IOCFG_OUT_PP_UP      IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_PP , GPIO_SPEED_VERY_HIGH , GPIO_PULL_UP )
+#define IOCFG_OUT_PP_25      IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_PP , GPIO_SPEED_VERY_HIGH,  GPIO_PULL_NONE)
+#define IOCFG_OUT_OD         IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_OD , GPIO_SPEED_VERY_HIGH , GPIO_PULL_NONE)
+
+#define IOCFG_AF_PP          IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_AF_PP, GPIO_SPEED_VERY_HIGH , GPIO_PULL_NONE)
+#define IOCFG_AF_PP_PD       IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_AF_PP, GPIO_SPEED_VERY_HIGH , GPIO_PULL_DOWN)
+#define IOCFG_AF_PP_UP       IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_AF_PP, GPIO_SPEED_VERY_HIGH , GPIO_PULL_UP)
+#define IOCFG_AF_OD          IO_CONFIG(DIR_OUT , GPIO_MODE_OUT_AF_OD, GPIO_SPEED_VERY_HIGH , GPIO_PULL_NONE)
+
+#define IOCFG_IPD            IO_CONFIG(DIR_IN  , GPIO_MODE_IN_PULL,   GPIO_SPEED_VERY_HIGH , GPIO_PULL_DOWN)
+#define IOCFG_IPU            IO_CONFIG(DIR_IN  , GPIO_MODE_IN_PULL,   GPIO_SPEED_VERY_HIGH , GPIO_PULL_UP)
+#define IOCFG_IN_FLOATING    IO_CONFIG(DIR_IN  , GPIO_MODE_IN_FLOAT,  GPIO_SPEED_VERY_HIGH , GPIO_PULL_NONE)
+#define IOCFG_IPU_25         IO_CONFIG(DIR_IN  , GPIO_MODE_IN_PULL,   GPIO_SPEED_VERY_HIGH , GPIO_PULL_UP)
+
+#define IO_CONFIG_GET_MODE(cfg)  (((cfg) >> 2) & 0x03)
+#define IO_CONFIG_GET_SPEED(cfg) (((cfg) >> 4) & 0x03)
+#define IO_CONFIG_GET_OTYPE(cfg) (((cfg) >> 0) & 0x03)  //don't need
+#define IO_CONFIG_GET_PULL(cfg)  (((cfg) >> 6) & 0x03)
 
 #elif defined(UNIT_TEST) || defined(SIMULATOR_BUILD)
 

@@ -59,6 +59,8 @@ void config_streamer_start(config_streamer_t *c, uintptr_t base, int size)
         HAL_FLASH_Unlock();
 #elif defined(AT32F4)
         flash_unlock();
+#elif defined(CH32H4)
+        FLASH_Lock_Fast( );
 #else
         FLASH_Unlock();
 #endif
@@ -76,6 +78,8 @@ void config_streamer_start(config_streamer_t *c, uintptr_t base, int size)
 #elif defined(STM32H7)
     // NOP
 #elif defined(STM32G4)
+    // NOP
+#elif defined(CH32H4)
     // NOP
 #elif defined(AT32F4)
     flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
@@ -478,6 +482,21 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
     if (status != FLASH_OPERATE_DONE) {
         return -2;
     }
+#elif defined(CH32H4)
+    if (address % FLASH_PAGE_SIZE == 0) {
+        const FLASH_Status status = FLASH_ErasePage(address);
+        if (status != FLASH_COMPLETE) {
+            return CONFIG_RESULT_FAILURE;
+        }
+    }
+    //CH32H415/6/7 Fast page programming size is 256 bytes
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t)*64,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
+    FLASH_ProgramPage_Fast(address, buffer);
+    const FLASH_Status status = FLASH_GetStatus();
+    // const FLASH_Status status = FLASH_ProgramWord(address, *buffer);
+    if (status != FLASH_COMPLETE) {
+        return CONFIG_RESULT_ADDRESS_INVALID;
+    }      
 #else // !STM32H7 && !STM32F7 && !STM32G4
     if (c->address % FLASH_PAGE_SIZE == 0) {
         const FLASH_Status status = FLASH_EraseSector(getFLASHSectorForEEPROM(), VoltageRange_3); //0x08080000 to 0x080A0000
