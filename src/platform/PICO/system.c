@@ -85,7 +85,45 @@ void Default_Handler(void)
 
 void systemReset(void)
 {
-    //TODO: implement
+    bprintf("*** PICO systemReset ***");
+    //TODO: check
+
+#if 1
+#ifdef USE_MULTICORE
+    // Reset core 1
+    multicore_reset_core1();
+#endif
+    watchdog_reboot(0, 0, 0);
+#else
+    // this might be fine
+    __disable_irq();
+    NVIC_SystemReset();
+#endif
+}
+
+uint32_t systemUniqueId[3] = { 0 };
+
+// cycles per microsecond
+static uint32_t usTicks = 0;
+static float usTicksInv = 0.0f;
+
+// These are defined in pico-sdk headers as volatile uint32_t types
+#define PICO_DWT_CTRL   m33_hw->dwt_ctrl
+#define PICO_DWT_CYCCNT m33_hw->dwt_cyccnt
+#define PICO_DEMCR      m33_hw->demcr
+
+void cycleCounterInit(void)
+{
+    // TODO check clock_get_hz(clk_sys) is the clock for CPU cycles
+    usTicks = SystemCoreClock / 1000000;
+    usTicksInv = 1e6f / SystemCoreClock;
+
+    // Global DWT enable
+    PICO_DEMCR |= M33_DEMCR_TRCENA_BITS;
+
+    // Reset and enable cycle counter
+    PICO_DWT_CYCCNT = 0;
+    PICO_DWT_CTRL |= M33_DWT_CTRL_CYCCNTENA_BITS;
 }
 
 void systemInit(void)

@@ -423,6 +423,7 @@ void initPhase1(void)
     LED2_ON;
 
     EXTIInit();
+#endif
 }
 
 void initPhase2(void)
@@ -601,6 +602,7 @@ void initMsc(void)
 {
 /* MSC mode will start after init, but will not allow scheduler to run,
  *  so there is no bottleneck in reading and writing data */
+    mscInit();
     ledInit(statusLedConfig());
 
 #ifdef USE_SDCARD
@@ -627,7 +629,7 @@ void initMsc(void)
     spiInitBusDMA();
 #endif
     if (mscStart() == 0) {
-        mscWaitForButton();
+         mscWaitForButton();
     } else {
         systemResetFromMsc();
     }

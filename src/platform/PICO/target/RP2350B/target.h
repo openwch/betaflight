@@ -37,9 +37,7 @@
 #define RP2350B
 #endif
 
-#ifndef TARGET_BOARD_IDENTIFIER
-#define TARGET_BOARD_IDENTIFIER "235B"
-#endif
+#define USE_MULTICORE
 
 #ifndef USBD_PRODUCT_STRING
 #define USBD_PRODUCT_STRING     "Betaflight RP2350B"
