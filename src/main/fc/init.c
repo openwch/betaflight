@@ -278,7 +278,6 @@ void initPhase1(void)
     printfSerialInit();
 #endif
 
-    systemInit();
     // Initialize task data as soon as possible. Has to be done before tasksInit(),
     // and any init code that may try to modify task behaviour before tasksInit().
     tasksInitData();
