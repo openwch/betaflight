@@ -513,7 +513,7 @@ FAST_CODE void scheduler(void)
     }
 #endif
 
-    if (gyroEnabled) {
+    if (gyroEnabled) { 
         // Realtime gyro/filtering/PID tasks get complete priority
         task_t *gyroTask = getTask(TASK_GYRO);
         nowCycles = getCycleCounter();

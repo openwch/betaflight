@@ -334,7 +334,7 @@ bool isEEPROMStructureValid(void)
 {
     const uint8_t *p = (const uint8_t*)&__config_start;
     const configHeader_t *header = (const configHeader_t *)p;
-
+            
     if (header->magic_be != 0xBE) {
         return false;
     }
@@ -371,7 +371,7 @@ bool isEEPROMStructureValid(void)
     p += sizeof(storedCrc);
 
     eepromConfigSize = p - (const uint8_t*)&__config_start;
-
+    
     // CRC has the property that if the CRC itself is included in the calculation the resulting CRC will have constant value
     return crc == CRC_CHECK_VALUE;
 }
