@@ -319,7 +319,7 @@ void configUnlock(void)
 #elif defined(AT32F4)
     flash_unlock();
 #else
-    FLASH_Unlock();
+    FLASH_Unlock_Fast( );
 #endif
 }
 
@@ -332,7 +332,7 @@ void configLock(void)
 #elif defined(APM32F4)
         DAL_FLASH_Lock();
 #else
-        FLASH_Lock();
+        FLASH_Lock_Fast( );
 #endif
 }
 
@@ -350,6 +350,8 @@ void configClearFlags(void)
     flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
 #elif defined(APM32F4)
     __DAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+#elif defined(CH32H4)
+    // FLASH->STATR |= ((1<<5) | (1<<4)); //EOP,WRPRTERR
 #elif defined(UNIT_TEST) || defined(SIMULATOR_BUILD)
     // NOP
 #else
@@ -437,7 +439,7 @@ configStreamerResult_e configWriteWord(uintptr_t address, config_streamer_buffer
     const flash_status_type status = flash_word_program(address, *buffer);
     if (status != FLASH_OPERATE_DONE) {
         return CONFIG_RESULT_ADDRESS_INVALID;
-    }
+    }    
 #elif defined(APM32F4)
     if (address % FLASH_PAGE_SIZE == 0) {
         FLASH_EraseInitTypeDef EraseInitStruct = {
@@ -471,6 +473,21 @@ configStreamerResult_e configWriteWord(uintptr_t address, config_streamer_buffer
     if (status != FLASH_COMPLETE) {
         return CONFIG_RESULT_ADDRESS_INVALID;
     }
+#elif defined(CH32H4)
+    if (address % FLASH_PAGE_SIZE == 0) {
+        const FLASH_Status status = FLASH_ErasePage(address);
+        if (status != FLASH_COMPLETE) {
+            return CONFIG_RESULT_FAILURE;
+        }
+    }
+    //CH32H415/6/7 Fast page programming size is 256 bytes
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t)*64,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
+    FLASH_ProgramPage_Fast(address, buffer);
+    const FLASH_Status status = FLASH_GetStatus();
+    // const FLASH_Status status = FLASH_ProgramWord(address, *buffer);
+    if (status != FLASH_COMPLETE) {
+        return CONFIG_RESULT_ADDRESS_INVALID;
+    }        
 #else
 #error "MCU not catered for in configWriteWord for config_streamer"
 #endif
