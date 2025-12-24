@@ -69,19 +69,15 @@ bool sensorsAutodetect(void)
 {
 
     // gyro must be initialised before accelerometer
-
     bool gyroDetected = gyroInit();
-
 #ifdef USE_ACC
     if (gyroDetected) {
         accInit(gyro.accSampleRateHz);
     }
 #endif
-
 #ifdef USE_BARO
     baroInit();
 #endif
-
 #ifdef USE_MAG
     compassInit();
 #endif
@@ -97,6 +93,5 @@ bool sensorsAutodetect(void)
 #ifdef USE_ADC_INTERNAL
     adcInternalInit();
 #endif
-
     return gyroDetected;
 }

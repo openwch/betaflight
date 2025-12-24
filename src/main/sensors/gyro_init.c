@@ -53,6 +53,7 @@
 #include "drivers/accgyro/accgyro_spi_l3gd20.h"
 #include "drivers/accgyro/accgyro_spi_lsm6dso.h"
 #include "drivers/accgyro/accgyro_spi_lsm6dsv16x.h"
+#include "drivers/accgyro/accgyro_spi_lsm6dsk320x.h"
 
 #include "drivers/accgyro/accgyro_spi_mpu6000.h"
 #include "drivers/accgyro/accgyro_spi_mpu6500.h"
@@ -290,12 +291,10 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
     gyroSensor->gyroDev.gyroAlign = config->alignment;
     buildRotationMatrixFromAngles(&gyroSensor->gyroDev.rotationMatrix, &config->customAlignment);
     gyroSensor->gyroDev.mpuIntExtiTag = config->extiTag;
-    gyroSensor->gyroDev.hardware_lpf = gyroConfig()->gyro_hardware_lpf;
-
+    gyroSensor->gyroDev.hardware_lpf = gyroConfig()->gyro_hardware_lpf;                     
     // The targetLooptime gets set later based on the active sensor's gyroSampleRateHz and pid_process_denom
     gyroSensor->gyroDev.gyroSampleRateHz = gyroSetSampleRate(&gyroSensor->gyroDev);
     gyroSensor->gyroDev.initFn(&gyroSensor->gyroDev);
-
     // As new gyros are supported, be sure to add them below based on whether they are subject to the overflow/inversion bug
     // Any gyro not explicitly defined will default to not having built-in overflow protection as a safe alternative.
     switch (gyroSensor->gyroDev.gyroHardware) {
@@ -335,7 +334,6 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
         gyroSensor->gyroDev.gyroHasOverflowProtection = false;  // default catch for newly added gyros until proven to be unaffected
         break;
     }
-
     gyroInitSensorFilters(gyroSensor);
 }
 
@@ -526,10 +524,10 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
 
 #ifdef USE_ACCGYRO_LSM6DSK320X
     case GYRO_LSM6DSK320X:
-        if (lsm6dsk320xSpiGyroDetect(dev)) {
+        if (lsm6dsk320xSpiGyroDetect(dev)){
             gyroHardware = GYRO_LSM6DSK320X;
             break;
-        }
+        }    
         FALLTHROUGH;
 #endif
 
@@ -757,7 +755,6 @@ bool gyroInit(void)
         gyro.sampleRateHz = 0;
         gyro.accSampleRateHz = 0;
     }
-
     return true;
 }
 

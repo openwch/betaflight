@@ -66,8 +66,7 @@ typedef enum {
     MCU_TYPE_RP2350A,
     MCU_TYPE_RP2350B,
     MCU_TYPE_H735,
-    MCU_TYPE_N657,
-    MCU_TYPE_H563,
+    MCU_TYPE_CH32H415,
     MCU_TYPE_COUNT,
     MCU_TYPE_UNKNOWN = 255,
 } mcuTypeId_e;

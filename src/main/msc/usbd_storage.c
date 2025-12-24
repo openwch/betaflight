@@ -25,6 +25,15 @@
 #include "platform.h"
 #include "common/time.h"
 
+#ifdef USE_HAL_DRIVER
+#include "usbd_msc.h"
+#else
+#include "usbd_msc_mem.h"
+#if !defined(AT32F435) && !defined(PICO) && !defined(CH32H415) 
+#include "usbd_msc_core.h"
+#endif
+#endif
+
 #include "usbd_storage.h"
 
 USBD_MSC_StorageType *USBD_STORAGE_fops;

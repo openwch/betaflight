@@ -387,10 +387,10 @@ void initPhase1(void)
     initEEPROM();
 
     ensureEEPROMStructureIsValid();
-
+    
     bool readSuccess = readEEPROM();
 
-#if defined(USE_BOARD_INFO)
+    #if defined(USE_BOARD_INFO)
     initBoardInformation();
 #endif
 
@@ -488,7 +488,6 @@ void initPhase2(void)
 #if PLATFORM_TRAIT_CONFIG_HSE
     systemClockSetHSEValue(systemConfig()->hseMhz * 1000000U);
 #endif
-
 #ifdef USE_OVERCLOCK
     {
         static const uint16_t overclockMhzTable[] = {
@@ -685,7 +684,8 @@ void initPhase3(void)
 
     initBoardAlignment(boardAlignment());
 
-    if (!sensorsAutodetect()) {
+    if (!sensorsAutodetect()) 
+    {
         // if gyro was not detected due to whatever reason, notify and don't arm.
         if (isSystemConfigured()) {
             indicateFailure(FAILURE_MISSING_ACC, 2);
@@ -706,7 +706,7 @@ void initPhase3(void)
 
 #if defined(USE_DSHOT_TELEMETRY) || defined(USE_ESC_SENSOR)
     // Initialize the motor frequency filter now that we have a target looptime
-    initDshotTelemetry(gyro.targetLooptime);
+    initDshotTelemetry(gyro.targetLooptime);  
 #endif
 
     // Finally initialize the gyro filtering
@@ -796,7 +796,6 @@ void initPhase3(void)
 #ifdef USE_USB_DETECT
     usbCableDetectInit();
 #endif
-
 #ifdef USE_TRANSPONDER
     if (featureIsEnabled(FEATURE_TRANSPONDER)) {
         transponderInit();
@@ -846,7 +845,7 @@ void initPhase3(void)
 
 #ifdef USE_VTX_CONTROL
     vtxControlInit();
-
+ 
 #if defined(USE_VTX_COMMON)
     vtxCommonInit();
 #endif
@@ -884,7 +883,6 @@ void initPhase3(void)
 #ifdef USE_PERSISTENT_STATS
     statsInit();
 #endif
-
     // Initialize MSP
     mspInit();
     mspSerialInit();
@@ -1030,9 +1028,7 @@ void initPhase3(void)
 #endif
 
     debugInit();
-
     unusedPinsInit();
-
     tasksInit();
 
     systemState |= SYSTEM_STATE_READY;

@@ -22,7 +22,14 @@
 
 #pragma once
 
-#include "platform/usb_msc_storage.h"
+#ifdef USE_HAL_DRIVER
+#include "usbd_msc.h"
+#else
+#include "usbd_msc_mem.h"
+#if !defined(AT32F435) && !defined(PICO) && !defined(CH32H415)
+#include "usbd_msc_core.h"
+#endif
+#endif
 
 #include "common/time.h"
 

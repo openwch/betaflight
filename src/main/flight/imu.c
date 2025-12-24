@@ -292,7 +292,7 @@ STATIC_UNIT_TESTED void imuMahonyAHRSupdate(float dt,
 
     // Pre-compute rotation matrix from quaternion
     imuComputeRotationMatrix();
-
+    
     attitudeIsEstablished = true;
 }
 
