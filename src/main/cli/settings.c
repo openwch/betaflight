@@ -144,7 +144,118 @@
 
 #include "settings.h"
 
-// Sensor hardware name lookup tables are defined in sensors/sensors.c
+// Sensor names (used in lookup tables for *_hardware settings and in status command output)
+// sync with accelerationSensor_e
+const char * const lookupTableAccHardware[] = {
+    "AUTO",
+    "NONE",
+    "MPU6050",
+    "MPU6000",
+    "MPU6500",
+    "MPU9250",
+    "ICM20601",
+    "ICM20602",
+    "ICM20608G",
+    "ICM20649",
+    "ICM20689",
+    "ICM42605",
+    "ICM42688P",
+    "BMI160",
+    "BMI270",
+    "LSM6DSO",
+    "LSM6DSV16X",
+    "IIM42653",
+    "ICM45605",
+    "ICM45686",
+    "ICM40609D",
+    "IIM42652",
+    "LSM6DSK320X",
+    "VIRTUAL"
+};
+
+// sync with gyroHardware_e
+const char * const lookupTableGyroHardware[] = {
+    "AUTO",
+    "NONE",
+    "MPU6050",
+    "L3GD20",
+    "MPU6000",
+    "MPU6500",
+    "MPU9250",
+    "ICM20601",
+    "ICM20602",
+    "ICM20608G",
+    "ICM20649",
+    "ICM20689",
+    "ICM42605",
+    "ICM42688P",
+    "BMI160",
+    "BMI270",
+    "LSM6DSO",
+    "LSM6DSV16X",
+    "IIM42653",
+    "ICM45605",
+    "ICM45686",
+    "ICM40609D",
+    "IIM42652",
+    "LSM6DSK320X",
+    "VIRTUAL"
+};
+
+// sync with baroSensor_e
+const char * const lookupTableBaroHardware[BARO_HARDWARE_COUNT] = {
+    [BARO_DEFAULT] = "AUTO",
+    [BARO_NONE] = "NONE",
+    [BARO_BMP085] = "BMP085",
+    [BARO_MS5611] = "MS5611",
+    [BARO_BMP280] = "BMP280",
+    [BARO_LPS] = "LPS",
+    [BARO_QMP6988] = "QMP6988",
+    [BARO_BMP388] = "BMP388",
+    [BARO_DPS310] = "DPS310",
+    [BARO_2SMPB_02B] = "2SMPB_02B",
+    [BARO_LPS22DF] = "LPS22DF",
+    [BARO_VIRTUAL] = "VIRTUAL"
+};
+
+// sync with magSensor_e
+const char * const lookupTableMagHardware[MAG_HARDWARE_COUNT] = {
+    [MAG_DEFAULT] = "AUTO",
+    [MAG_NONE] = "NONE",
+    [MAG_HMC5883] = "HMC5883",
+    [MAG_AK8975] = "AK8975",
+    [MAG_AK8963] = "AK8963",
+    [MAG_QMC5883] = "QMC5883",
+    [MAG_LIS2MDL] = "LIS2MDL",
+    [MAG_LIS3MDL] = "LIS3MDL",
+    [MAG_MPU925X_AK8963] = "MPU925X_AK8963",
+    [MAG_IST8310] = "IST8310"
+};
+
+// sync with rangefinderType_e
+const char * const lookupTableRangefinderHardware[RANGEFINDER_HARDWARE_COUNT] = {
+    [RANGEFINDER_NONE] = "NONE",
+    [RANGEFINDER_HCSR04] = "HCSR04",
+    [RANGEFINDER_TFMINI] = "TFMINI",
+    [RANGEFINDER_TF02] = "TF02",
+    [RANGEFINDER_MTF01] = "MTF01",
+    [RANGEFINDER_MTF02] = "MTF02",
+    [RANGEFINDER_MTF01P] = "MTF01P",
+    [RANGEFINDER_MTF02P] = "MTF02P",
+    [RANGEFINDER_TFNOVA] = "TFNOVA",
+    [RANGEFINDER_NOOPLOOP_F2] = "NOOPLOOP_F2",
+    [RANGEFINDER_NOOPLOOP_F2P] = "NOOPLOOP_F2P",
+    [RANGEFINDER_NOOPLOOP_F2PH] = "NOOPLOOP_F2PH",
+    [RANGEFINDER_NOOPLOOP_F] = "NOOPLOOP_F",
+    [RANGEFINDER_NOOPLOOP_FP] = "NOOPLOOP_FP",
+    [RANGEFINDER_NOOPLOOP_F2MINI] = "NOOPLOOP_F2MINI"
+};
+
+// sync with opticalflowType_e
+const char * const lookupTableOpticalflowHardware[OPTICALFLOW_HARDWARE_COUNT] = {
+    [OPTICALFLOW_NONE] = "NONE",
+    [OPTICALFLOW_MT] = "MT"
+};
 
 const char * const lookupTableOffOn[] = {
     "OFF", "ON"

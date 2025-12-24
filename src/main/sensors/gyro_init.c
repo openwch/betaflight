@@ -522,10 +522,10 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
 
 #ifdef USE_ACCGYRO_LSM6DSK320X
     case GYRO_LSM6DSK320X:
-        if (lsm6dsk320xSpiGyroDetect(dev)) {
+        if (lsm6dsk320xSpiGyroDetect(dev)){
             gyroHardware = GYRO_LSM6DSK320X;
             break;
-        }
+        }    
         FALLTHROUGH;
 #endif
 

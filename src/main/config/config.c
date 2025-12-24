@@ -751,9 +751,7 @@ void writeEEPROM(void)
 bool resetEEPROM(void)
 {
     resetConfig();
-
     writeUnmodifiedConfigToEEPROM();
-
     return true;
 }
 

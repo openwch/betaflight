@@ -386,9 +386,7 @@ void icm426xxGyroInit(gyroDev_t *gyro)
     mpuGyroInit(gyro);
     gyro->accDataReg = ICM426XX_RA_ACCEL_DATA_X1;
     gyro->gyroDataReg = ICM426XX_RA_GYRO_DATA_X1;
-    gyro->tempDataReg = ICM426XX_RA_TEMP_DATA1;
-    gyro->dmaReadRegStart = gyro->tempDataReg;
-
+  
     // Turn off ACC and GYRO so they can be configured
     // See section 12.9 in ICM-42688-P datasheet v1.7
     setUserBank(dev, ICM426XX_BANK_SELECT0);
