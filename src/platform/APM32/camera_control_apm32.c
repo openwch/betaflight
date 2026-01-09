@@ -27,7 +27,6 @@
 
 #include "platform/camera_control.h"
 #include "drivers/nvic.h"
-#include "platform/timer.h"
 
 #ifdef CAMERA_CONTROL_SOFTWARE_PWM_AVAILABLE
 #include "build/atomic.h"
