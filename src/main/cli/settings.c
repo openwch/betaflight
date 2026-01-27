@@ -148,7 +148,6 @@
 const char * const lookupTablePosHoldSource[] = {
     "AUTO", "GPS_ONLY", "OPTICALFLOW_ONLY"
 };
-#endif
 
 const char * const lookupTableOffOn[] = {
     "OFF", "ON"
@@ -695,6 +694,7 @@ const lookupTableEntry_t lookupTables[] = {
 
 const clivalue_t valueTable[] = {
 // PG_GYRO_CONFIG
+    { PARAM_NAME_GYRO_HARDWARE,     VAR_UINT8  | MASTER_VALUE | MODE_LOOKUP, .config.lookup = { TABLE_GYRO_HARDWARE }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, gyro_hardware) },
     { PARAM_NAME_GYRO_HARDWARE_LPF, VAR_UINT8  | MASTER_VALUE | MODE_LOOKUP, .config.lookup = { TABLE_GYRO_HARDWARE_LPF }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, gyro_hardware_lpf) },
 
 #if defined(USE_GYRO_SPI_ICM20649)

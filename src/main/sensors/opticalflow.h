@@ -34,6 +34,8 @@ typedef enum {
     OPTICALFLOW_HARDWARE_COUNT
 } opticalflowType_e;
 
+extern const char * const opticalflowTypeNames[OPTICALFLOW_HARDWARE_COUNT];
+
 typedef struct opticalflowConfig_s {
     uint8_t  opticalflow_hardware;
     uint16_t rotation;
