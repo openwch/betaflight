@@ -311,8 +311,6 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
     case GYRO_LSM6DSO:
     case GYRO_LSM6DSV16X:
     case GYRO_LSM6DSK320X:
-    case GYRO_ICM42622P:
-    case GYRO_ICM42686P:
     case GYRO_ICM42688P:
     case GYRO_IIM42652:
     case GYRO_IIM42653:
