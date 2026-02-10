@@ -101,7 +101,7 @@ include $(MAKE_SCRIPT_DIR)/checks.mk
 # basic target list
 PLATFORMS        := $(sort $(notdir $(patsubst /%,%, $(wildcard $(PLATFORM_DIR)/*))))
 BASE_TARGETS     := $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(PLATFORM_DIR)/*/target/*/target.mk)))))
-
+$(info Debug: Platforms: $(PLATFORMS))
 # configure some directories that are relative to wherever ROOT_DIR is located
 TOOLS_DIR  ?= $(ROOT)/tools
 DL_DIR     := $(ROOT)/downloads
@@ -129,7 +129,18 @@ RESULT = $(shell (which $(CCACHE) > /dev/null 2>&1; echo $$?) )
 ifneq ($(RESULT),0)
 CCACHE :=
 endif
+$(info Debug: TARGET is $(TARGET))
+ifeq ("$(TARGET)","CH32H415")
+CROSS_CC     = $(CCACHE) $(RISCV_SDK_PREFIX)gcc
+CROSS_CXX    = $(CCACHE) $(RISCV_SDK_PREFIX)g++
+CROSS_GDB    = $(RISCV_SDK_PREFIX)gdb
+OBJCOPY      = $(RISCV_SDK_PREFIX)objcopy
+OBJDUMP      = $(RISCV_SDK_PREFIX)objdump
+READELF      = $(RISCV_SDK_PREFIX)readelf
+SIZE         = $(RISCV_SDK_PREFIX)size
+DFUSE-PACK  := src/utils/dfuse-pack.py
 
+else
 # Tool names (defer prefix resolution for per-platform overrides like SITL)
 CROSS_CC     = $(CCACHE) $(ARM_SDK_PREFIX)gcc
 CROSS_CXX    = $(CCACHE) $(ARM_SDK_PREFIX)g++
@@ -139,7 +150,7 @@ OBJDUMP      = $(ARM_SDK_PREFIX)objdump
 READELF      = $(ARM_SDK_PREFIX)readelf
 SIZE         = $(ARM_SDK_PREFIX)size
 DFUSE-PACK  := src/utils/dfuse-pack.py
-
+endif
 # Preprocessor helpers (generic .h parsing)
 include $(MAKE_SCRIPT_DIR)/preprocess.mk
 
@@ -333,7 +344,7 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(EXTRA_FLAGS)
 
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
-
+$(info $(CFLAGS))
 ASFLAGS     = $(ARCH_FLAGS) \
               $(DEBUG_FLAGS) \
               -x assembler-with-cpp \
