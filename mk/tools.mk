@@ -346,7 +346,7 @@ else ifeq (,$(filter %_sdk %_install test% clean% %-print checks help configs, $
 endif
 
 ifeq ($(shell [ -d "$(RISCV_SDK_DIR)" ] && echo "exists"), exists)
-  RISCV_SDK_PREFIX := $(RISCV_SDK_DIR)/bin/riscv64-unknown-elf-
+  RISCV_SDK_PREFIX := $(RISCV_SDK_DIR)/bin/riscv-wch-elf-
 else ifeq (,$(filter %_sdk %_install test% clean% %-print checks help configs, $(MAKECMDGOALS)))
   GCC_VERSION = $(shell riscv64-unknown-elf-gcc -dumpversion)
   ifeq ($(GCC_VERSION),)
@@ -356,7 +356,7 @@ else ifeq (,$(filter %_sdk %_install test% clean% %-print checks help configs, $
   endif
 
   # RISCV toolchain is in the path, and the version is what's required.
-  RISCV_SDK_PREFIX ?= riscv64-unknown-elf-
+  RISCV_SDK_PREFIX ?= riscv-wch-elf-
 endif
 
 ifeq ($(shell [ -d "$(ZIP_DIR)" ] && echo "exists"), exists)
