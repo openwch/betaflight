@@ -40,10 +40,7 @@
 #include "drivers/serial_impl.h"
 #include "drivers/serial_uart.h"
 #include "drivers/serial_uart_impl.h"
-#include "drivers/dma.h"
-#include "drivers/dma_reqmap.h"
-#include "platform/dma.h"
-#include "platform/serial_uart_hal.h"
+#include "platform/rcc.h"
 
 #include "pg/serial_uart.h"
 
@@ -101,6 +98,7 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
   s->USARTx = hardware->reg;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #ifdef USE_HAL_DRIVER
 <<<<<<< HEAD
   s->Handle.Instance = hardware->reg;
@@ -140,6 +138,37 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
   const resourceOwner_e ownerTxRx =
       serialOwnerTxRx(identifier); // rx is always +1
 
+=======
+    s->checkUsartTxOutput = checkUsartTxOutput;
+=======
+#ifdef USE_HAL_DRIVER
+  s->Handle.Instance = hardware->reg;
+#endif
+
+  s->checkUsartTxOutput = checkUsartTxOutput;
+>>>>>>> 9e9b067b5 (WIP CH32 platform updates)
+
+  if (hardware->rcc) {
+    RCC_ClockCmd(hardware->rcc, ENABLE);
+  }
+
+#ifdef USE_DMA
+  uartConfigureDma(uartdev);
+  s->txDMAEmpty = true;
+#endif
+
+  IO_t txIO = IOGetByTag(uartdev->tx.pin);
+  IO_t rxIO = IOGetByTag(uartdev->rx.pin);
+
+  uartdev->txPinState = TX_PIN_IGNORE;
+
+  const serialPortIdentifier_e identifier = s->port.identifier;
+
+  const int ownerIndex = serialOwnerIndex(identifier);
+  const resourceOwner_e ownerTxRx =
+      serialOwnerTxRx(identifier); // rx is always +1
+
+>>>>>>> 4c0d171f9 (WIP CH32 platform updates)
   // prepare AF modes
 #if UART_TRAIT_AF_PORT
   uint8_t rxAf = hardware->af;
@@ -162,11 +191,15 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
         ((const unsigned[]){GPIO_NOPULL, GPIO_PULLDOWN, GPIO_PULLUP})[pull]);
 #elif defined(AT32F4)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4c0d171f9 (WIP CH32 platform updates)
     const ioConfig_t ioCfg =
         IO_CONFIG(GPIO_MODE_MUX, GPIO_DRIVE_STRENGTH_STRONGER,
                   pushPull ? GPIO_OUTPUT_PUSH_PULL : GPIO_OUTPUT_OPEN_DRAIN,
                   ((const gpio_pull_type[]){GPIO_PULL_NONE, GPIO_PULL_DOWN,
                                             GPIO_PULL_UP})[pull]);
+<<<<<<< HEAD
 #elif defined(CH32H4)
     const ioConfig_t ioCfg = IOCFG_AF_PP;
     UNUSED(pull);
@@ -181,6 +214,12 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
 #elif defined(CH32H4)
 const ioConfig_t ioCfg = IOCFG_AF_PP;
 >>>>>>> 1b9653a92 (dshot 8K,uart4 MSP+DisplayPort function is OK)
+=======
+#elif defined(CH32H4)
+    const ioConfig_t ioCfg = IOCFG_AF_PP;
+    UNUSED(pull);
+    UNUSED(pushPull);
+>>>>>>> 4c0d171f9 (WIP CH32 platform updates)
 #elif defined(STM32F4)
     // UART inverter is not supproted on F4, but keep it in line with other CPUs
     // External inverter in bidir mode would be quite problematic anyway
@@ -356,6 +395,7 @@ void uartEnableTxInterrupt(uartPort_t *uartPort) {
 #if defined(USE_HAL_DRIVER)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   __HAL_UART_ENABLE_IT(&uartPort->Handle, UART_IT_TXE);
 #elif defined(USE_ATBSP_DRIVER)
   usart_interrupt_enable(uartPort->USARTx, USART_TDBE_INT, TRUE);
@@ -364,13 +404,25 @@ void uartEnableTxInterrupt(uartPort_t *uartPort) {
 =======
     __HAL_UART_ENABLE_IT(&uartPort->halHandle->hal, UART_IT_TXE);
 =======
+=======
+>>>>>>> 4c0d171f9 (WIP CH32 platform updates)
     LL_USART_EnableIT_TXE((USART_TypeDef *)uartPort->USARTx);
 >>>>>>> bf14d1302 (Migrate UART from HAL to LL, eliminating HAL handle dependencies (#15035))
 #elif defined(USE_ATBSP_DRIVER)
     usart_interrupt_enable((usart_type *)uartPort->USARTx, USART_TDBE_INT, TRUE);
 #else
     USART_ITConfig((USART_TypeDef *)uartPort->USARTx, USART_IT_TXE, ENABLE);
+<<<<<<< HEAD
 >>>>>>> 3d285e1cb (Replace void* and MCU-specific TypeDef pointers with opaque resource types in driver interfaces (#15033))
+=======
+=======
+  __HAL_UART_ENABLE_IT(&uartPort->Handle, UART_IT_TXE);
+#elif defined(USE_ATBSP_DRIVER)
+  usart_interrupt_enable(uartPort->USARTx, USART_TDBE_INT, TRUE);
+#else
+  USART_ITConfig(uartPort->USARTx, USART_IT_TXE, ENABLE);
+>>>>>>> 9e9b067b5 (WIP CH32 platform updates)
+>>>>>>> 4c0d171f9 (WIP CH32 platform updates)
 #endif
 }
 
