@@ -321,6 +321,8 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(DEBUG_FLAGS) \
               -std=gnu17 \
               -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
+							-Wno-incompatible-pointer-types \
+							-Wno-sign-compare \
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
