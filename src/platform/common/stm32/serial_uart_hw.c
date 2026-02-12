@@ -68,12 +68,8 @@ static void enableRxIrq(const uartHardware_t *hardware)
 #elif defined(AT32F4)
         nvic_irq_enable(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority), NVIC_PRIORITY_SUB(hardware->rxPriority));
 #elif defined(APM32F4)
-  DAL_NVIC_SetPriority(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority),
-                       NVIC_PRIORITY_SUB(hardware->rxPriority));
-  DAL_NVIC_EnableIRQ(hardware->irqn);
-#elif defined(CH32H4)
-  NVIC_SetPriority(hardware->irqn, hardware->rxPriority);
-  NVIC_EnableIRQ(hardware->irqn);
+        DAL_NVIC_SetPriority(hardware->irqn, NVIC_PRIORITY_BASE(hardware->rxPriority), NVIC_PRIORITY_SUB(hardware->rxPriority));
+        DAL_NVIC_EnableIRQ(hardware->irqn);
 #else
 # error "Unhandled MCU type"
 #endif
