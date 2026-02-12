@@ -113,21 +113,25 @@ static const char *string_descriptors[] = {
 
 static const uint8_t *device_descriptor_callback(uint8_t speed)
 {
+    (void) speed;
     return device_descriptor;
 }
 
 static const uint8_t *config_descriptor_callback(uint8_t speed)
 {
+    (void) speed;
     return config_descriptor;
 }
 
 static const uint8_t *device_quality_descriptor_callback(uint8_t speed)
 {
+    (void) speed;
     return device_quality_descriptor;
 }
 
 static const char *string_descriptor_callback(uint8_t speed, uint8_t index)
 {
+    (void) speed;    
     if (index > 5) {
         return NULL;
     }
@@ -144,6 +148,7 @@ const struct usb_descriptor msc_ram_descriptor = {
 
 static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
+    (void) busid;
     switch (event) {
         case USBD_EVENT_RESET:
             break;
@@ -267,6 +272,12 @@ uint8_t mscStart(void)
 
     return 0;
 }
+
+void mscTask(void)
+{
+    // Nothing to do here
+}
+
 static uint32_t g_block_size = 0;
 void usbd_msc_get_cap(uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size)
 {

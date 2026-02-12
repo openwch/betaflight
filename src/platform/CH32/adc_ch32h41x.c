@@ -41,7 +41,10 @@
 #include "platform/rcc.h"
 
 #include "pg/adc.h"
+#include "platform/adc_impl.h"
+
 #include <math.h>
+
 const adcDevice_t adcHardware[ADCDEV_COUNT] = {{.ADCx = ADC1,
                                                 .rccADC = RCC_HB2(ADC1),
 #if !defined(USE_DMA_SPEC)
@@ -80,7 +83,7 @@ const adcTagMap_t adcTagMap[] = {
     {DEFIO_TAG_E__PB1, ADC_DEVICES_12, ADC_Channel_9},
 };
 
-static volatile DMA_DATA uint32_t adcConversionBuffer[ADC_CHANNEL_COUNT];
+static volatile DMA_DATA uint32_t adcConversionBuffer[ADC_SOURCE_COUNT]; //ADC_SOURCE_COUNT ADC_CHANNEL_COUNT
 
 static void adcInitDevice(const adcDevice_t *adcdev, int channelCount) {
   ADC_TypeDef *Instance = adcdev->ADCx;
@@ -170,26 +173,31 @@ void adcInit(const adcConfig_t *config) {
 
   // loop over all possible channels and build the adcOperatingConfig to
   // represent the set of enabled channels
-  for (int i = 0; i < ADC_CHANNEL_COUNT; i++) {
+  for (int i = 0; i < ADC_SOURCE_COUNT; i++) {
     int map;
     int dev;
 
-    if (i == ADC_TEMPSENSOR) {
-      map = ADC_TAG_MAP_TEMPSENSOR;
-      dev = ADCDEV_1;
-    } else if (i == ADC_VREFINT) {
-      map = ADC_TAG_MAP_VREFINT;
-      dev = ADCDEV_1;
-    } else {
-      if (!adcOperatingConfig[i].tag) {
-        continue;
-      }
+    switch (i){
+      #ifdef USE_ADC_INTERNAL
+        case ADC_TEMPSENSOR:
+          map = ADC_TAG_MAP_TEMPSENSOR;
+          dev = ADCDEV_1;
+          break;
+        case ADC_VREFINT:
+          map = ADC_TAG_MAP_VREFINT;
+          dev = ADCDEV_1;
+          break;
+      #endif
 
-      map = adcFindTagMapEntry(adcOperatingConfig[i].tag);
-      if (map < 0) {
-        continue;
-      }
+      default:
+        if (!adcOperatingConfig[i].tag) {
+                continue;
+          }
 
+        map = adcFindTagMapEntry(adcOperatingConfig[i].tag);
+        if (map < 0) {
+          continue;
+        }
       // Since ADC1 can do all channels this will only ever return adc1 and is
       // unnecessary
 
@@ -210,15 +218,16 @@ void adcInit(const adcConfig_t *config) {
       //     }
       // }
       dev = ADCDEV_1;
+
     }
+    
 
     adcOperatingConfig[i].adcDevice = dev;
     adcOperatingConfig[i].adcChannel = adcTagMap[map].channel;
     adcOperatingConfig[i].sampleTime = ADC_SampleTime_CyclesMode7;
     adcOperatingConfig[i].enabled = true;
 
-    nChannelsUsed[dev] +=
-        1; // increase the active channel count for this device
+    nChannelsUsed[dev] += 1; // increase the active channel count for this device
 
     // Enable the gpio for analog input
     if (adcOperatingConfig[i].tag) {
@@ -302,7 +311,7 @@ void adcInit(const adcConfig_t *config) {
 #endif // end of USE_DMA_SPEC
 
     // set each channel into the auto sequence for this ADC device
-    for (int adcChan = 0; adcChan < ADC_CHANNEL_COUNT; adcChan++) {
+    for (int adcChan = 0; adcChan < ADC_SOURCE_COUNT; adcChan++) {
       // only add enabled channels for the current dev (can be simplified if we
       // drop the pretense at handling adc2 and 3)
       if (adcOperatingConfig[adcChan].enabled &&
@@ -338,7 +347,7 @@ void adcInit(const adcConfig_t *config) {
  * Copies the latest ADC external channel data into adcValues defined in adc.c
  */
 void adcGetChannelValues(void) {
-  for (int i = 0; i < ADC_CHANNEL_INTERNAL_FIRST_ID; i++) {
+  for (unsigned i = 0; i < ADC_EXTERNAL_COUNT; i++) {
     if (adcOperatingConfig[i].enabled) {
       adcValues[adcOperatingConfig[i].dmaIndex] =
           adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
@@ -361,9 +370,17 @@ void adcInternalStartConversion(void) { return; }
 /**
  * Reads a given channel from the DMA buffer
  */
-static uint16_t adcInternalRead(int channel) {
-  const int dmaIndex = adcOperatingConfig[channel].dmaIndex;
-  return adcConversionBuffer[dmaIndex];
+uint16_t adcInternalRead(adcSource_e source) {
+  // const int dmaIndex = adcOperatingConfig[channel].dmaIndex;
+  // return adcConversionBuffer[dmaIndex];
+    switch (source) {
+    case ADC_VREFINT:
+    case ADC_TEMPSENSOR:
+        const unsigned dmaIndex = adcOperatingConfig[source].dmaIndex;
+        return dmaIndex < ARRAYLEN(adcConversionBuffer) ? adcConversionBuffer[dmaIndex] : 0;
+    default:
+        return 0;
+    }
 }
 
 /**
@@ -378,21 +395,21 @@ static uint16_t adcInternalRead(int channel) {
  * @return the raw ADC reading for the internal voltage reference
  * @see adcInternalCompensateVref in src/main/drivers/adc.c
  */
-uint16_t adcInternalReadVrefint(void) {
-  const uint16_t value = adcInternalRead(ADC_VREFINT);
+// uint16_t adcInternalReadVrefint(void) {
+//   const uint16_t value = adcInternalRead(ADC_VREFINT);
 
-  return value;
-}
+//   return value;
+// }
 
 /**
  * Read the internal temperature sensor
  *
  * @return the raw ADC reading
  */
-uint16_t adcInternalReadTempsensor(void) {
-  const uint16_t value = adcInternalRead(ADC_TEMPSENSOR);
-  return value;
-}
+// uint16_t adcInternalReadTempsensor(void) {
+//   const uint16_t value = adcInternalRead(ADC_TEMPSENSOR);
+//   return value;
+// }
 
 #endif // USE_ADC_INTERNAL
 

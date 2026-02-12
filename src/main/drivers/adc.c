@@ -21,8 +21,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "platform.h"
 #include "common/utils.h"
+#include "platform.h"
 
 #ifdef USE_ADC
 
@@ -34,49 +34,59 @@
 
 #include "adc.h"
 
-//#define DEBUG_ADC_CHANNELS
+// #define DEBUG_ADC_CHANNELS
 
 #ifdef USE_ADC_INTERNAL
 
 /**
  * Use a measurement of the fixed internal vref to calculate the external Vref+
  *
- * The ADC full range reading equates to Vref+ on the channel. Vref+ is typically
- * fed from Vcc at 3.3V, but since Vcc isn't a critical value it may be off
- * by a little due to variation in the regulator. Some chips are provided with a
- * known internal voltage reference, typically around 1.2V. By measuring this
- * reference with an internally connected ADC channel we can then calculate a more
- * accurate value for Vref+ instead of assuming that it is 3.3V
+ * The ADC full range reading equates to Vref+ on the channel. Vref+ is
+ * typically fed from Vcc at 3.3V, but since Vcc isn't a critical value it may
+ * be off by a little due to variation in the regulator. Some chips are provided
+ * with a known internal voltage reference, typically around 1.2V. By measuring
+ * this reference with an internally connected ADC channel we can then calculate
+ * a more accurate value for Vref+ instead of assuming that it is 3.3V
  *
  * @param intVRefAdcValue reading from the internal calibration voltage
  *
  * @return the calculated value of Vref+
-*/
-uint16_t adcInternalCompensateVref(uint16_t intVRefAdcValue)
-{
-    // This is essentially a tuned version of
-    // __HAL_ADC_CALC_VREFANALOG_VOLTAGE(vrefAdcValue, ADC_RESOLUTION_12B);
-    return (uint16_t)((uint32_t)(adcVREFINTCAL * VREFINT_CAL_VREF) / intVRefAdcValue);
+ */
+uint16_t adcInternalCompensateVref(uint16_t intVRefAdcValue) {
+  // This is essentially a tuned version of
+  // __HAL_ADC_CALC_VREFANALOG_VOLTAGE(vrefAdcValue, ADC_RESOLUTION_12B);
+  return (uint16_t)((uint32_t)(adcVREFINTCAL * VREFINT_CAL_VREF) /
+                    intVRefAdcValue);
 }
 
-int16_t adcInternalComputeTemperature(uint16_t tempAdcValue, uint16_t vrefValue)
-{
-    // This is essentially a tuned version of
-    // __HAL_ADC_CALC_TEMPERATURE(vrefValue, tempAdcValue, ADC_RESOLUTION_12B);
+int16_t adcInternalComputeTemperature(uint16_t tempAdcValue,
+                                      uint16_t vrefValue) {
+  // This is essentially a tuned version of
+  // __HAL_ADC_CALC_TEMPERATURE(vrefValue, tempAdcValue, ADC_RESOLUTION_12B);
 #ifdef CH32H415
-    int32_t Temper, Refer_Volt, Refer_Temper;
-    int32_t k = 43;
-    uint32_t tmp;    
-    
-    tmp =  *(volatile uint32_t * )0x08000018;   //refrence EVT   
+  int32_t Temper, Refer_Volt, Refer_Temper;
+  int32_t k = 43;
+  // uint32_t tmp;
 
-    Refer_Volt = (int32_t)((*(uint32_t *)0x1FFFF76C) & 0x0000FFFF);
-    Refer_Temper = (int32_t)(((*(uint32_t *)0x1FFFF76C) >> 16) & 0x0000FFFF);
-    // Temper = Refer_Temper - (((int32_t)((tempAdcValue * vrefValue) / TEMPSENSOR_CAL_VREFANALOG) - Refer_Volt) * 10    + (k >> 1)) / k;
-    Temper = Refer_Temper - (((int32_t)((tempAdcValue * 3300 / 4096) ) - Refer_Volt) * 10    + (k >> 1)) / k;
-    return Temper;
+  // tmp = *(volatile uint32_t *)0x08000018; // refrence EVT
+
+  Refer_Volt = (int32_t)((*(uint32_t *)0x1FFFF76C) & 0x0000FFFF);
+  Refer_Temper = (int32_t)(((*(uint32_t *)0x1FFFF76C) >> 16) & 0x0000FFFF);
+  // Temper = Refer_Temper - (((int32_t)((tempAdcValue * vrefValue) /
+  // TEMPSENSOR_CAL_VREFANALOG) - Refer_Volt) * 10    + (k >> 1)) / k;
+  vrefValue = 3300;
+  Temper = Refer_Temper -
+           (((int32_t)((tempAdcValue * vrefValue / 4096)) - Refer_Volt) * 10 +
+            (k >> 1)) /
+               k;
+  return Temper;
 #else
-    return ((((int32_t)((tempAdcValue * vrefValue) / TEMPSENSOR_CAL_VREFANALOG) - adcTSCAL1) * adcTSSlopeK) + 500) / 1000 + TEMPSENSOR_CAL1_TEMP;
+  return ((((int32_t)((tempAdcValue * vrefValue) / TEMPSENSOR_CAL_VREFANALOG) -
+            adcTSCAL1) *
+           adcTSSlopeK) +
+          500) /
+             1000 +
+         TEMPSENSOR_CAL1_TEMP;
 #endif
 }
 #endif // USE_ADC_INTERNAL

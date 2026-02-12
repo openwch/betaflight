@@ -410,7 +410,7 @@ static const struct serialPortVTable usbVTable[] = {
     }
 };
 
-serialPort_t *usbVcpOpen(void)
+void usbVcpInit(void)
 {
 
     RCC_HB2PeriphClockCmd(RCC_HB2Periph_AFIO | RCC_HB2Periph_GPIOB, ENABLE);
@@ -443,6 +443,14 @@ serialPort_t *usbVcpOpen(void)
 
     // TxTimerConfig();
 
+    // vcpPort_t *s = &vcpPort;
+    // s->port.vTable = usbVTable;
+    // return &s->port;
+}
+
+
+serialPort_t *usbVcpOpen(void)
+{
     vcpPort_t *s = &vcpPort;
     s->port.vTable = usbVTable;
     return &s->port;
