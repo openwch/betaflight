@@ -357,7 +357,6 @@ CFLAGS     += $(ARCH_FLAGS) \
               -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
 							-Wno-incompatible-pointer-types \
 							-Wno-sign-compare \
-							-Wno-double-promotion \
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
