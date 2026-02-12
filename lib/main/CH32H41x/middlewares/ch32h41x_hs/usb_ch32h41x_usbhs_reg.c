@@ -94,9 +94,9 @@ __WEAK void usb_dc_low_level_deinit(void) {}
 
 usb_rxsof_handler_t usb_rxsof_handler = NULL;
 
+__WEAK void usb_dc_low_level_deinit(void) {}
 
 usb_rxsof_handler_t usb_rxsof_handler = NULL;
-
 
 /**
  * @brief            USB initialization
@@ -516,7 +516,6 @@ static inline void usb_trans_end_process(void) {
   }
 }
 
-
 /**
  * @brief            USB interrupt processing function
  * @pre              None
@@ -527,38 +526,23 @@ void USBD_IRQHandler(uint8_t busid) {
   volatile uint8_t intflag = 0;
   intflag = CH32H41x_USBHS_DEV->INT_FG;
 
-    if (intflag & USBHS_UDIF_TRANSFER) {
-        usb_trans_end_process();
-    } 
-    else if (intflag & USBHS_UDIF_BUS_RST) {
-        /* Reset */
-        CH32H41x_USBHS_DEV->DEV_AD = 0;
-        usbd_event_reset_handler(0);
-        /* Set ep0 rx vaild to start receive setup packet */
-        CH32H41x_USBHS_DEV->UEP0_DMA = (uint32_t)&usb_dc_cfg.setup;
-        // EPn_SET_RX_VALID(0);
-        R8_UEP0_TX_CTRL = USBHS_UEP_T_RES_NAK;
-        R8_UEP0_RX_CTRL = USBHS_UEP_R_RES_ACK;
-        CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIF_BUS_RST;
-    } 
-    else if (intflag & USBHS_UDIF_SUSPEND) {
-        if (CH32H41x_USBHS_DEV->MIS_ST & USBHS_UDMS_SUSPEND) 
-        {
-            /* Suspend */
-        } 
-        else
-        {
-            /* Wake up */
-        }
-        CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIF_SUSPEND;
-    } 
-    else if(intflag & USBHS_UDIE_SOF_ACT)
-    {
-        if(usb_rxsof_handler!=NULL)  usb_rxsof_handler( );
-        CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIE_SOF_ACT;
-    }
-    else {
-        CH32H41x_USBHS_DEV->INT_FG = intflag;
+  if (intflag & USBHS_UDIF_TRANSFER) {
+    usb_trans_end_process();
+  } else if (intflag & USBHS_UDIF_BUS_RST) {
+    /* Reset */
+    CH32H41x_USBHS_DEV->DEV_AD = 0;
+    usbd_event_reset_handler(0);
+    /* Set ep0 rx vaild to start receive setup packet */
+    CH32H41x_USBHS_DEV->UEP0_DMA = (uint32_t)&usb_dc_cfg.setup;
+    // EPn_SET_RX_VALID(0);
+    R8_UEP0_TX_CTRL = USBHS_UEP_T_RES_NAK;
+    R8_UEP0_RX_CTRL = USBHS_UEP_R_RES_ACK;
+    CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIF_BUS_RST;
+  } else if (intflag & USBHS_UDIF_SUSPEND) {
+    if (CH32H41x_USBHS_DEV->MIS_ST & USBHS_UDMS_SUSPEND) {
+      /* Suspend */
+    } else {
+      /* Wake up */
     }
     CH32H41x_USBHS_DEV->INT_FG = USBHS_UDIF_SUSPEND;
   } else if (intflag & USBHS_UDIE_SOF_ACT) {
