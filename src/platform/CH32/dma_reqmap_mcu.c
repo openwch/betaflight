@@ -52,7 +52,8 @@ typedef struct dmaTimerMapping_s {
 #define REQMAP_SGL(periph) { DMA_PERIPH_ ## periph, 0, DMA_REQUEST_ ## periph }
 #define REQMAP(periph, device) { DMA_PERIPH_ ## periph, periph ## DEV_ ## device, DMA_REQUEST_ ## periph ## device }
 #define REQMAP_DIR(periph, device, dir) { DMA_PERIPH_ ## periph ## _ ## dir, periph ## DEV_ ## device, DMA_REQUEST_ ## periph ## device ## _ ## dir }
-#define REQMAP_TIMUP(periph, timno) { DMA_PERIPH_TIMUP, timno - 1, DMAMUX_DMAREQ_ID_ ## TIM ## timno ## _UP }
+// #define REQMAP_TIMUP(periph, timno) { DMA_PERIPH_TIMUP, timno - 1, DMAMUX_DMAREQ_ID_ ## TIM ## timno ## _UP }
+#define REQMAP_TIMUP(periph, timno) { DMA_PERIPH_TIMUP, TIMER_INDEX(timno), DMAMUX_DMAREQ_ID_ ## TIM ## timno ## _UP } 
 
 #define DMA_REQUEST_UART1_RX DMAMUX_DMAREQ_ID_USART1_RX
 #define DMA_REQUEST_UART1_TX DMAMUX_DMAREQ_ID_USART1_TX

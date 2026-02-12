@@ -22,7 +22,7 @@
  * porting for ch32h41x by Temperslee
  */
 #pragma once
-
+#include <stdint.h>
 #include "drivers/resource.h"
 #include "platform.h"
 
@@ -34,7 +34,8 @@
 
 typedef enum {
   DMA_NONE = 0,
-  DMA1_CH1_HANDLER = 1,
+  DMA_FIRST_HANDLER = 1,
+  DMA1_CH1_HANDLER = DMA_FIRST_HANDLER,
   DMA1_CH2_HANDLER,
   DMA1_CH3_HANDLER,
   DMA1_CH4_HANDLER,

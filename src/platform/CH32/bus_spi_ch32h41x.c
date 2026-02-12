@@ -68,7 +68,7 @@ static void spiSetDivisorBRreg(SPI_TypeDef *instance, uint16_t divisor)
 #undef BR_BITS
 }
 
-void spiInitDevice(SPIDevice device)
+void spiInitDevice(spiDevice_e device)
 {
     spiDevice_t *spi = &(spiDevice[device]);
 
@@ -122,7 +122,7 @@ void spiInternalResetDescriptors(busDevice_t *bus)
         dmaInitRx->DMA_DIR = DMA_DIR_PeripheralSRC;
         dmaInitRx->DMA_Mode = DMA_Mode_Normal;
         dmaInitRx->DMA_PeripheralBaseAddr = (uint32_t)&bus->busType_u.spi.instance->DATAR;
-        dmaInitRx->DMA_Priority = DMA_Priority_Low;
+        dmaInitRx->DMA_Priority = DMA_Priority_Medium;
         dmaInitRx->DMA_PeripheralInc = DMA_PeripheralInc_Disable;
         dmaInitRx->DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
         dmaInitRx->DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
@@ -160,22 +160,23 @@ FAST_CODE bool spiInternalReadWriteBufPolled(SPI_TypeDef *instance, const uint8_
     return true;
 }
 
-void spiInternalInitStream(const extDevice_t *dev, bool preInit)
+// void spiInternalInitStream(const extDevice_t *dev, bool preInit)
+void spiInternalInitStream(const extDevice_t *dev, volatile busSegment_t *segment)
 {
     STATIC_DMA_DATA_AUTO uint8_t dummyTxByte = 0xff;
     STATIC_DMA_DATA_AUTO uint8_t dummyRxByte;
     busDevice_t *bus = dev->bus;
 
-    volatile busSegment_t *segment = bus->curSegment;
+    // volatile busSegment_t *segment = bus->curSegment;
 
-    if (preInit) {
-        // Prepare the init structure for the next segment to reduce inter-segment interval
-        segment++;
-        if(segment->len == 0) {
-            // There's no following segment
-            return;
-        }
-    }
+    // if (preInit) {
+    //     // Prepare the init structure for the next segment to reduce inter-segment interval
+    //     segment++;
+    //     if(segment->len == 0) {
+    //         // There's no following segment
+    //         return;
+    //     }
+    // }
 
     int len = segment->len;
 

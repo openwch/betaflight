@@ -29,12 +29,12 @@
 #define USED_TIMERS  ( BIT(1) | BIT(3) | BIT(4) | BIT(5) | BIT(6) | BIT(7) | BIT(8) | BIT(9) )
 #define TIMUP_TIMERS ( BIT(1) | BIT(3) | BIT(4) | BIT(5) | BIT(6) | BIT(7) | BIT(8) | BIT(9) )
 #define FULL_TIMER_CHANNEL_COUNT        130
-#define HARDWARE_TIMER_DEFINITION_COUNT 12
+#define HARDWARE_TIMER_DEFINITION_COUNT BITCOUNT(USED_TIMERS)
 #else
 #define USED_TIMERS  ( BIT(1) | BIT(2) | BIT(3) | BIT(4) | BIT(5) | BIT(6) | BIT(7) | BIT(8) | BIT(9) | BIT(10) | BIT(11) | BIT(12))
 #define TIMUP_TIMERS ( BIT(1) | BIT(2) | BIT(3) | BIT(4) | BIT(5) | BIT(6) | BIT(7) | BIT(8) | BIT(9) | BIT(10) | BIT(11) | BIT(12))
 #define FULL_TIMER_CHANNEL_COUNT        130
-#define HARDWARE_TIMER_DEFINITION_COUNT 12
+#define HARDWARE_TIMER_DEFINITION_COUNT BITCOUNT(USED_TIMERS)
 #endif
 
 // allow conditional definition of DMA related members

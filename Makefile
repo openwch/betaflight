@@ -48,7 +48,7 @@ SERIAL_DEVICE   ?= $(firstword $(wildcard /dev/ttyACM*) $(firstword $(wildcard /
 FLASH_SIZE ?=
 
 # Disabled build flags
-CFLAGS_DISABLED         ?=
+CFLAGS_DISABLED         ?= -WError
 
 ###############################################################################
 # Things that need to be maintained as the source changes

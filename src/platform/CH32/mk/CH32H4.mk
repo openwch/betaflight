@@ -85,6 +85,7 @@ MCU_COMMON_SRC = \
         common/stm32/system.c \
         common/stm32/io_impl.c \
         common/stm32/config_flash.c \
+        common/stm32/mco.c \
         CH32/startup/ch32h417_it.c \
         CH32/startup/system_ch32h417.c \
         CH32/adc_ch32h41x.c \
@@ -114,6 +115,7 @@ MCU_COMMON_SRC = \
         drivers/accgyro/accgyro_mpu.c \
         drivers/dshot_bitbang_decode.c \
         drivers/inverter.c \
+        common/stm32/pwm_output_beeper.c \
         common/stm32/pwm_output_dshot_shared.c \
         common/stm32/dshot_dpwm.c \
         common/stm32/dshot_bitbang_shared.c \
@@ -133,7 +135,10 @@ MCU_COMMON_SRC = \
         msc/usbd_storage.c \
         msc/usbd_storage_emfat.c \
         msc/emfat.c \
-        msc/emfat_file.c
+        msc/emfat_file.c \
+        common/stm32/ledstrip_ws2811_stm32.c \
+        common/stm32/debug_pin.c \
+        common/stm32/adc_impl.c
         
 #         \
 #         msc/usbd_storage_sd_spi.c
@@ -153,6 +158,7 @@ SIZE_OPTIMISED_SRC += \
             drivers/bus_spi_config.c \
             common/stm32/bus_i2c_pinconfig.c \
             common/stm32/bus_spi_pinconfig.c \
+            common/stm32/pwm_output_beeper.c \
             common/stm32/serial_uart_pinconfig.c \
             drivers/serial_escserial.c \
             drivers/serial_pinconfig.c
