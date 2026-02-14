@@ -485,7 +485,7 @@ bool icm426xxSpiGyroDetect(gyroDev_t *gyro)
 #endif
     case ICM_42688P_SPI:
         gyro->scale = GYRO_SCALE_2000DPS;
-        // ICM-42605/ICM-42622P/ICM-42686P/ICM-42688P: 132.48 LSB/°C for 16-bit register read, offset 25°C
+        // ICM-42605/ICM-42688P: 132.48 LSB/°C for 16-bit register read, offset 25°C
         gyro->tempScale = 1.0f / 132.48f;
         gyro->tempZero = 25.0f;
         break;
@@ -496,7 +496,7 @@ bool icm426xxSpiGyroDetect(gyroDev_t *gyro)
     case IIM_42652_SPI:
     case IIM_42653_SPI:
         gyro->scale = GYRO_SCALE_4000DPS;
-        // ICM-42686P (extended range) / IIM-42652 / IIM-42653: 132.48 LSB/°C, offset 25°C
+        // IIM-42652/IIM-42653: 132.48 LSB/°C, offset 25°C
         gyro->tempScale = 1.0f / 132.48f;
         gyro->tempZero = 25.0f;
         break;

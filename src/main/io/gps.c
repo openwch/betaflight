@@ -2246,21 +2246,6 @@ static int64_t dateTimeToUnixSeconds(uint16_t year, uint8_t month, uint8_t day, 
     return (int64_t)days * 86400 + hour * 3600 + min * 60 + sec;
 }
 
-// Convert gpsDateTime_t to Unix epoch seconds; returns 0 if not valid
-uint32_t gpsDateTimeToEpoch(const gpsDateTime_t *dt)
-{
-    if (!dt || !dt->valid) {
-        return 0;
-    }
-
-    if (dt->year < 1980 || dt->month < 1 || dt->month > 12 || dt->day < 1 ||
-        dt->day > 31 || dt->hour > 23 || dt->min > 59 || dt->sec > 60) {
-        return 0;
-    }
-
-    return (uint32_t)dateTimeToUnixSeconds(dt->year, dt->month, dt->day, dt->hour, dt->min, dt->sec);
-}
-
 // Apply nanosecond correction to seconds/millis with proper borrow/carry
 static void applyNanoCorrection(int64_t *unixSeconds, uint16_t *millis, int32_t nano)
 {
@@ -2455,6 +2440,50 @@ static bool UBLOX_parse_gps(void)
         gpsSol.velned.velE = (int16_t)ubxRcvMsgPayload.ubxNavVelned.ned_east; // cm/s
         gpsSol.velned.velD = (int16_t)ubxRcvMsgPayload.ubxNavVelned.ned_down; // cm/s
         ubxHaveNewSpeed = true;
+        break;
+    case CLSMSG(CLASS_NAV, MSG_NAV_PVT):
+#ifdef USE_DASHBOARD
+        *dashboardGpsPacketLogCurrentChar = DASHBOARD_LOG_UBLOX_SOL;
+#endif
+        ubxHaveNewValidFix = (ubxRcvMsgPayload.ubxNavPvt.flags & NAV_STATUS_FIX_VALID) && (ubxRcvMsgPayload.ubxNavPvt.fixType == FIX_3D);
+        gpsSol.time = ubxRcvMsgPayload.ubxNavPvt.time;
+        calculateNavInterval();
+        gpsSol.llh.lon = ubxRcvMsgPayload.ubxNavPvt.lon;
+        gpsSol.llh.lat = ubxRcvMsgPayload.ubxNavPvt.lat;
+        gpsSol.llh.altCm = ubxRcvMsgPayload.ubxNavPvt.hMSL / 10;  //alt in cm
+        gpsSetFixState(ubxHaveNewValidFix);
+        ubxHaveNewPosition = true;
+        gpsSol.numSat = ubxRcvMsgPayload.ubxNavPvt.numSV;
+        gpsSol.acc.hAcc = ubxRcvMsgPayload.ubxNavPvt.hAcc;
+        gpsSol.acc.vAcc = ubxRcvMsgPayload.ubxNavPvt.vAcc;
+        gpsSol.acc.sAcc = ubxRcvMsgPayload.ubxNavPvt.sAcc;
+        gpsSol.acc.headAcc = ubxRcvMsgPayload.ubxNavPvt.headAcc;
+        // gSpeed & velD are in mm/s (int32_t), gpsSol.speed3d in cm/s (uint16_t)
+        float gs = (float)ubxRcvMsgPayload.ubxNavPvt.gSpeed;
+        float vd = (float)ubxRcvMsgPayload.ubxNavPvt.velD;
+        gpsSol.speed3d = (uint16_t)(sqrtf(sq(gs) + sq(vd)) * 0.1f);     // mm/s -> cm/s
+        // Update 2D ground speed (mm/s -> cm/s) for NAV-PVT when NAV-VELNED is disabled
+        gpsSol.groundSpeed = (uint16_t)(ubxRcvMsgPayload.ubxNavPvt.gSpeed / 10);    // cm/s
+        gpsSol.groundCourse = (uint16_t)(ubxRcvMsgPayload.ubxNavPvt.headMot / 10000);     // Heading 2D deg * 100000 rescaled to deg * 10
+        gpsSol.dop.pdop = ubxRcvMsgPayload.ubxNavPvt.pDOP;
+        // NAV-PVT doesn't provide hDOP/vDOP, estimate from pDOP (pDOP >= hDOP/vDOP, so this is conservative)
+        gpsSol.dop.hdop = ubxRcvMsgPayload.ubxNavPvt.pDOP;
+        gpsSol.dop.vdop = ubxRcvMsgPayload.ubxNavPvt.pDOP;
+        gpsSol.velned.velN = (int16_t)(ubxRcvMsgPayload.ubxNavPvt.velN / 10); // cm/s
+        gpsSol.velned.velE = (int16_t)(ubxRcvMsgPayload.ubxNavPvt.velE / 10); // cm/s
+        gpsSol.velned.velD = (int16_t)(ubxRcvMsgPayload.ubxNavPvt.velD / 10); // cm/s
+        ubxHaveNewSpeed = true;
+        // Store GPS date/time for telemetry, applying nano correction per u-blox spec
+        // (nano can be negative when integer time fields are rounded up)
+        gpsSol.dateTime.valid = (ubxRcvMsgPayload.ubxNavPvt.valid & NAV_VALID_DATE) && (ubxRcvMsgPayload.ubxNavPvt.valid & NAV_VALID_TIME);
+        if (gpsSol.dateTime.valid) {
+            int64_t utcSeconds = dateTimeToUnixSeconds(
+                ubxRcvMsgPayload.ubxNavPvt.year, ubxRcvMsgPayload.ubxNavPvt.month, ubxRcvMsgPayload.ubxNavPvt.day,
+                ubxRcvMsgPayload.ubxNavPvt.hour, ubxRcvMsgPayload.ubxNavPvt.min, ubxRcvMsgPayload.ubxNavPvt.sec);
+            uint16_t millis = 0;
+            applyNanoCorrection(&utcSeconds, &millis, ubxRcvMsgPayload.ubxNavPvt.nano);
+            unixSecondsToDateTime(&gpsSol.dateTime, utcSeconds, millis);
+        }
 #ifdef USE_RTC_TIME
         // Set system clock once when GPS time is available
         if (!rtcHasTime() && gpsSol.dateTime.valid) {
