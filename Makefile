@@ -352,6 +352,23 @@ ASFLAGS     = $(ARCH_FLAGS) \
               -MMD -MP
 
 ifeq ($(LD_FLAGS),)
+ifeq ("$(TARGET)","CH32H415")
+LD_FLAGS     = -lm \
+              -nostartfiles \
+              --specs=nano.specs \
+              -lc \
+              -lnosys \
+              $(ARCH_FLAGS) \
+              $(LTO_FLAGS) \
+              $(DEBUG_FLAGS) \
+              -static \
+              -Wl,-gc-sections,-Map,$(TARGET_MAP) \
+              -Wl,-L$(LINKER_DIR) \
+              -Wl,--cref \
+              -Wl,--print-memory-usage \
+              -T$(LD_SCRIPT) \
+               $(EXTRA_LD_FLAGS)
+else
 LD_FLAGS     = -lm \
               -nostartfiles \
               --specs=nano.specs \
@@ -368,6 +385,7 @@ LD_FLAGS     = -lm \
               -Wl,--print-memory-usage \
               -T$(LD_SCRIPT) \
                $(EXTRA_LD_FLAGS)
+endif
 endif
 
 LTO_FLAGS               := $(filter-out $(CFLAGS_DISABLED), $(LTO_FLAGS))
