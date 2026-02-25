@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #pragma once
+#include "ch32_debug.h"
 
 /**********************************/
 /*********USB high speed**********/
@@ -11,6 +12,10 @@
 typedef volatile unsigned short *PUINT16V;
 typedef volatile unsigned long *PUINT32V;
 typedef volatile unsigned char *PUINT8V;
+
+#if !defined(UNUSED)
+#define UNUSED(x) (void)(x)
+#endif
 
 /* USB high speed device register */
 #define R8_USB_CTRL             (*((PUINT8V)0x40030000)) // RW, USB_high_speed control register

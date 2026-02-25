@@ -37,7 +37,6 @@ STDPERIPH_SRC   = \
         ch32h417_sai.c \
         ch32h417_sdio.c \
         ch32h417_sdmmc.c \
-        ch32h417_serdes.c \
         ch32h417_spi.c \
         ch32h417_swpmi.c \
         ch32h417_tim.c \

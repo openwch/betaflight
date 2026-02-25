@@ -1,4 +1,5 @@
 #include "cdc_vcp_ch32h41x.h"
+#include "usb_ch32h41x_usbhs_reg.h"
 #include "ch32h417.h"
 
 struct cdc_line_coding cdc_vcp_line_coding = {
