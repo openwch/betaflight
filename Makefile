@@ -396,13 +396,9 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               $(DEBUG_FLAGS) \
               -std=gnu17 \
-<<<<<<< HEAD
-              -Wunused -Wuninitialized \
-=======
               -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
 							-Wno-incompatible-pointer-types \
 							-Wno-sign-compare \
->>>>>>> b17dc0e34 (WIP makefile changes)
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
