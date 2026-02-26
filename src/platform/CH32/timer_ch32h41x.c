@@ -33,7 +33,9 @@
 
 const timerDef_t timerDefinitions[HARDWARE_TIMER_DEFINITION_COUNT] = {
     { .TIMx = TIM1,  .rcc = RCC_HB2(TIM1),  .inputIrq = TIM1_CC_IRQn },
+#ifndef USE_INTERNAL_OSD        
     { .TIMx = TIM2,  .rcc = RCC_HB1(TIM2),  .inputIrq = TIM2_IRQn },
+#endif
     { .TIMx = TIM3,  .rcc = RCC_HB1(TIM3),  .inputIrq = TIM3_IRQn },
     { .TIMx = TIM4,  .rcc = RCC_HB1(TIM4),  .inputIrq = TIM4_IRQn },
     { .TIMx = TIM5,  .rcc = RCC_HB1(TIM5),  .inputIrq = TIM5_IRQn },
@@ -41,9 +43,11 @@ const timerDef_t timerDefinitions[HARDWARE_TIMER_DEFINITION_COUNT] = {
     { .TIMx = TIM7,  .rcc = RCC_HB1(TIM7),  .inputIrq = TIM7_IRQn} ,
     { .TIMx = TIM8,  .rcc = RCC_HB2(TIM8),  .inputIrq = TIM8_CC_IRQn },
     { .TIMx = TIM9,  .rcc = RCC_HB2(TIM9),  .inputIrq = TIM9_IRQn },
+#ifndef USE_INTERNAL_OSD
     { .TIMx = TIM10, .rcc = RCC_HB2(TIM10), .inputIrq = TIM10_IRQn },
     { .TIMx = TIM11, .rcc = RCC_HB2(TIM11), .inputIrq = TIM11_IRQn },
     { .TIMx = TIM12, .rcc = RCC_HB2(TIM12), .inputIrq = TIM12_IRQn },
+#endif
 };
 
 #if defined(USE_TIMER_MGMT)

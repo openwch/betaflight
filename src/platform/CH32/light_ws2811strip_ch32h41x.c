@@ -208,7 +208,7 @@ bool ws2811LedStripHardwareInit(void)
 
 void ws2811LedStripStartTransfer(void)
 {
-    xDMA_Cmd(dmaRef, FALSE);
+    xDMA_Cmd(dmaRef, DISABLE);
     xDMA_SetCurrDataCounter(dmaRef, WS2811_DMA_BUFFER_SIZE);  // load number of bytes to be transferred
     TIM_SetCounter(timer, 0);
     TIM_Cmd(timer, ENABLE);

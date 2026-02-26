@@ -130,7 +130,8 @@ ifneq ($(RESULT),0)
 CCACHE :=
 endif
 $(info Debug: TARGET is $(TARGET))
-ifeq ("$(TARGET)","CH32H415")
+# ifeq ("$(TARGET)","CH32H415") 
+ifneq ($(filter CH32H415,$(TARGET))$(filter OMNIBUS-V,$(CONFIG)),)
 CROSS_CC     = $(CCACHE) $(RISCV_SDK_PREFIX)gcc
 CROSS_CXX    = $(CCACHE) $(RISCV_SDK_PREFIX)g++
 CROSS_GDB    = $(RISCV_SDK_PREFIX)gdb
@@ -209,7 +210,8 @@ else
 ifeq ($(DEBUG),INFO)
 DEBUG_FLAGS            = -ggdb2
 endif
-OPTIMISATION_BASE     := -flto=auto -fuse-linker-plugin -ffast-math -fmerge-all-constants
+# OPTIMISATION_BASE     := -flto=auto -fuse-linker-plugin -ffast-math -fmerge-all-constants
+OPTIMISATION_BASE     := -fuse-linker-plugin -ffast-math -fmerge-all-constants
 OPTIMISE_DEFAULT      := -O2
 OPTIMISE_SPEED        := -Ofast
 OPTIMISE_SIZE         := -Os
