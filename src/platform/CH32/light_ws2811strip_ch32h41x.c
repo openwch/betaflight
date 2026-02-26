@@ -275,6 +275,7 @@ bool ws2811LedStripHardwareInit(ioTag_t ioTag)
 void ws2811LedStripStartTransfer(void)
 {
     xDMA_Cmd(dmaRef, DISABLE);
+<<<<<<< HEAD
 =======
 void ws2811LedStripDMAEnable(void)
 {
@@ -292,6 +293,8 @@ void ws2811LedStripStartTransfer(void)
 void ws2811LedStripDMAEnable(void)
 {
 >>>>>>> 5c26dd0a1 (dshot 8K,uart4 MSP+DisplayPort function is OK)
+=======
+>>>>>>> a1fd0d1b4 (fix timer and led strip drivers bugs)
     xDMA_SetCurrDataCounter(dmaRef, WS2811_DMA_BUFFER_SIZE);  // load number of bytes to be transferred
     TIM_SetCounter(timer, 0);
     TIM_Cmd(timer, ENABLE);
