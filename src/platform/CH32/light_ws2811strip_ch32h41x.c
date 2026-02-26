@@ -255,8 +255,12 @@ void ws2811LedStripDMAEnable(void)
 =======
 void ws2811LedStripStartTransfer(void)
 {
+<<<<<<< HEAD
     xDMA_Cmd(dmaRef, FALSE);
 >>>>>>> ab93a2999 (WIP CH32 platform updates)
+=======
+    xDMA_Cmd(dmaRef, DISABLE);
+>>>>>>> e00d53f2f (fix timer and led strip drivers bugs)
     xDMA_SetCurrDataCounter(dmaRef, WS2811_DMA_BUFFER_SIZE);  // load number of bytes to be transferred
     TIM_SetCounter(timer, 0);
     TIM_Cmd(timer, ENABLE);
