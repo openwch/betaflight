@@ -404,7 +404,6 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(EXTRA_FLAGS)
 endif
 
-
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
 $(info $(CFLAGS))
 ASFLAGS     = $(ARCH_FLAGS) \
