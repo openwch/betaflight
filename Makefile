@@ -126,8 +126,14 @@ ifneq ($(RESULT),0)
 CCACHE :=
 endif
 $(info Debug: TARGET is $(TARGET))
+ifeq ($(TARGET),)
+ifneq ($(CONFIG),)
+	DETECTED_TARGET := $(call FIND_TARGET_MCU_VALUE,$(CONFIG))
+endif
+endif
+$(info Debug: Detected target is $(DETECTED_TARGET))
 # ifeq ("$(TARGET)","CH32H415") 
-ifneq ($(filter CH32H415,$(TARGET))$(filter OMNIBUS-V,$(CONFIG)),)
+ifneq ($(filter CH32H415,$(TARGET))$(filter CH32H415,$(DETECTED_TARGET)),)
 CROSS_CC     = $(CCACHE) $(RISCV_SDK_PREFIX)gcc
 CROSS_CXX    = $(CCACHE) $(RISCV_SDK_PREFIX)g++
 CROSS_GDB    = $(RISCV_SDK_PREFIX)gdb
@@ -315,7 +321,7 @@ FC_VER           := $(call pp_def_value_str,src/main/build/version.h,FC_VERSION_
 TEMPORARY_FLAGS :=
 
 EXTRA_WARNING_FLAGS := -Wold-style-definition
-
+ifneq ($(filter CH32H415,$(TARGET))$(filter CH32H415,$(DETECTED_TARGET)),)
 CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -D,$(OPTIONS)) \
               $(addprefix -I,$(INCLUDE_DIRS)) \
@@ -343,6 +349,33 @@ CFLAGS     += $(ARCH_FLAGS) \
               -pipe \
               -MMD -MP \
               $(EXTRA_FLAGS)
+
+else
+CFLAGS     += $(ARCH_FLAGS) \
+              $(addprefix -D,$(OPTIONS)) \
+              $(addprefix -I,$(INCLUDE_DIRS)) \
+              $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
+              $(DEBUG_FLAGS) \
+              -std=gnu17 \
+              -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
+              $(EXTRA_WARNING_FLAGS) \
+              -ffunction-sections \
+              -fdata-sections \
+              -fno-common \
+              $(TEMPORARY_FLAGS) \
+              $(DEVICE_FLAGS) \
+              -D_GNU_SOURCE \
+              -D$(TARGET) \
+              $(TARGET_FLAGS) \
+              -D'__FORKNAME__="$(FORKNAME)"' \
+              -D'__TARGET__="$(TARGET)"' \
+              -D'__REVISION__="$(REVISION)"' \
+              -D'__FC_VERSION__="$(FC_VER)"' \
+              $(CONFIG_REVISION_DEFINE) \
+              -pipe \
+              -MMD -MP \
+              $(EXTRA_FLAGS)
+endif
 
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
 $(info $(CFLAGS))

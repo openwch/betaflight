@@ -10,5 +10,6 @@
 #   msysGit
 #   Python
 
+FIND_TARGET_MCU_VALUE = $(word 3,$(shell findstr 'TARGET_MCU' src/config/configs/$(1)/config.h))
 PYTHON := python
 export PYTHON

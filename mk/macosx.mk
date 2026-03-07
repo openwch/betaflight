@@ -28,4 +28,5 @@ else
     endif
 endif
 
+FIND_TARGET_MCU_VALUE = $(word 3,$(shell grep 'TARGET_MCU' src/config/configs/$(1)/config.h))
 export PYTHON
