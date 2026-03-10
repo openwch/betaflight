@@ -45,6 +45,7 @@
 #include "drivers/dshot_bitbang_decode.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "platform/timer.h"
 #include "pwm_output_dshot_shared.h"
 
 #include "pg/motor.h"
@@ -166,7 +167,7 @@ static void bbOutputDataClear(uint32_t *buffer)
 
 // bbPacer management
 
-static bbPacer_t *bbFindMotorPacer(timerResource_t *tim)
+static bbPacer_t *bbFindMotorPacer(void *tim)
 {
     for (int i = 0; i < MAX_MOTOR_PACERS; i++) {
 

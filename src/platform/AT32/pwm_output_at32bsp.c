@@ -62,7 +62,7 @@ static void pwmOCConfig(tmr_type *tim, uint8_t channel, uint16_t value, uint8_t 
 void pwmOutputConfig(timerChannel_t *channel, const timerHardware_t *timerHardware, uint32_t hz, uint16_t period, uint16_t value, uint8_t inversion)
 {
     timerReconfigureTimeBase(timerHardware, period, hz);
-    pwmOCConfig((tmr_type *)timerHardware->tim,
+    pwmOCConfig(timerHardware->tim,
         timerHardware->channel,
         value,
         inversion ? timerHardware->output ^ TIMER_OUTPUT_INVERTED : timerHardware->output
@@ -76,6 +76,11 @@ void pwmOutputConfig(timerChannel_t *channel, const timerHardware_t *timerHardwa
     channel->tim = timerHardware->tim;
 
     *channel->ccr = 0;
+}
+
+void pwmWriteChannel(timerChannel_t *channel, uint32_t value)
+{
+    *channel->ccr = value;
 }
 
 static FAST_DATA_ZERO_INIT motorDevice_t *pwmMotorDevice;
@@ -237,7 +242,7 @@ bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
         motors[motorIndex].pulseScale = ((motorConfig->motorProtocol == MOTOR_PROTOCOL_BRUSHED) ? period : (sLen * hz)) / 1000.0f;
         motors[motorIndex].pulseOffset = (sMin * hz) - (motors[motorIndex].pulseScale * 1000);
 
-        pwmOutConfig(&motors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
+        pwmOutputConfig(&pwmMotors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
 
         bool timerAlreadyUsed = false;
         for (int i = 0; i < motorIndex; i++) {

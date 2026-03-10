@@ -120,7 +120,7 @@ static tmr_channel_select_type toCHSelectType(const uint8_t bfChannel, const boo
 void dshotEnableChannels(unsigned motorCount)
 {
     for (unsigned i = 0; i < motorCount; i++) {
-        tmr_primary_mode_select(dmaMotors[i].timerHardware->tim, TMR_PRIMARY_SEL_COMPARE);
+        tmr_primary_mode_select((tmr_type *)dmaMotors[i].timerHardware->tim, TMR_PRIMARY_SEL_COMPARE);
 
         tmr_channel_select_type atCh = toCHSelectType(dmaMotors[i].timerHardware->channel, dmaMotors[i].output & TIMER_OUTPUT_N_CHANNEL);
         tmr_channel_enable((tmr_type *)dmaMotors[i].timerHardware->tim, atCh, TRUE);
@@ -452,7 +452,7 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
 
         tmr_counter_enable(timer, FALSE);
 
-        uint32_t prescaler = (uint16_t)(lrintf((float) timerClock(timer) / getDshotHz(pwmProtocolType) + 0.01f) - 1);
+        uint32_t prescaler = (uint16_t)(lrintf((float) timerClockFromInstance(timer) / getDshotHz(pwmProtocolType) + 0.01f) - 1);
         uint32_t period = (pwmProtocolType == MOTOR_PROTOCOL_PROSHOT1000 ? (MOTOR_NIBBLE_LENGTH_PROSHOT) : MOTOR_BITLENGTH) - 1;
 
         tmr_clock_source_div_set(timer, TMR_CLOCK_DIV1);
@@ -524,7 +524,7 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
         DMAINIT.DMA_MemoryBurst = DMA_MemoryBurst_Single;
         DMAINIT.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
-        DMAINIT.DMA_PeripheralBaseAddr = (uint32_t)&timerHardware->tim->DMAR;
+        DMAINIT.DMA_PeripheralBaseAddr = (uint32_t)&((tmr_type *)timerHardware->tim)->DMAR;
         DMAINIT.DMA_BufferSize = (pwmProtocolType == MOTOR_PROTOCOL_PROSHOT1000) ? PROSHOT_DMA_BUFFER_SIZE : DSHOT_DMA_BUFFER_SIZE; // XXX
         DMAINIT.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
         DMAINIT.DMA_MemoryInc = DMA_MemoryInc_Enable;

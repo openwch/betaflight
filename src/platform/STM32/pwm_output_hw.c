@@ -34,11 +34,13 @@
 #include "drivers/time.h"
 #include "drivers/timer.h"
 
+#include "platform/timer.h"
+
 #include "drivers/motor_impl.h"
 
 static bool useContinuousUpdate = true;
 
-static void pwmOCConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t value, uint8_t output)
+static void pwmOCConfig(void *tim, uint8_t channel, uint16_t value, uint8_t output)
 {
 #if defined(USE_HAL_DRIVER)
     TIM_HandleTypeDef* Handle = timerFindTimerHandle(tim);
@@ -107,6 +109,11 @@ void pwmOutputConfig(timerChannel_t *channel, const timerHardware_t *timerHardwa
     channel->tim = timerHardware->tim;
 
     *channel->ccr = 0;
+}
+
+void pwmWriteChannel(timerChannel_t *channel, uint32_t value)
+{
+    *channel->ccr = value;
 }
 
 static void pwmWriteStandard(uint8_t index, float value)
@@ -255,7 +262,7 @@ bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
         motors[motorIndex].pulseScale = ((motorConfig->motorProtocol == MOTOR_PROTOCOL_BRUSHED) ? period : (sLen * hz)) / 1000.0f;
         motors[motorIndex].pulseOffset = (sMin * hz) - (motors[motorIndex].pulseScale * 1000);
 
-        pwmOutConfig(&motors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
+        pwmOutputConfig(&pwmMotors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
 
         bool timerAlreadyUsed = false;
         for (int i = 0; i < motorIndex; i++) {

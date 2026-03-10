@@ -88,7 +88,7 @@ void pwmDshotRequestTelemetry(unsigned index)
     }
 }
 
-uint8_t getTimerIndex(TIM_TypeDef *timer)
+uint8_t getTimerIndex(void *timer)
 {
     for (int i = 0; i < dmaMotorTimerCount; i++) {
         if (dmaMotorTimers[i].timer == timer) {

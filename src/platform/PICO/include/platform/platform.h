@@ -53,14 +53,6 @@ typedef enum {DISABLE = 0, ENABLE = !DISABLE} FunctionalState;
 
 #define TIM_OCInitTypeDef    void*
 #define TIM_ICInitTypeDef    void*
-//#define TIM_OCStructInit
-//#define TIM_Cmd
-//#define TIM_CtrlPWMOutputs
-//#define TIM_TimeBaseInit
-//#define TIM_ARRPreloadConfig
-//#define SystemCoreClock
-//#define EXTI_TypeDef
-//#define EXTI_InitTypeDef
 
 // SPI_TypeDef alias removed: use spiResource_t* in generic code, cast to SPI0_Type* in platform code.
 // SPI_INST converts to the correct type for use in pico-sdk functions.

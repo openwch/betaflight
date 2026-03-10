@@ -42,6 +42,7 @@
 #include "drivers/pwm_output.h" // XXX for pwmOutputPort_t motors[]; should go away with refactoring
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "platform/timer.h"
 #include "pwm_output_dshot_shared.h"
 
 #include "pg/motor.h"
