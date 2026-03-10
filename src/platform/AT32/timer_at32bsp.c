@@ -557,7 +557,8 @@ static inline volatile timCCR_t* timerGetCCRPointer(tmr_type *tim, uint8_t chann
     }
 }
 
-volatile timCCR_t* timerChCCR(const timerHardware_t *timHw)
+// Internal helper
+static inline volatile timCCR_t* timerGetCCRPointer(tmr_type *tim, uint8_t channel)
 {
     return timerGetCCRPointer((tmr_type *)timHw->tim, timHw->channel);
 }
