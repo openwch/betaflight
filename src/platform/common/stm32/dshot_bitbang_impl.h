@@ -120,6 +120,9 @@ typedef struct dmaRegCache_s {
     uint32_t PADDR;
     uint32_t MADDR;
     uint32_t M1ADDR;
+#elif defined(STM32N6)
+    // TODO: N6 HPDMA/GPDMA register cache - placeholder for future implementation
+    uint32_t placeholder;
 #else
 #error No MCU dependent code here
 #endif
