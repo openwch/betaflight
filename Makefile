@@ -111,7 +111,7 @@ UF2_TARGETS      := $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(PLATFORM_
 HEX_TARGETS      := $(filter-out $(EXE_TARGETS) $(UF2_TARGETS),$(BASE_TARGETS))
 
 # configure some directories that are relative to wherever ROOT_DIR is located
-TOOLS_DIR  ?= $(ROOT)/tools
+TOOLS_DIR  ?= $(ROOT_DIR)/tools
 DL_DIR     := $(ROOT)/downloads
 CONFIG_DIR ?= $(BETAFLIGHT_CONFIG)
 ifeq ($(CONFIG_DIR),)
@@ -238,6 +238,9 @@ SPEED_OPTIMISED_SRC :=
 SIZE_OPTIMISED_SRC  :=
 
 include $(TARGET_PLATFORM_DIR)/mk/$(TARGET_MCU_FAMILY).mk
+
+# Validate the platform toolchain is available
+include $(MAKE_SCRIPT_DIR)/tools_check.mk
 
 # Configure default flash sizes for the targets (largest size specified gets hit first) if flash not specified already.
 ifeq ($(TARGET_FLASH_SIZE),)
@@ -761,7 +764,20 @@ uf2:
 .PHONY: exe
 exe: $(TARGET_EXE)
 
-TARGETS_REVISION = $(addsuffix _rev,$(HEX_TARGETS))
+# FWO (Firmware Output) is the default output for building the firmware
+.PHONY: fwo
+fwo:
+ifeq ($(DEFAULT_OUTPUT),exe)
+	$(V1) $(MAKE) exe
+else ifeq ($(DEFAULT_OUTPUT),uf2)
+	$(V1) $(MAKE) uf2
+else ifeq ($(DEFAULT_OUTPUT),bin)
+	$(V1) $(MAKE) binary
+else
+	$(V1) $(MAKE) hex
+endif
+
+TARGETS_REVISION = $(addsuffix _rev, $(BASE_TARGETS))
 ## <TARGET>_rev    : build target and add revision to filename
 .PHONY: $(TARGETS_REVISION)
 $(TARGETS_REVISION):
@@ -884,7 +900,7 @@ $(TARGET_EF_HASH_FILE):
 	$(V1) touch $(TARGET_EF_HASH_FILE)
 
 # rebuild everything when makefile changes or the extra flags have changed
-$(TARGET_OBJS): $(TARGET_EF_HASH_FILE) Makefile $(TARGET_DIR)/target.mk $(wildcard make/*) $(CONFIG_FILE)
+$(TARGET_OBJS): $(TARGET_EF_HASH_FILE) Makefile $(TARGET_DIR)/target.mk $(wildcard make/*) $(CONFIG_FILE) | $(PLATFORM_SDK_STAMP)
 
 # include auto-generated dependencies
 -include $(TARGET_DEPS)
