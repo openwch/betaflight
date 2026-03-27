@@ -22,9 +22,7 @@ jobs:
       tools-cache-key: ${{ steps.tools-key.outputs.key }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+        uses: actions/checkout@v5
 
       - name: Init config submodule
         run: git submodule update --init -- src/config
@@ -36,10 +34,6 @@ jobs:
       - name: Get platform SDK list
         id: get-sdks
         run: echo "sdks=$(make platform-sdk-list-print | jq -R -c 'split(" ")')" >> $GITHUB_OUTPUT
-
-      - name: Build pico tool and install
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
-        run: make picotool_install
 
       - name: Hydrate configuration
         id: get-config
@@ -112,9 +106,7 @@ jobs:
         target: ${{ fromJson(needs.setup.outputs.targets) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+        uses: actions/checkout@v5
 
       - name: Init config submodule
         run: git submodule update --init -- src/config
