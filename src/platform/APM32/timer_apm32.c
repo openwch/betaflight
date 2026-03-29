@@ -338,8 +338,7 @@ static void timerNVICConfigure(uint8_t irq)
 
 void* timerFindTimerHandle(timerResource_t *tim)
 {
-    TMR_TypeDef *tim_ptr = (TMR_TypeDef *)tim;
-    uint8_t timerIndex = lookupTimerIndex(tim_ptr);
+    uint8_t timerIndex = lookupTimerIndex(tim);
     if (timerIndex >= USED_TIMER_COUNT) {
         return NULL;
     }
@@ -471,8 +470,7 @@ void timerChannelOverflowHandlerInit(timerOvrHandlerRec_t *self, timerOvrHandler
 // some synchronization mechanism is neccesary to avoid disturbing other channels (BASEPRI used now)
 static void timerChConfig_UpdateOverflow(timerConfig_t *cfg, const timerResource_t *tim)
 {
-    const TMR_TypeDef *tim_ptr = (const TMR_TypeDef *)tim;
-    uint8_t timerIndex = lookupTimerIndex(tim_ptr);
+    uint8_t timerIndex = lookupTimerIndex(tim);
     if (timerIndex >= USED_TIMER_COUNT) {
         return;
     }
