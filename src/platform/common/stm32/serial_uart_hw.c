@@ -40,9 +40,18 @@
 #include "drivers/serial_impl.h"
 #include "drivers/serial_uart.h"
 #include "drivers/serial_uart_impl.h"
-#include "platform/rcc.h"
+#include "drivers/dma.h"
+#include "drivers/dma_reqmap.h"
+#include "platform/dma.h"
+#include "platform/serial_uart_hal.h"
 
 #include "pg/serial_uart.h"
+
+#ifdef USE_HAL_DRIVER
+extern struct uartHalHandle_s uartHalHandles[UARTDEV_COUNT];
+extern struct dmaHalHandle_s uartRxDmaHalHandles[UARTDEV_COUNT];
+extern struct dmaHalHandle_s uartTxDmaHalHandles[UARTDEV_COUNT];
+#endif
 
 // TODO: split this function into mcu-specific UART files ?
 static void enableRxIrq(const uartHardware_t *hardware) {
@@ -92,7 +101,17 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
   s->USARTx = hardware->reg;
 
 #ifdef USE_HAL_DRIVER
+<<<<<<< HEAD
   s->Handle.Instance = hardware->reg;
+=======
+    {
+        const uartDeviceIdx_e uartDevIdx = uartDeviceIdxFromIdentifier(hardware->identifier);
+        s->halHandle = &uartHalHandles[uartDevIdx];
+        s->rxDmaHalHandle = &uartRxDmaHalHandles[uartDevIdx];
+        s->txDmaHalHandle = &uartTxDmaHalHandles[uartDevIdx];
+        s->halHandle->hal.Instance = (USART_TypeDef *)hardware->reg;
+    }
+>>>>>>> 3d285e1cb (Replace void* and MCU-specific TypeDef pointers with opaque resource types in driver interfaces (#15033))
 #endif
 
   s->checkUsartTxOutput = checkUsartTxOutput;
@@ -320,11 +339,19 @@ void uartConfigureDma(uartDevice_t *uartdev) {
 
 void uartEnableTxInterrupt(uartPort_t *uartPort) {
 #if defined(USE_HAL_DRIVER)
+<<<<<<< HEAD
   __HAL_UART_ENABLE_IT(&uartPort->Handle, UART_IT_TXE);
 #elif defined(USE_ATBSP_DRIVER)
   usart_interrupt_enable(uartPort->USARTx, USART_TDBE_INT, TRUE);
 #else
   USART_ITConfig(uartPort->USARTx, USART_IT_TXE, ENABLE);
+=======
+    __HAL_UART_ENABLE_IT(&uartPort->halHandle->hal, UART_IT_TXE);
+#elif defined(USE_ATBSP_DRIVER)
+    usart_interrupt_enable((usart_type *)uartPort->USARTx, USART_TDBE_INT, TRUE);
+#else
+    USART_ITConfig((USART_TypeDef *)uartPort->USARTx, USART_IT_TXE, ENABLE);
+>>>>>>> 3d285e1cb (Replace void* and MCU-specific TypeDef pointers with opaque resource types in driver interfaces (#15033))
 #endif
 }
 
