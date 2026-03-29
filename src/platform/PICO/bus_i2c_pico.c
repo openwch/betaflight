@@ -59,13 +59,13 @@ const i2cHardware_t i2cHardware[I2CDEV_COUNT] = {
 #ifdef USE_I2C_DEVICE_0
 {
         .device = I2CDEV_0,
-        .reg = i2c0,
+        .reg = (i2cResource_t *)i2c0,
     },
 #endif
 #ifdef USE_I2C_DEVICE_1
     {
         .device = I2CDEV_1,
-        .reg = i2c1,
+        .reg = (i2cResource_t *)i2c1,
     },
 #endif
 };
@@ -441,6 +441,38 @@ void i2cInit(i2cDevice_e device)
     // Enable internal pull-up resistors
     gpio_pull_up(sdaPin);
     gpio_pull_up(sclPin);
+
+    i2c_contexts[device].i2c = I2C_INST(i2cHardware[device].reg);
+    i2c_contexts[device].state = I2C_STATE_IDLE;
+
+    // Enable the default interrupts
+    I2C_INST(hardware->reg)->hw->intr_mask = DEF_I2C_INTR;
+
+    // Set FIFO thresholds
+    // The reg takes up one position in the output FIFO and if
+    // I2C_FIFO_BUFFER_DEPTH bytes are written following this
+    // then a race condition occurs where if that byte isn't
+    // consumed quickly enough by the hardware a TX_ABORT occurs.
+    // Thus the rx_tl must be set to interrupt with one byte less.
+    I2C_INST(hardware->reg)->hw->rx_tl = I2C_FIFO_BUFFER_DEPTH - 2;
+
+    // Register the I2C interrupt handler
+    switch (device) {
+    case I2CDEV_0:
+        irq_set_exclusive_handler(I2C0_IRQ, i2c_irq0_handler);
+        irq_set_priority(I2C0_IRQ, NVIC_PRIO_I2C_EV);
+        irq_set_enabled(I2C0_IRQ, true);
+        break;
+
+    case I2CDEV_1:
+        irq_set_exclusive_handler(I2C1_IRQ, i2c_irq1_handler);
+        irq_set_priority(I2C1_IRQ, NVIC_PRIO_I2C_EV);
+        irq_set_enabled(I2C1_IRQ, true);
+        break;
+
+    default:
+        break;
+    }
 }
 
 #endif // #if defined(USE_I2C) && !defined(SOFT_I2C)

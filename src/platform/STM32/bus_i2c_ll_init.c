@@ -36,6 +36,9 @@
 #include "drivers/bus_i2c_impl.h"
 #include "drivers/bus_i2c_timing.h"
 #include "drivers/bus_i2c_utils.h"
+#include "platform/bus_i2c_hal.h"
+
+static struct i2cHalHandle_s i2cHalHandles[I2CDEV_COUNT];
 
 #define IOCFG_I2C_PU IO_CONFIG(GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP)
 #define IOCFG_I2C    IO_CONFIG(GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL)
@@ -274,13 +277,14 @@ void i2cInit(i2cDevice_e device)
 
     // Init I2C peripheral using LL
 
-    I2C_TypeDef *I2Cx = (I2C_TypeDef *)pDev->hardware->reg;
+    pDev->halHandle = &i2cHalHandles[device];
+
+    I2C_HandleTypeDef *pHandle = &pDev->halHandle->hal;
 
     // Reset the I2C state
     memset(&pDev->state, 0, sizeof(pDev->state));
 
-    LL_I2C_Disable(I2Cx);
-    LL_I2C_DeInit(I2Cx);
+    pHandle->Instance = (I2C_TypeDef *)pDev->hardware->reg;
 
     // Compute TIMINGR value based on peripheral clock for this device instance
 

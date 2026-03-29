@@ -28,6 +28,9 @@ typedef struct uartPort_s {
     serialPort_t port;
 
 #ifdef USE_DMA
+    dmaHalHandle_t *rxDmaHalHandle;
+    dmaHalHandle_t *txDmaHalHandle;
+
     dmaResource_t *rxDMAResource;
     dmaResource_t *txDMAResource;
     uint32_t rxDMAChannel;
@@ -46,6 +49,7 @@ typedef struct uartPort_s {
     uint32_t rxDMAPeripheralBaseAddr;
 #endif // USE_DMA
 
+    uartHalHandle_t *halHandle;
     usartResource_t *USARTx;
     bool txDMAEmpty;
 

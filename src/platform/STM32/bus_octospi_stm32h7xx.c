@@ -36,7 +36,14 @@
 #include "drivers/bus_octospi.h"
 #include "drivers/bus_octospi_impl.h"
 
-#if !(defined(STM32H730xx) || defined(STM32H723xx) || defined(STM32H735xx))
+// Provide platform-specific hardware table for STM32H7
+const octoSpiHardware_t octoSpiHardware[OCTOSPIDEV_COUNT] = {
+#if defined(STM32H730xx) || defined(STM32H723xx) || defined(STM32H735xx)
+    {
+        .device = OCTOSPIDEV_1,
+        .reg = (octoSpiResource_t *)OCTOSPI1,
+    }
+#else
 #error MCU not supported.
 #endif
 };
@@ -478,7 +485,7 @@ static MMFLASH_CODE_NOINLINE void octoSpiRestoreMemoryMappedModeConfiguration(OC
 MMFLASH_CODE_NOINLINE void octoSpiDisableMemoryMappedMode(octoSpiResource_t *instance_)
 {
     OCTOSPI_TypeDef *instance = (OCTOSPI_TypeDef *)instance_;
-    if (READ_BIT(instance->CR, OCTOSPI_CR_FMODE) != OCTOSPI_CR_FMODE) {
+    if (READ_BIT(OCTOSPI1->CR, OCTOSPI_CR_FMODE) != OCTOSPI_CR_FMODE) {
         failureMode(FAILURE_DEVELOPER); // likely not booted with memory mapped mode enabled, or mismatched calls to enable/disable memory map mode.
     }
 

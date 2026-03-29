@@ -254,7 +254,7 @@ void pgResetFn_gyroDeviceConfig(gyroDeviceConfig_t *devconf)
 #ifdef USE_SPI_GYRO
 
 #define GYRO_RESET(index, num) \
-    gyroResetSpiDeviceConfig(&devconf[index], GYRO_##num##_SPI_INSTANCE, \
+    gyroResetSpiDeviceConfig(&devconf[index], (spiResource_t *)GYRO_##num##_SPI_INSTANCE, \
         IO_TAG(GYRO_##num##_CS_PIN), IO_TAG(GYRO_##num##_EXTI_PIN), \
         IO_TAG(GYRO_##num##_CLKIN_PIN), GYRO_##num##_ALIGN, GYRO_##num##_CUSTOM_ALIGN)
 

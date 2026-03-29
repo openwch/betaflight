@@ -68,7 +68,7 @@ typedef struct timerOvrHandlerRec_s {
 } timerOvrHandlerRec_t;
 
 typedef struct timerHardware_s {
-    void *tim;
+    timerResource_t *tim;
     ioTag_t tag;
     uint8_t channel;
     uint8_t output;
