@@ -33,6 +33,7 @@
 #include "drivers/io.h"
 #include "drivers/io_impl.h"
 #include "drivers/dma.h"
+#include "platform/dma.h"
 #include "drivers/dma_reqmap.h"
 #include "drivers/dshot.h"
 #include "dshot_bitbang_impl.h"
@@ -41,6 +42,7 @@
 #include "drivers/nvic.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "platform/timer.h"
 
 #include "pg/motor.h"
 
@@ -218,7 +220,7 @@ void bbSwitchToOutput(bbPort_t * bbPort)
 
     // Reinitialize pacer timer for output
 
-    bbPort->timhw->tim->ATRLR = bbPort->outputARR;
+    ((TIM_TypeDef *)bbPort->timhw->tim)->ATRLR = bbPort->outputARR;
 
     bbPort->direction = DSHOT_BITBANG_DIRECTION_OUTPUT;
 
@@ -311,8 +313,8 @@ void bbSwitchToInput(bbPort_t *bbPort)
 
     // Reinitialize pacer timer for input
 
-    bbPort->timhw->tim->CNT = 0;
-    bbPort->timhw->tim->ATRLR = bbPort->inputARR;
+    ((TIM_TypeDef *)bbPort->timhw->tim)->CNT = 0;
+    ((TIM_TypeDef *)bbPort->timhw->tim)->ATRLR = bbPort->inputARR;
 
     bbDMA_Cmd(bbPort, ENABLE);
 
@@ -387,9 +389,9 @@ void bbTIM_TimeBaseInit(bbPort_t *bbPort, uint16_t period)
     TIM_ARRPreloadConfig(bbPort->timhw->tim, ENABLE);
 }
 
-void bbTIM_DMACmd(TIM_TypeDef* TIMx, uint16_t TIM_DMASource, FunctionalState NewState)
+void bbTIM_DMACmd(void* TIMx, uint16_t TIM_DMASource, FunctionalState NewState)
 {
-    TIM_DMACmd(TIMx, TIM_DMASource, NewState);
+    TIM_DMACmd((TIM_TypeDef *)TIMx, TIM_DMASource, NewState);
 }
 
 void bbDMA_ITConfig(bbPort_t *bbPort)

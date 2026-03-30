@@ -30,7 +30,8 @@
 #ifdef USE_DMA
 
 #include "drivers/nvic.h"
-#include "drivers/dma.h"
+#include "drivers/dma_impl.h"
+#include "platform/dma.h"
 #include "platform/rcc.h"
 #include "drivers/resource.h"
 

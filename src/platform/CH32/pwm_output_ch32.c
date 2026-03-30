@@ -28,17 +28,18 @@
 #ifdef USE_PWM_OUTPUT
 
 #include "drivers/io.h"
+#include "drivers/motor_impl.h"
 #include "drivers/pwm_output.h"
 #include "drivers/servo_impl.h"
 #include "drivers/pwm_output_impl.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "platform/timer.h"
 
-#include "drivers/motor_impl.h"
-
+#include "pg/motor.h"
 static bool useContinuousUpdate = true;
 
-static void pwmOCConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t value, uint8_t output)
+static void pwmOCConfig(void *tim, uint8_t channel, uint16_t value, uint8_t output)
 {
     TIM_OCInitTypeDef TIM_OCInitStructure;
 
@@ -56,28 +57,33 @@ static void pwmOCConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t value, uint8
     }
     TIM_OCInitStructure.TIM_Pulse = value;
 
-    timerOCInit(tim, channel, &TIM_OCInitStructure);
-    timerOCPreloadConfig(tim, channel, TIM_OCPreload_Enable);
+    timerOCInit((TIM_TypeDef *)tim, channel, &TIM_OCInitStructure);
+    timerOCPreloadConfig((TIM_TypeDef *)tim, channel, TIM_OCPreload_Enable);
 
 }
 
-void pwmOutConfig(timerChannel_t *channel, const timerHardware_t *timerHardware, uint32_t hz, uint16_t period, uint16_t value, uint8_t inversion)
+void pwmOutputConfig(timerChannel_t *channel, const timerHardware_t *timerHardware, uint32_t hz, uint16_t period, uint16_t value, uint8_t inversion)
 {
-    configTimeBase(timerHardware->tim, period, hz);
+    timerReconfigureTimeBase(timerHardware, period, hz);
     pwmOCConfig(timerHardware->tim,
         timerHardware->channel,
         value,
         inversion ? timerHardware->output ^ TIMER_OUTPUT_INVERTED : timerHardware->output
         );
 
-    TIM_CtrlPWMOutputs(timerHardware->tim, ENABLE);
-    TIM_Cmd(timerHardware->tim, ENABLE);
+    TIM_CtrlPWMOutputs((TIM_TypeDef *)timerHardware->tim, ENABLE);
+    TIM_Cmd((TIM_TypeDef *)timerHardware->tim, ENABLE);
 
     channel->ccr = timerChCCR(timerHardware);
 
     channel->tim = timerHardware->tim;
 
     *channel->ccr = 0;
+}
+
+void pwmWriteChannel(timerChannel_t *channel, uint32_t value)
+{
+    *channel->ccr = value;
 }
 
 static void pwmWriteStandard(uint8_t index, float value)
@@ -216,7 +222,7 @@ bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
         pwmMotors[motorIndex].pulseScale = ((motorConfig->motorProtocol == MOTOR_PROTOCOL_BRUSHED) ? period : (sLen * hz)) / 1000.0f;
         pwmMotors[motorIndex].pulseOffset = (sMin * hz) - (pwmMotors[motorIndex].pulseScale * 1000);
 
-        pwmOutConfig(&pwmMotors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
+        pwmOutputConfig(&pwmMotors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
 
         bool timerAlreadyUsed = false;
         for (int i = 0; i < motorIndex; i++) {
@@ -269,7 +275,7 @@ void servoDevInit(const servoDevConfig_t *servoConfig)
 
         IOConfigGPIOAF(servos[servoIndex].io, IOCFG_AF_PP, timer->alternateFunction);
 
-        pwmOutConfig(&servos[servoIndex].channel, timer, PWM_TIMER_1MHZ, PWM_TIMER_1MHZ / servoConfig->servoPwmRate, servoConfig->servoCenterPulse, 0);
+        pwmOutputConfig(&servos[servoIndex].channel, timer, PWM_TIMER_1MHZ, PWM_TIMER_1MHZ / servoConfig->servoPwmRate, servoConfig->servoCenterPulse, 0);
         servos[servoIndex].enabled = true;
     }
 }

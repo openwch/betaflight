@@ -23,6 +23,7 @@
 
 #include "platform.h"
 #include "common/utils.h"
+#include "platform/dma.h"
 
 #ifdef USE_INTERNAL_OSD
 //timer2/10/11/12 reserved for internal OSD 

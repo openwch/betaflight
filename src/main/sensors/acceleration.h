@@ -59,6 +59,7 @@ typedef enum {
     ACC_VIRTUAL
 } accelerationSensor_e;
 
+
 typedef struct acc_s {
     accDev_t dev;
     uint16_t sampleRateHz;

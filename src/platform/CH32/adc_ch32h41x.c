@@ -42,6 +42,7 @@
 
 #include "pg/adc.h"
 #include "platform/adc_impl.h"
+#include "platform/dma.h"
 
 #include <math.h>
 

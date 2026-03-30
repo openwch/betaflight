@@ -31,8 +31,10 @@
 
 #include "drivers/io.h"
 #include "drivers/io_impl.h"
+#include "platform/io_impl.h"
 #include "drivers/dma.h"
 #include "drivers/dma_reqmap.h"
+#include "platform/dma.h"
 #include "drivers/dshot.h"
 #include "drivers/dshot_bitbang.h"
 #include "dshot_bitbang_impl.h"
@@ -43,6 +45,7 @@
 #include "drivers/dshot_bitbang_decode.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "platform/timer.h"
 
 #include "pg/motor.h"
 #include "pg/pinio.h"
@@ -162,7 +165,7 @@ static void bbOutputDataClear(uint32_t *buffer)
 
 // bbPacer management
 
-static bbPacer_t *bbFindMotorPacer(TIM_TypeDef *tim)
+static bbPacer_t *bbFindMotorPacer(void *tim)
 {
     for (int i = 0; i < MAX_MOTOR_PACERS; i++) {
 

@@ -30,11 +30,13 @@
 
 #include "drivers/dma.h"
 #include "drivers/dma_reqmap.h"
+#include "platform/dma.h"
 #include "drivers/io.h"
 #include "drivers/nvic.h"
 #include "platform/rcc.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "platform/timer.h"
 #include "drivers/system.h"
 
 #include "drivers/pwm_output.h"
@@ -42,6 +44,7 @@
 #include "dshot_dpwm.h"
 #include "drivers/dshot_command.h"
 #include "pwm_output_dshot_shared.h"
+#include "platform/io_impl.h"
 
 #ifdef USE_DSHOT_TELEMETRY
 
@@ -50,9 +53,9 @@ void dshotEnableChannels(unsigned motorCount)
     for (unsigned i = 0; i < motorCount; i++) {
         // TIM_SelectOCxM(dmaMotors[i].timerHardware->tim,dmaMotors[i].timerHardware->channel,TIM_ForcedAction_InActive);  //output idle
         if (dmaMotors[i].output & TIMER_OUTPUT_N_CHANNEL) {
-            TIM_CCxNCmd(dmaMotors[i].timerHardware->tim, dmaMotors[i].timerHardware->channel, TIM_CCxN_Enable);
+            TIM_CCxNCmd((TIM_TypeDef *)dmaMotors[i].timerHardware->tim, dmaMotors[i].timerHardware->channel, TIM_CCxN_Enable);
         } else {
-            TIM_CCxCmd(dmaMotors[i].timerHardware->tim, dmaMotors[i].timerHardware->channel, TIM_CCx_Enable);
+            TIM_CCxCmd((TIM_TypeDef *)dmaMotors[i].timerHardware->tim, dmaMotors[i].timerHardware->channel, TIM_CCx_Enable);
         }
     }
 }
@@ -72,7 +75,7 @@ FAST_CODE void pwmDshotSetDirectionOutput(
 #endif
 
     const timerHardware_t * const timerHardware = motor->timerHardware;
-    TIM_TypeDef *timer = timerHardware->tim;
+    TIM_TypeDef *timer = (TIM_TypeDef *)timerHardware->tim;
 
     dmaResource_t *dmaRef = motor->dmaRef;
 
@@ -173,7 +176,7 @@ static void pwmDshotSetDirectionInput(
 
 }
 
-    TIM_TypeDef *timer = timerHardware->tim;
+    TIM_TypeDef *timer = (TIM_TypeDef *)timerHardware->tim;
 
     dmaResource_t *dmaRef = motor->dmaRef;
 
@@ -227,7 +230,7 @@ void pwmCompleteDshotMotorUpdate(void)
         {
             TIM_ARRPreloadConfig(dmaMotorTimers[i].timer, DISABLE);
             #ifdef USE_DSHOT_TELEMETRY
-            dmaMotorTimers[i].timer->ATRLR = dmaMotorTimers[i].outputPeriod;
+            ((TIM_TypeDef *)dmaMotorTimers[i].timer)->ATRLR = dmaMotorTimers[i].outputPeriod;
             #endif
             TIM_ARRPreloadConfig(dmaMotorTimers[i].timer, ENABLE);
             TIM_SetCounter(dmaMotorTimers[i].timer, 0);
@@ -248,12 +251,12 @@ FAST_CODE static void motor_DMA_IRQHandler(dmaChannelDescriptor_t *descriptor)
 #ifdef USE_DSHOT_DMAR
         if (useBurstDshot) {
             xDMA_Cmd(motor->timerHardware->dmaTimUPRef, DISABLE);
-            TIM_DMACmd(motor->timerHardware->tim, TIM_DMA_Update, DISABLE);
+            TIM_DMACmd((TIM_TypeDef *)motor->timerHardware->tim, TIM_DMA_Update, DISABLE);
         } else
 #endif
         {
             // TIM_DMACmd(motor->timerHardware->tim, motor->timerDmaSource, DISABLE);
-            motor->timerHardware->tim->DMAINTENR &= ~motor->timerDmaSource;
+            ((TIM_TypeDef *)motor->timerHardware->tim)->DMAINTENR &= ~motor->timerDmaSource;
             // xDMA_Cmd(motor->dmaRef, DISABLE);
              ((DMA_ARCH_TYPE *)(motor->dmaRef))->CFGR &= (uint16_t)(~DMA_CFGR1_EN);
         }
@@ -269,7 +272,7 @@ FAST_CODE static void motor_DMA_IRQHandler(dmaChannelDescriptor_t *descriptor)
             ((DMA_ARCH_TYPE *)(motor->dmaRef))->CFGR |= DMA_CFGR1_EN;
 
             // TIM_DMACmd(motor->timerHardware->tim, motor->timerDmaSource, ENABLE);
-            motor->timerHardware->tim->DMAINTENR |= motor->timerDmaSource;
+            ((TIM_TypeDef *)motor->timerHardware->tim)->DMAINTENR |= motor->timerDmaSource;
 
             dshotDMAHandlerCycleCounters.changeDirectionCompletedAt = getCycleCounter();
         }

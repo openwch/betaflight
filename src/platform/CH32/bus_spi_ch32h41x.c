@@ -37,7 +37,7 @@
 #include "drivers/exti.h"
 #include "drivers/io.h"
 #include "platform/rcc.h"
-
+#include "platform/dma.h"
 // Use DMA if possible if this many bytes are to be transferred
 #define SPI_DMA_THRESHOLD 8
 

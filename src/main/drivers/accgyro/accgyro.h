@@ -70,6 +70,7 @@ typedef enum {
     GYRO_VIRTUAL
 } gyroHardware_e;
 
+
 typedef enum {
     GYRO_HARDWARE_LPF_NORMAL,
     GYRO_HARDWARE_LPF_OPTION_1,

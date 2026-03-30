@@ -26,7 +26,7 @@
 #include "drivers/io.h"
 #include "drivers/io_impl.h"
 #include "platform/rcc.h"
-
+#include "platform/io_impl.h"
 #include "common/utils.h"
 
 // io ports defs are stored in array by index now
