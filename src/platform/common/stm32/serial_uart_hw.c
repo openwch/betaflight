@@ -100,6 +100,7 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
 
   s->USARTx = hardware->reg;
 
+<<<<<<< HEAD
 #ifdef USE_HAL_DRIVER
 <<<<<<< HEAD
   s->Handle.Instance = hardware->reg;
@@ -115,6 +116,9 @@ uartPort_t *serialUART(uartDevice_t *uartdev, uint32_t baudRate,
 #endif
 
   s->checkUsartTxOutput = checkUsartTxOutput;
+=======
+    s->checkUsartTxOutput = checkUsartTxOutput;
+>>>>>>> bf14d1302 (Migrate UART from HAL to LL, eliminating HAL handle dependencies (#15035))
 
   if (hardware->rcc) {
     RCC_ClockCmd(hardware->rcc, ENABLE);
@@ -340,6 +344,7 @@ void uartConfigureDma(uartDevice_t *uartdev) {
 void uartEnableTxInterrupt(uartPort_t *uartPort) {
 #if defined(USE_HAL_DRIVER)
 <<<<<<< HEAD
+<<<<<<< HEAD
   __HAL_UART_ENABLE_IT(&uartPort->Handle, UART_IT_TXE);
 #elif defined(USE_ATBSP_DRIVER)
   usart_interrupt_enable(uartPort->USARTx, USART_TDBE_INT, TRUE);
@@ -347,6 +352,9 @@ void uartEnableTxInterrupt(uartPort_t *uartPort) {
   USART_ITConfig(uartPort->USARTx, USART_IT_TXE, ENABLE);
 =======
     __HAL_UART_ENABLE_IT(&uartPort->halHandle->hal, UART_IT_TXE);
+=======
+    LL_USART_EnableIT_TXE((USART_TypeDef *)uartPort->USARTx);
+>>>>>>> bf14d1302 (Migrate UART from HAL to LL, eliminating HAL handle dependencies (#15035))
 #elif defined(USE_ATBSP_DRIVER)
     usart_interrupt_enable((usart_type *)uartPort->USARTx, USART_TDBE_INT, TRUE);
 #else
