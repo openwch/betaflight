@@ -222,7 +222,7 @@ bool checkUsartTxOutput(uartPort_t *s)
             IOConfigGPIOAF(txIO, IOCFG_AF_PP, uart->hardware->af);
 
             // Enable the UART transmitter
-            SET_BIT(s->halHandle->hal.Instance->CTRL1, USART_CTRL1_TXEN);
+            SET_BIT(((USART_TypeDef *)s->USARTx)->CTRL1, USART_CTRL1_TXEN);
 
             return true;
         } else {
@@ -242,7 +242,7 @@ void uartTxMonitor(uartPort_t *s)
         IO_t txIO = IOGetByTag(uart->tx.pin);
 
         // Disable the UART transmitter
-        CLEAR_BIT(s->halHandle->hal.Instance->CTRL1, USART_CTRL1_TXEN);
+        CLEAR_BIT(((USART_TypeDef *)s->USARTx)->CTRL1, USART_CTRL1_TXEN);
 
         // Switch TX to an input with pullup so it's state can be monitored
         uart->txPinState = TX_PIN_MONITOR;
@@ -282,10 +282,8 @@ void uartDmaIrqHandler(dmaChannelDescriptor_t* descriptor)
 
 FAST_IRQ_HANDLER void uartIrqHandler(uartPort_t *s)
 {
-    UART_HandleTypeDef *huart = &s->halHandle->hal;
-    uint32_t isrflags = READ_REG(huart->Instance->STS);
-    uint32_t cr1its = READ_REG(huart->Instance->CTRL1);
-    uint32_t cr3its = READ_REG(huart->Instance->CTRL3);
+    USART_TypeDef *USARTx = (USART_TypeDef *)s->USARTx;
+
     /* UART in mode Receiver ---------------------------------------------------*/
     if (!s->rxDMAResource && DDL_USART_IsActiveFlag_RXNE(USARTx)) {
         uint8_t rbyte = DDL_USART_ReceiveData8(USARTx);
