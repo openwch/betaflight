@@ -46,6 +46,7 @@
 #include "platform/adc_impl.h"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "platform/dma.h"
 
 #include <math.h>
@@ -57,6 +58,9 @@
 =======
 #include "platform/dma.h"
 >>>>>>> cdcdf52d6 (update CH32 drivers for rebase)
+=======
+#include "platform/dma.h"
+>>>>>>> 515604af5 (update CH32 drivers for rebase)
 
 #include <math.h>
 
