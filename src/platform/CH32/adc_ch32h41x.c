@@ -43,6 +43,7 @@
 #include "pg/adc.h"
 #include "platform/adc_impl.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "platform/dma.h"
 
 #include <math.h>
@@ -51,6 +52,9 @@
 =======
 >>>>>>> fd9c9cdce (target based cross-compiler)
 =======
+=======
+#include "platform/dma.h"
+>>>>>>> cdcdf52d6 (update CH32 drivers for rebase)
 
 #include <math.h>
 

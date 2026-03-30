@@ -38,10 +38,14 @@
 #include "platform/rcc.h"
 #include "drivers/timer.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "platform/timer.h"
 
 #include "platform/light_ws2811strip_stm32.h"
 =======
+=======
+#include "platform/timer.h"
+>>>>>>> cdcdf52d6 (update CH32 drivers for rebase)
 
 #include "drivers/light_ws2811strip.h"
 <<<<<<< HEAD

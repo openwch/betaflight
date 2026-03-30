@@ -32,27 +32,48 @@
 
 #define DMA_ARCH_TYPE DMA_Channel_TypeDef
 
-typedef enum {
-  DMA_NONE = 0,
-  DMA_FIRST_HANDLER = 1,
-  DMA1_CH1_HANDLER = DMA_FIRST_HANDLER,
-  DMA1_CH2_HANDLER,
-  DMA1_CH3_HANDLER,
-  DMA1_CH4_HANDLER,
-  DMA1_CH5_HANDLER,
-  DMA1_CH6_HANDLER,
-  DMA1_CH7_HANDLER,
-  DMA1_CH8_HANDLER,
-  DMA2_CH1_HANDLER,
-  DMA2_CH2_HANDLER,
-  DMA2_CH3_HANDLER,
-  DMA2_CH4_HANDLER,
-  DMA2_CH5_HANDLER,
-  DMA2_CH6_HANDLER,
-  DMA2_CH7_HANDLER,
-  DMA2_CH8_HANDLER,
-  DMA_LAST_HANDLER = DMA2_CH8_HANDLER
-} dmaIdentifier_e;
+// typedef enum {
+//   DMA_NONE = 0,
+//   DMA_FIRST_HANDLER = 1,
+//   DMA1_CH1_HANDLER = DMA_FIRST_HANDLER,
+//   DMA1_CH2_HANDLER,
+//   DMA1_CH3_HANDLER,
+//   DMA1_CH4_HANDLER,
+//   DMA1_CH5_HANDLER,
+//   DMA1_CH6_HANDLER,
+//   DMA1_CH7_HANDLER,
+//   DMA1_CH8_HANDLER,
+//   DMA2_CH1_HANDLER,
+//   DMA2_CH2_HANDLER,
+//   DMA2_CH3_HANDLER,
+//   DMA2_CH4_HANDLER,
+//   DMA2_CH5_HANDLER,
+//   DMA2_CH6_HANDLER,
+//   DMA2_CH7_HANDLER,
+//   DMA2_CH8_HANDLER,
+//   DMA_LAST_HANDLER = DMA2_CH8_HANDLER
+// } dmaIdentifier_e;
+
+  #define DMA1_CH1_HANDLER    (DMA_FIRST_HANDLER + 0)
+  #define DMA1_CH2_HANDLER    (DMA_FIRST_HANDLER + 1)
+  #define DMA1_CH3_HANDLER    (DMA_FIRST_HANDLER + 2)
+  #define DMA1_CH4_HANDLER    (DMA_FIRST_HANDLER + 3)
+  #define DMA1_CH5_HANDLER    (DMA_FIRST_HANDLER + 4)
+  #define DMA1_CH6_HANDLER    (DMA_FIRST_HANDLER + 5)
+  #define DMA1_CH7_HANDLER    (DMA_FIRST_HANDLER + 6)
+  #define DMA1_CH8_HANDLER    (DMA_FIRST_HANDLER + 7)
+  #define DMA2_CH1_HANDLER    (DMA_FIRST_HANDLER + 8)
+  #define DMA2_CH2_HANDLER    (DMA_FIRST_HANDLER + 9)
+  #define DMA2_CH3_HANDLER    (DMA_FIRST_HANDLER + 10)
+  #define DMA2_CH4_HANDLER    (DMA_FIRST_HANDLER + 11)
+  #define DMA2_CH5_HANDLER    (DMA_FIRST_HANDLER + 12)
+  #define DMA2_CH6_HANDLER    (DMA_FIRST_HANDLER + 13)
+  #define DMA2_CH7_HANDLER    (DMA_FIRST_HANDLER + 14)
+  #define DMA2_CH8_HANDLER    (DMA_FIRST_HANDLER + 15)
+  #define DMA_LAST_HANDLER    (DMA2_CH8_HANDLER)
+
+
+
 
 #define DMA_DEVICE_NO(x) ((((x) - 1) / 8) + 1)
 #define DMA_DEVICE_INDEX(x) ((((x) - 1) % 8) + 1)
@@ -85,14 +106,13 @@ uint32_t dmaGetChannel(const uint8_t channel);
       handler(&dmaDescriptors[index]);                                         \
   }
 
-#define DMA_CLEAR_FLAG(d, flag) d->dma->INTFCR = (flag << d->flagsShift)
-#define DMA_GET_FLAG_STATUS(d, flag) (d->dma->INTFR & (flag << d->flagsShift))
+#define DMA_CLEAR_FLAG(d, flag)  ((DMA_TypeDef *)(d)->dma)->INTFCR = (flag << d->flagsShift)
+#define DMA_GET_FLAG_STATUS(d, flag) (((DMA_TypeDef *)(d)->dma)->INTFR & (flag << d->flagsShift))
 #define DMA_IT_GLOB ((uint32_t)0x00000001) // channel global interput flag
 #define DMA_IT_TCIF ((uint32_t)0x00000002) // channel full transport flag
 #define DMA_IT_HTIF ((uint32_t)0x00000004) // channel half transport flag
 #define DMA_IT_TEIF ((uint32_t)0x00000008) // channel transport error flag
 
-void dmaMuxEnable(dmaIdentifier_e identifier, uint32_t dmaMuxId);
 
 #define xDMA_Init(dmaResource, initStruct)                                     \
   DMA_Init((DMA_ARCH_TYPE *)(dmaResource), initStruct)

@@ -117,7 +117,7 @@
 
 
 #if defined(CH32H4)
-
+#define GPIO_PIN_RESET       0
 #define DIR_OUT              0x03
 #define DIR_IN               0x00
 
