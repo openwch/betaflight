@@ -418,32 +418,6 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(EXTRA_FLAGS)
 endif
 
-else
-CFLAGS     += $(ARCH_FLAGS) \
-              $(addprefix -D,$(OPTIONS)) \
-              $(addprefix -I,$(INCLUDE_DIRS)) \
-              $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
-              $(DEBUG_FLAGS) \
-              -std=gnu17 \
-              -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wdouble-promotion \
-              $(EXTRA_WARNING_FLAGS) \
-              -ffunction-sections \
-              -fdata-sections \
-              -fno-common \
-              $(TEMPORARY_FLAGS) \
-              $(DEVICE_FLAGS) \
-              -D_GNU_SOURCE \
-              -D$(TARGET) \
-              $(TARGET_FLAGS) \
-              -D'__FORKNAME__="$(FORKNAME)"' \
-              -D'__TARGET__="$(TARGET)"' \
-              -D'__REVISION__="$(REVISION)"' \
-              -D'__FC_VERSION__="$(FC_VER)"' \
-              $(CONFIG_REVISION_DEFINE) \
-              -pipe \
-              -MMD -MP \
-              $(EXTRA_FLAGS)
-endif
 
 CFLAGS     := $(filter-out $(CFLAGS_DISABLED), $(CFLAGS))
 $(info $(CFLAGS))
