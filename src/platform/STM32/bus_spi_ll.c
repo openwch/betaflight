@@ -160,11 +160,6 @@ void spiInitDevice(spiDevice_e device)
 
     LL_SPI_SetFIFOThreshold(dev, LL_SPI_FIFO_TH_01DATA);
     LL_SPI_Init(dev, &defaultInit);
-#elif defined(STM32N6)
-    LL_SPI_EnableGPIOControl(dev);
-
-    LL_SPI_SetFIFOThreshold(dev, LL_SPI_FIFO_TH_01DATA);
-    LL_SPI_Init(dev, &defaultInit);
 #else
     LL_SPI_SetRxFIFOThreshold(dev, SPI_RXFIFO_THRESHOLD_QF);
 
@@ -241,7 +236,7 @@ void spiInternalResetStream(dmaChannelDescriptor_t *descriptor)
 FAST_CODE bool spiInternalReadWriteBufPolled(spiResource_t *spiInstance, const uint8_t *txData, uint8_t *rxData, int len)
 {
     SPI_TypeDef *instance = (SPI_TypeDef *)spiInstance;
-#if defined(STM32H7) || defined(STM32N6)
+#if defined(STM32H7) || defined(STM32H5) || defined(STM32N6)
     LL_SPI_SetTransferSize(instance, len);
     LL_SPI_Enable(instance);
     LL_SPI_StartMasterTransfer(instance);

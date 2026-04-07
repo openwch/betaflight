@@ -155,8 +155,8 @@ MCU_COMMON_SRC = \
             drivers/bus_i2c_timing.c \
             drivers/bus_quadspi.c \
             drivers/dshot_bitbang_decode.c \
-            STM32/bus_i2c_hal_init.c \
-            STM32/bus_i2c_hal.c \
+            STM32/bus_i2c_ll_init.c \
+            STM32/bus_i2c_ll.c \
             STM32/bus_spi_ll.c \
             STM32/bus_quadspi_hal.c \
             STM32/debug.c \
@@ -177,11 +177,11 @@ MCU_COMMON_SRC = \
             STM32/system_stm32h5xx.c \
             drivers/adc.c \
             drivers/serial_escserial.c \
+            STM32/serial_uart_stm32h5xx.c \
             STM32/startup/system_stm32h5xx.c
 
 #            memprot_hal.c \
 #            memprot_stm32h5xx.c \
-#            serial_uart_stm32h5xx.c \
 #            sdio_h5xx.c \
 #            timer_stm32h5xx.c \
 #            adc_stm32h5xx.c \

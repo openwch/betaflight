@@ -215,7 +215,7 @@ static void adcInitDevice(adcDevice_t *adcdev, int channelCount)
 
     // Enable circular DMA.
     // ADC3 of H72X and H73X has a special way of doing this (does not work on H735).
-#if defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H730xx) 
+#if defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H730xx)
     if (adcdev->ADCx == ADC3) {
         hadc->Init.DMAContinuousRequests = ENABLE;
     } else
@@ -309,9 +309,9 @@ void adcInit(const adcConfig_t *config)
     adcInitCalibrationValues();
 #endif
 
-    for (int i = 0; i < ADC_SOURCE_COUNT; i++) {
-        int map;
-        int dev;
+    for (unsigned i = 0; i < ADC_SOURCE_COUNT; i++) {
+        int map = -1;
+        int dev = -1;
 
 #ifdef USE_ADC_INTERNAL
         if (i >= ADC_EXTERNAL_COUNT) {
@@ -562,7 +562,7 @@ void adcGetChannelValues(void)
 {
     // Transfer values in conversion buffer into adcValues[]
     SCB_InvalidateDCache_by_Addr((uint32_t*)adcConversionBuffer, ADC_BUF_CACHE_ALIGN_BYTES);
-    for (int i = 0; i < ADC_SOURCE_INTERNAL_FIRST_ID; i++) {
+    for (unsigned i = 0; i < ADC_EXTERNAL_COUNT; i++) {
         if (adcOperatingConfig[i].enabled) {
             adcValues[adcOperatingConfig[i].dmaIndex] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
         }

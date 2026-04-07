@@ -1125,11 +1125,17 @@ uint16_t timerGetPrescalerByDesiredMhz(timerResource_t *tim, uint16_t mhz)
 
 uint16_t timerGetPeriodByPrescaler(timerResource_t *tim, uint16_t prescaler, uint32_t hz)
 {
+    if (hz == 0) {
+        return 0;
+    }
     return (uint16_t)((timerClockFromInstance(tim) / (prescaler + 1)) / hz);
 }
 
 uint16_t timerGetPrescalerByDesiredHertz(timerResource_t *tim, uint32_t hz)
 {
+    if (hz == 0) {
+        return 0;
+    }
     // protection here for desired hertz > SystemCoreClock???
     if (hz > timerClockFromInstance(tim)) {
         return 0;

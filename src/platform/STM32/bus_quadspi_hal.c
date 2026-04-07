@@ -177,6 +177,7 @@ void quadSpiPinConfigure(const quadSpiConfig_t *pConfig)
         for (int pindex = 0; pindex < MAX_QUADSPI_PIN_SEL; pindex++) {
             if (pConfig[device].ioTagClk == hw->clkPins[pindex].pin) {
                 pDev->clk = hw->clkPins[pindex].pin;
+                pDev->clkAF = hw->clkPins[pindex].af;
             }
             //
             // BK1

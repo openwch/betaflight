@@ -29,8 +29,6 @@
 
 #include "pg/bus_i2c.h"
 
-#include "pg/bus_i2c.h"
-
 #include "hardware/i2c.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
@@ -70,47 +68,26 @@ const i2cHardware_t i2cHardware[I2CDEV_COUNT] = {
 #endif
 };
 
-void i2cHardwareConfigure(const i2cConfig_t *i2cConfig)
-{
-    for (int index = 0 ; index < I2CDEV_COUNT ; index++) {
-        const i2cHardware_t *hardware = &i2cHardware[index];
+typedef enum {
+    I2C_STATE_IDLE,         // Idle
+    I2C_STATE_ACTIVE,       // Transfer in progress
+    I2C_STATE_READ_DATA,    // Multi-batch read in progress
+} i2c_state_t;
 
-        if (!hardware->reg) {
-            continue;
-        }
+typedef volatile struct {
+    i2c_inst_t *i2c;
+    i2c_state_t state;
+    uint32_t intr_error_stat;
+    bool read;
+    uint8_t *data;
+    uint8_t len;
+    uint8_t bytes_transfered;
+    uint8_t remaining_batches;
+} i2c_context_t;
 
-        I2CDevice device = hardware->device;
-        i2cDevice_t *pDev = &i2cDevice[device];
+i2c_context_t i2c_contexts[I2CDEV_COUNT];
 
-        memset(pDev, 0, sizeof(*pDev));
-        IO_t confSclIO = IOGetByTag(i2cConfig[device].ioTagScl);
-        IO_t confSdaIO = IOGetByTag(i2cConfig[device].ioTagSda);
-        int confSclPin = IO_GPIOPinIdx(confSclIO);
-        int confSdaPin = IO_GPIOPinIdx(confSdaIO);
-
-#ifdef RP2350B
-        uint16_t numPins = 48;
-#else
-        uint16_t numPins = 30;
-#endif
-
-        // I2C0 on pins 0,1 mod 4, I2C1 on pins 2,3 mod 4
-        // SDA on pins 0 mod 2, SCL on pins 1 mod 2
-        int pinOffset = device == I2CDEV_0 ? 0 : 2;
-        if (confSdaPin >= 0 && confSclPin >= 0 &&
-            confSdaPin < numPins && confSclPin < numPins &&
-            (confSdaPin % 4) == pinOffset && (confSclPin % 4) == (pinOffset + 1)) {
-            pDev->scl = confSclIO;
-            pDev->sda = confSdaIO;
-            pDev->hardware = hardware;
-            pDev->reg = hardware->reg;
-            pDev->pullUp = i2cConfig[device].pullUp;
-            pDev->clockSpeed = i2cConfig[device].clockSpeed;
-        }
-    }
-}
-
-static bool i2cHandleHardwareFailure(I2CDevice device)
+void i2cPinConfigure(const i2cConfig_t *i2cConfig)
 {
     for (int index = 0 ; index < I2CDEV_COUNT ; index++) {
         const i2cHardware_t *hardware = &i2cHardware[index];
@@ -162,23 +139,9 @@ bool i2cWrite(i2cDevice_e device, uint8_t addr, uint8_t reg, uint8_t data)
         return false;
     }
 
-    i2c_inst_t *port = I2C_INST(i2cHardware[device].reg);
-
-    if (!port) {
-        return false;
-    }
-
-    if (len_ > I2C_TX_BUFFER_LENGTH - 1) {
-        return false; // Buffer too long
-    }
-
-    uint8_t buf[I2C_TX_BUFFER_LENGTH] = { reg_, 0 };
-    memcpy(&buf[1], data, len_);
-    bool nostop = false;
-    int status = i2c_write_timeout_us(port, addr_, buf, len_ + 1, nostop, I2C_TIMEOUT_US);
-
-    if (status < 0) {
-        return i2cHandleHardwareFailure(device);
+    // Wait for completion
+    while (i2cBusy(device, NULL)) {
+        // Wait until transfer is complete
     }
 
     return true;
@@ -197,16 +160,56 @@ bool i2cWriteBuffer(i2cDevice_e device, uint8_t addr, uint8_t reg, uint8_t len, 
         return false;
     }
 
-    bool nostop = true;
-    int status = i2c_write_timeout_us(port, addr_, &reg_, 1, nostop, I2C_TIMEOUT_US);
-    if (status < 0) {
-        return i2cHandleHardwareFailure(device);
+    // Check if I2C is busy
+    if (i2cBusy(device, NULL)) {
+        return false;
     }
 
-    nostop = false;
-    status = i2c_read_timeout_us(port, addr_, buf, len, nostop, I2C_TIMEOUT_US);
-    if (status < 0) {
-        return i2cHandleHardwareFailure(device);
+    i2c_context_t *context = &i2c_contexts[device];
+    i2c_hw_t *hw = port->hw;
+
+    // Set up transfer parameters
+    context->read = false;
+    context->data = data;
+    context->len = len;
+    context->bytes_transfered = 0;
+    context->state = I2C_STATE_ACTIVE;
+
+    // Set up I2C for transfer
+    hw->enable = 0;
+    hw->tar = addr;
+    hw->enable = 1;
+
+    // Preload TX FIFO with all commands for write sequence
+    // 1. Register address (normal write, no restart needed)
+    hw->data_cmd = reg;
+
+    // 2. Data bytes
+    for (uint8_t i = 0; i < len; i++) {
+        uint32_t cmd = data[i];
+        if (i == len - 1) {
+            // Last byte - add stop
+            cmd |= I2C_IC_DATA_CMD_STOP_BITS;
+        }
+        hw->data_cmd = cmd;
+    }
+
+    // Enable only STOP and error interrupts
+    hw->intr_mask = DEF_I2C_INTR;
+
+    return true;
+}
+
+bool i2cRead(i2cDevice_e device, uint8_t addr, uint8_t reg, uint8_t len, uint8_t* buf)
+{
+    // Start non-blocking read
+    if (!i2cReadBuffer(device, addr, reg, len, buf)) {
+        return false;
+    }
+
+    // Wait for completion
+    while (i2cBusy(device, NULL)) {
+        // Wait until transfer is complete
     }
 
     return true;
@@ -214,9 +217,15 @@ bool i2cWriteBuffer(i2cDevice_e device, uint8_t addr, uint8_t reg, uint8_t len, 
 
 static void i2c_load_read_commands(i2c_hw_t *hw, uint8_t len, bool final_batch)
 {
-    // TODO: Implement genuine non-blocking read using DMA or similar mechanism
-    // ( I2C0_IRQ, I2C1_IRQ ...)
-    return i2cRead(device, addr_, reg_, len, buf);
+    // Load read commands into TX FIFO
+    for (uint8_t i = 0; i < len; i++) {
+        uint32_t cmd = I2C_IC_DATA_CMD_CMD_BITS;
+        if (i == len - 1 && final_batch) {
+            // Last command of final batch - add stop
+            cmd |= I2C_IC_DATA_CMD_STOP_BITS;
+        }
+        hw->data_cmd = cmd;
+    }
 }
 
 bool i2cReadBuffer(i2cDevice_e device, uint8_t addr, uint8_t reg, uint8_t len, uint8_t* buf)
@@ -310,14 +319,15 @@ bool i2cBusy(i2cDevice_e device, bool *error)
         *error = 0;
     }
 
-    // TODO check: If we are using DMA (for a sequence of transfers?), then we will need to
-    // protect against that being in progress
+    // Check if we have a transfer in progress via our state machine
+    i2c_context_t *context = &i2c_contexts[device];
+    if (context->state != I2C_STATE_IDLE) {
+        return true;
+    }
 
-    // Read the IC_STATUS register
+    // Also check hardware status
     uint32_t status_reg = port->hw->status;
-
-    // The bit for (combined master/slave) ACTIVITY is (1 << 0).
-    return (status_reg & (1 << 0)) != 0;
+    return (status_reg & I2C_IC_STATUS_ACTIVITY_VALUE_ACTIVE) != 0;
 }
 
 static void i2c_handle_error(i2c_context_t *i2c_context, uint32_t intr_stat)
@@ -420,12 +430,13 @@ void i2cInit(i2cDevice_e device)
 
     const IO_t scl = pDev->scl;
     const IO_t sda = pDev->sda;
-    const uint8_t sclPin = IO_Pin(scl);
-    const uint8_t sdaPin = IO_Pin(sda);
 
     if (!hardware || !scl || !sda) {
         return;
     }
+
+    const uint8_t sclPin = IO_Pin(scl);
+    const uint8_t sdaPin = IO_Pin(sda);
 
     // Set owners
     IOInit(scl, OWNER_I2C_SCL, RESOURCE_INDEX(device));
@@ -475,4 +486,4 @@ void i2cInit(i2cDevice_e device)
     }
 }
 
-#endif // #if defined(USE_I2C) && !defined(SOFT_I2C)
+#endif // #if defined(USE_I2C) && !defined(USE_SOFT_I2C)

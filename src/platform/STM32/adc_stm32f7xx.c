@@ -275,9 +275,11 @@ void adcInit(const adcConfig_t *config)
 #endif
 
     uint8_t rank = 1;
-    for (i = 0; i < ADC_SOURCE_COUNT; i++) {
-        if (adcOperatingConfig[i].enabled) {
-            ADC_ChannelConfTypeDef sConfig;
+    for (i = 0; i < ADC_EXTERNAL_COUNT; i++) {
+        if (!adcOperatingConfig[i].enabled) {
+            continue;
+        }
+        ADC_ChannelConfTypeDef sConfig;
 
         sConfig.Channel      = adcOperatingConfig[i].adcChannel;
         sConfig.Rank         = rank++;

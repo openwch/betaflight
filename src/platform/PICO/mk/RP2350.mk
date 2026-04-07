@@ -482,6 +482,15 @@ DEVICE_FLAGS    += \
             -DPICO_USE_BLOCKED_RAM=0 \
             -DPICO_CORE1_STACK_SIZE=0x1000
 
+# Set the size of flash in the primary linker file (LD_SCRIPT),
+# other linker files loaded via EXTRA_LD_FLAGS.
+# PICO_FLASH_MB may be set from board-specific config.mk
+
+# Default 4MB
+PICO_FLASH_MB ?= 4
+
+LD_SCRIPT       = $(LINKER_DIR)/pico_flash_$(PICO_FLASH_MB)MB.ld
+
 ifeq ($(RUN_FROM_RAM),1)
 EXTRA_LD_FLAGS  += -T$(LINKER_DIR)/pico_rp2350_RunFromRAM.ld
 else
@@ -568,6 +577,8 @@ MCU_COMMON_SRC = \
             PICO/uart/uart_rx_program.c \
             PICO/uart/uart_tx_program.c \
             PICO/usb/usb_cdc.c \
+            PICO/usb/usb_descriptors.c \
+            PICO/usb/usb_msc_pico.c \
             PICO/multicore.c \
             PICO/debug_pin.c \
             PICO/light_ws2811strip_pico.c

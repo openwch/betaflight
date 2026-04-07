@@ -94,8 +94,6 @@ void pwmWriteChannel(timerChannel_t *channel, uint32_t value)
 
 static bool useContinuousUpdate = true;
 
-static bool useContinuousUpdate = true;
-
 static void pwmWriteStandard(uint8_t index, float value)
 {
     /* TODO: move value to be a number between 0-1 (i.e. percent throttle from mixer) */
@@ -118,17 +116,6 @@ static void pwmDisableMotors(void)
 }
 
 static motorVTable_t motorPwmVTable;
-bool pwmEnableMotors(void)
-{
-    /* check motors can be enabled */
-    return pwmMotorCount > 0;
-}
-
-bool pwmIsMotorEnabled(unsigned index)
-{
-    if (useContinuousUpdate) {
-        return;
-    }
 
 static void pwmCompleteMotorUpdate(void)
 {
@@ -137,8 +124,8 @@ static void pwmCompleteMotorUpdate(void)
     }
 
     for (int index = 0; index < pwmMotorCount; index++) {
-        if (motors[index].forceOverflow) {
-            timerForceOverflow(motors[index].channel.tim);
+        if (pwmMotors[index].forceOverflow) {
+            timerForceOverflow(pwmMotors[index].channel.tim);
         }
         // Set the compare register to 0, which stops the output pulsing if the timer overflows before the main loop completes again.
         // This compare register will be set to the output value on the next main loop.
@@ -169,6 +156,7 @@ static motorVTable_t motorPwmVTable = {
     .updateComplete = pwmCompleteMotorUpdate,
     .requestTelemetry = NULL,
     .isMotorIdle = NULL,
+    .getMotorIO = pwmGetMotorIO,
 };
 
 bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig, uint16_t idlePulse)
@@ -245,8 +233,8 @@ bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorConfig,
             TODO: this can be moved back to periodMin and periodLen
             once mixer outputs a 0..1 float value.
         */
-        motors[motorIndex].pulseScale = ((motorConfig->motorProtocol == MOTOR_PROTOCOL_BRUSHED) ? period : (sLen * hz)) / 1000.0f;
-        motors[motorIndex].pulseOffset = (sMin * hz) - (motors[motorIndex].pulseScale * 1000);
+        pwmMotors[motorIndex].pulseScale = ((motorConfig->motorProtocol == MOTOR_PROTOCOL_BRUSHED) ? period : (sLen * hz)) / 1000.0f;
+        pwmMotors[motorIndex].pulseOffset = (sMin * hz) - (pwmMotors[motorIndex].pulseScale * 1000);
 
         pwmOutputConfig(&pwmMotors[motorIndex].channel, timerHardware, hz, period, idlePulse, motorConfig->motorInversion);
 

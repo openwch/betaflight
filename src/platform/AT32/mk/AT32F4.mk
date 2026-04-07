@@ -126,7 +126,7 @@ MCU_COMMON_SRC = \
             drivers/usb_msc_common.c \
             drivers/adc.c \
             drivers/bus_spi_config.c \
-            common/stm32/bus_i2c_config.c \
+            common/stm32/bus_i2c_pinconfig.c \
             common/stm32/bus_spi_pinconfig.c \
             common/stm32/bus_spi_hw.c \
             common/stm32/camera_control.c \
@@ -141,7 +141,8 @@ MCU_COMMON_SRC = \
             msc/usbd_storage_sd_spi.c \
             common/stm32/ledstrip_ws2811_stm32.c \
             common/stm32/debug_pin.c \
-            common/stm32/adc_impl.c
+            common/stm32/adc_impl.c \
+            common/stm32/expresslrs_driver_hw.c
 
 SPEED_OPTIMISED_SRC += \
             common/stm32/dshot_bitbang_shared.c \
@@ -153,7 +154,7 @@ SIZE_OPTIMISED_SRC += \
             drivers/bus_i2c_timing.c \
             drivers/inverter.c \
             drivers/bus_spi_config.c \
-            common/stm32/bus_i2c_config.c \
+            common/stm32/bus_i2c_pinconfig.c \
             common/stm32/bus_spi_pinconfig.c \
             common/stm32/pwm_output_beeper.c \
             common/stm32/serial_uart_pinconfig.c \

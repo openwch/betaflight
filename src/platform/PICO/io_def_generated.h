@@ -209,9 +209,9 @@
 
 // DEFIO_IO_USED_COUNT is number of io pins supported on target
 #if defined(RP2350A)
-#define DEFIO_IO_USED_COUNT 30
+#define DEFIO_IO_USED_COUNT DEFIO_USED_COUNT
 #elif defined(RP2350B)
-#define DEFIO_IO_USED_COUNT 48
+#define DEFIO_IO_USED_COUNT DEFIO_USED_COUNT
 #endif
 
 // DEFIO_PORT_USED_LIST - comma separated list of bitmask for all used ports.

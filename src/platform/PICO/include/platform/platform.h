@@ -25,8 +25,6 @@
 
 #include "pico.h"
 #include "pico/stdlib.h"
-#include "hardware/i2c.h"
-#include "hardware/spi.h"
 #include "hardware/dma.h"
 #include "hardware/flash.h"
 #include "hardware/i2c.h"
@@ -65,6 +63,8 @@ struct quadSpiResource_s
 };
 
 #define MAX_QUADSPI_PIN_SEL  1
+
+#define QUADSPI_TRAIT_CS_SOFTWARE       1
 
 #endif
 

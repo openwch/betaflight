@@ -48,7 +48,7 @@
 #define STM32G4
 #endif
 
-#elif defined(STM32H743xx) || defined(STM32H750xx) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H730xx) || defined(STM32H735xx) 
+#elif defined(STM32H743xx) || defined(STM32H750xx) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H730xx) || defined(STM32H735xx)
 #include "stm32h7xx.h"
 #include "stm32h7xx_hal.h"
 #include "system_stm32h7xx.h"
@@ -439,7 +439,7 @@ extern uint8_t _dmaram_end__;
 
 #endif
 
-#if defined(STM32H743xx) || defined(STM32H750xx) || defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H735xx) 
+#if defined(STM32H743xx) || defined(STM32H750xx) || defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H735xx)
 #define FLASH_CONFIG_STREAMER_BUFFER_SIZE 32  // Flash word = 256-bits (8 rows, uint32_t per row - 8 x 32)
 #define FLASH_CONFIG_BUFFER_TYPE uint32_t
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
@@ -600,7 +600,9 @@ extern uint8_t _dmaram_end__;
 // QUAD SPI
 #if defined(STM32H7) || defined(STM32N6)
 #define MAX_QUADSPI_PIN_SEL 3
-#define PLATFORM_TRAIT_SDIO_INIT 1
+#endif
+#if defined(STM32G4)
+#define MAX_QUADSPI_PIN_SEL 4
 #endif
 
 // F4 has non-8MHz boards
@@ -614,7 +616,7 @@ extern uint8_t _dmaram_end__;
 #define MCO_DIVIDER_COUNT  5
 #endif
 
-#if defined(STM32H7) || defined(STM32G4)
+#if defined(STM32H7) || defined(STM32G4) || defined(STM32H5) || defined(STM32N6)
 #define DMA_CHANREQ_STRING "Request"
 
 #define ADC_INTERNAL_VBAT4_ENABLED 1

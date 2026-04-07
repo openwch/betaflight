@@ -19,9 +19,18 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TODO replace with stdio_usb from pico-sdk, with a few wrappers
+
 #include "platform.h"
 
 #include "tusb_config.h"
+
+/*
+  Make sure the tinyUSB common header includes don't
+  bring in the poisoned sprintf, snprintf etc.
+*/
+#define _STDIO_H_
+
 #include "tusb.h"
 #include "usb_cdc.h"
 
@@ -188,13 +197,13 @@ int cdc_usb_read(uint8_t *buf, unsigned length)
     return rc;
 }
 
-bool cdc_usb_init(void)
+void cdc_usb_init(void)
 {
     if (get_core_num() != alarm_pool_core_num(alarm_pool_get_default())) {
         // included an assertion here rather than just returning false, as this is likely
         // a coding bug, rather than anything else.
         assert(false);
-        return false;
+        return;
     }
 
     // initialize TinyUSB, as user hasn't explicitly linked it
@@ -220,7 +229,6 @@ bool cdc_usb_init(void)
     }
 
     configured = rc;
-    return rc;
 }
 
 bool cdc_usb_deinit(void)
