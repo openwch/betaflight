@@ -252,7 +252,9 @@ else
 ifeq ($(DEBUG),INFO)
 DEBUG_FLAGS            = -ggdb2
 endif
-OPTIMISATION_BASE     := -flto=auto -fuse-linker-plugin -ffast-math -fmerge-all-constants
+# OPTIMISATION_BASE     := -flto=auto -fuse-linker-plugin -ffast-math -fmerge-all-constants
+# OPTIMISE_DEFAULT      := -O2
+OPTIMISATION_BASE     := -fuse-linker-plugin -ffast-math -fmerge-all-constants
 OPTIMISE_DEFAULT      := -O2
 OPTIMISE_SPEED        := -Ofast
 OPTIMISE_SIZE         := -Os
@@ -392,7 +394,11 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               $(DEBUG_FLAGS) \
               -std=gnu17 \
+<<<<<<< HEAD
               -Wall -Wextra -Werror -Wunsafe-loop-optimizations $(WARN_DOUBLE_PROMOTION) \
+=======
+              -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wno-double-promotion \
+>>>>>>> 49a279a64 (update ch32 sdk)
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
@@ -421,6 +427,25 @@ ASFLAGS     = $(ARCH_FLAGS) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               -MMD -MP
 
+# ifeq ($(LD_FLAGS),)
+# LD_FLAGS     = -lm \
+#               -nostartfiles \
+#               --specs=nano.specs \
+#               -lc \
+#               -lnosys \
+#               $(ARCH_FLAGS) \
+#               $(LTO_FLAGS) \
+#               $(DEBUG_FLAGS) \
+#               -static \
+#               -Wl,-gc-sections,-Map,$(TARGET_MAP) \
+#               -Wl,-L$(LINKER_DIR) \
+#               -Wl,--cref \
+#               -Wl,--no-wchar-size-warning \
+#               -Wl,--print-memory-usage \
+#               -T$(LD_SCRIPT) \
+#                $(EXTRA_LD_FLAGS)
+# endif
+
 ifeq ($(LD_FLAGS),)
 LD_FLAGS     = -lm \
               -nostartfiles \
@@ -434,7 +459,6 @@ LD_FLAGS     = -lm \
               -Wl,-gc-sections,-Map,$(TARGET_MAP) \
               -Wl,-L$(LINKER_DIR) \
               -Wl,--cref \
-              -Wl,--no-wchar-size-warning \
               -Wl,--print-memory-usage \
               -T$(LD_SCRIPT) \
                $(EXTRA_LD_FLAGS)
