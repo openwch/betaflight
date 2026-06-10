@@ -605,7 +605,6 @@ configStreamerResult_e configWriteWord(uintptr_t address, config_streamer_buffer
     if (status != FLASH_COMPLETE) {
         return CONFIG_RESULT_ADDRESS_INVALID;
     }
-<<<<<<< HEAD
 #elif defined(STM32C5)
     if (address % FLASH_PAGE_SIZE == 0) {
         FLASH_EraseInitTypeDef EraseInitStruct = {
@@ -626,7 +625,6 @@ configStreamerResult_e configWriteWord(uintptr_t address, config_streamer_buffer
     if (status != HAL_OK) {
         return CONFIG_RESULT_ADDRESS_INVALID;
     }
-=======
 #elif defined(CH32H4)
     if (address % FLASH_PAGE_SIZE == 0) {
         const FLASH_Status status = FLASH_ErasePage(address);
@@ -642,7 +640,6 @@ configStreamerResult_e configWriteWord(uintptr_t address, config_streamer_buffer
     if (status != FLASH_COMPLETE) {
         return CONFIG_RESULT_ADDRESS_INVALID;
     }      
->>>>>>> 00f411e36 (add ch32)
 #else
 #error "MCU not catered for in configWriteWord for config_streamer"
 #endif
