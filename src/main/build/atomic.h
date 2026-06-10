@@ -22,13 +22,7 @@
 
 #include <stdint.h>
 
-<<<<<<< HEAD
 #if !defined(UNIT_TEST) && !defined(PLATFORM_CUSTOM_BASEPRI_NB)
-=======
-#if !defined(UNIT_TEST)
-
-#ifndef RISC_V
->>>>>>> 538ebcf67 (add ch32)
 // BASEPRI manipulation functions
 // only set_BASEPRI is implemented in device library. It does always create memory barrier
 // missing versions are implemented here
