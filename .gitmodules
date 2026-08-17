@@ -54,3 +54,5 @@
 [submodule "lib/modules/CH32H41x"]
 	path = lib/modules/CH32H41x
 	url = https://github.com/openwch/CH32H41x_BetaFlight_Lib
+	ignore = dirty
+	update = none
