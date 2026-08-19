@@ -38,7 +38,7 @@
 
 #define USE_VCP
 #define USE_USB_DETECT
-#undef USE_USB_MSC
+#define USE_USB_MSC
 
 #define USE_UART1
 #define USE_UART2
