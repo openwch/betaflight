@@ -19,6 +19,7 @@
 extern uint32_t HCLKClock; 
 extern uint32_t SystemClock;               /* System Clock Frequency */
 extern uint32_t SystemCoreClock;           /* System Core Frequency */
+extern uint32_t V5_V3_CLOCK_RATE;
 
 /* System_Exported_Functions */  
 extern void SystemInit(void);

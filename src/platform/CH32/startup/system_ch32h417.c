@@ -15,6 +15,7 @@
 uint32_t HCLKClock;
 uint32_t SystemClock;       
 uint32_t SystemCoreClock;
+uint32_t V5_V3_CLOCK_RATE; //V5_V3_CLOCK_RATE = coreclk_V5F / coreclk_V3F
 
 static __I uint8_t PLLMULTB[32] = {4,6,7,8,17,9,19,10,21,11,23,12,25,13,14,15,16,17,18,19,20,22,24,26,28,30,32,34,36,38,40,59};
 static __I uint8_t HBPrescTB[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
@@ -127,5 +128,6 @@ void SystemAndCoreClockUpdate (void)
     {
          SystemCoreClock = tmp3;
     }
+    V5_V3_CLOCK_RATE = SystemCoreClock / HCLKClock;
 }
 
