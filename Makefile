@@ -392,11 +392,7 @@ CFLAGS     += $(ARCH_FLAGS) \
               $(addprefix -isystem,$(SYS_INCLUDE_DIRS)) \
               $(DEBUG_FLAGS) \
               -std=gnu17 \
-<<<<<<< HEAD
               -Wall -Wextra -Werror -Wunsafe-loop-optimizations $(WARN_DOUBLE_PROMOTION) \
-=======
-              -Wall -Wextra -Werror -Wunsafe-loop-optimizations -Wno-double-promotion \
->>>>>>> 49a279a64 (update ch32 sdk)
               $(EXTRA_WARNING_FLAGS) \
               -ffunction-sections \
               -fdata-sections \
