@@ -63,7 +63,6 @@ __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint3
 
 #endif
 
-#endif
 
 #if defined(UNIT_TEST)
 // atomic related functions for unittest.
