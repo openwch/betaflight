@@ -61,6 +61,7 @@ extern "C" {
     #include "sensors/sensors.h"
 
     void imuComputeRotationMatrix(void);
+    void imuComputeQuaternionFromRPY(int16_t initialRoll, int16_t initialPitch, int16_t initialYaw);
     void imuUpdateEulerAngles(void);
     void imuMahonyAHRSupdate(float dt,
                              float gx, float gy, float gz,
@@ -109,15 +110,15 @@ TEST(FlightImuTest, TestCalculateRotationMatrix)
 
     imuComputeRotationMatrix();
 
-    EXPECT_FLOAT_EQ(1.0f, rMat.m[0][0]);
-    EXPECT_FLOAT_EQ(0.0f, rMat.m[0][1]);
-    EXPECT_FLOAT_EQ(0.0f, rMat.m[0][2]);
-    EXPECT_FLOAT_EQ(0.0f, rMat.m[1][0]);
-    EXPECT_FLOAT_EQ(1.0f, rMat.m[1][1]);
-    EXPECT_FLOAT_EQ(0.0f, rMat.m[1][2]);
-    EXPECT_FLOAT_EQ(0.0f, rMat.m[2][0]);
-    EXPECT_FLOAT_EQ(0.0f, rMat.m[2][1]);
-    EXPECT_FLOAT_EQ(1.0f, rMat.m[2][2]);
+    EXPECT_FLOAT_EQ(1.0f, rMat.m[NWU_N][X]);
+    EXPECT_FLOAT_EQ(0.0f, rMat.m[NWU_N][Y]);
+    EXPECT_FLOAT_EQ(0.0f, rMat.m[NWU_N][Z]);
+    EXPECT_FLOAT_EQ(0.0f, rMat.m[NWU_W][X]);
+    EXPECT_FLOAT_EQ(1.0f, rMat.m[NWU_W][Y]);
+    EXPECT_FLOAT_EQ(0.0f, rMat.m[NWU_W][Z]);
+    EXPECT_FLOAT_EQ(0.0f, rMat.m[NWU_U][X]);
+    EXPECT_FLOAT_EQ(0.0f, rMat.m[NWU_U][Y]);
+    EXPECT_FLOAT_EQ(1.0f, rMat.m[NWU_U][Z]);
 
     // 90 degrees around Z axis
     q.w = sqrt2over2;
@@ -127,15 +128,15 @@ TEST(FlightImuTest, TestCalculateRotationMatrix)
 
     imuComputeRotationMatrix();
 
-    EXPECT_NEAR(0.0f, rMat.m[0][0], TOL);
-    EXPECT_NEAR(-1.0f, rMat.m[0][1], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[0][2], TOL);
-    EXPECT_NEAR(1.0f, rMat.m[1][0], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[1][1], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[1][2], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[2][0], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[2][1], TOL);
-    EXPECT_NEAR(1.0f, rMat.m[2][2], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_N][X], TOL);
+    EXPECT_NEAR(-1.0f, rMat.m[NWU_N][Y], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_N][Z], TOL);
+    EXPECT_NEAR(1.0f, rMat.m[NWU_W][X], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_W][Y], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_W][Z], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_U][X], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_U][Y], TOL);
+    EXPECT_NEAR(1.0f, rMat.m[NWU_U][Z], TOL);
 
     // 60 degrees around X axis
     q.w = 0.866f;
@@ -145,15 +146,15 @@ TEST(FlightImuTest, TestCalculateRotationMatrix)
 
     imuComputeRotationMatrix();
 
-    EXPECT_NEAR(1.0f, rMat.m[0][0], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[0][1], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[0][2], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[1][0], TOL);
-    EXPECT_NEAR(0.5f, rMat.m[1][1], TOL);
-    EXPECT_NEAR(-0.866f, rMat.m[1][2], TOL);
-    EXPECT_NEAR(0.0f, rMat.m[2][0], TOL);
-    EXPECT_NEAR(0.866f, rMat.m[2][1], TOL);
-    EXPECT_NEAR(0.5f, rMat.m[2][2], TOL);
+    EXPECT_NEAR(1.0f, rMat.m[NWU_N][X], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_N][Y], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_N][Z], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_W][X], TOL);
+    EXPECT_NEAR(0.5f, rMat.m[NWU_W][Y], TOL);
+    EXPECT_NEAR(-0.866f, rMat.m[NWU_W][Z], TOL);
+    EXPECT_NEAR(0.0f, rMat.m[NWU_U][X], TOL);
+    EXPECT_NEAR(0.866f, rMat.m[NWU_U][Y], TOL);
+    EXPECT_NEAR(0.5f, rMat.m[NWU_U][Z], TOL);
 }
 
 TEST(FlightImuTest, TestUpdateEulerAngles)
@@ -169,16 +170,41 @@ TEST(FlightImuTest, TestUpdateEulerAngles)
 
     // 45 degree yaw
     memset(&rMat, 0.0, sizeof(float) * 9);
-    rMat.m[0][0] = sqrt2over2;
-    rMat.m[0][1] = sqrt2over2;
-    rMat.m[1][0] = -sqrt2over2;
-    rMat.m[1][1] = sqrt2over2;
+    rMat.m[NWU_N][X] = sqrt2over2;
+    rMat.m[NWU_N][Y] = sqrt2over2;
+    rMat.m[NWU_W][X] = -sqrt2over2;
+    rMat.m[NWU_W][Y] = sqrt2over2;
 
     imuUpdateEulerAngles();
 
     EXPECT_EQ(0, attitude.values.roll);
     EXPECT_EQ(0, attitude.values.pitch);
     EXPECT_EQ(450, attitude.values.yaw);
+}
+
+TEST(FlightImuTest, TestComputeQuaternionFromRPY)
+{
+    const quaternion_t savedQ = q;
+    const attitudeEulerAngles_t savedAttitude = attitude;
+
+    q.w = 1.0f;
+    q.x = 0.0f;
+    q.y = 0.0f;
+    q.z = 0.0f;
+    imuComputeRotationMatrix();
+
+    imuComputeQuaternionFromRPY(0, 0, 900);
+    imuUpdateEulerAngles();
+
+    EXPECT_NEAR(sqrt2over2, q.w, 1e-6f);
+    EXPECT_NEAR(0.0f, q.x, 1e-6f);
+    EXPECT_NEAR(0.0f, q.y, 1e-6f);
+    EXPECT_NEAR(-sqrt2over2, q.z, 1e-6f);
+    EXPECT_EQ(900, attitude.values.yaw);
+
+    q = savedQ;
+    attitude = savedAttitude;
+    imuComputeRotationMatrix();
 }
 
 TEST(FlightImuTest, TestSmallAngle)
@@ -201,10 +227,10 @@ TEST(FlightImuTest, TestSmallAngle)
     EXPECT_FALSE(isUpright());
 
     // given
-    rMat.m[0][0] = r1;
-    rMat.m[0][2] = r2;
-    rMat.m[2][0] = -r2;
-    rMat.m[2][2] = r1;
+    rMat.m[NWU_N][X] = r1;
+    rMat.m[NWU_N][Z] = r2;
+    rMat.m[NWU_U][X] = -r2;
+    rMat.m[NWU_U][Z] = r1;
 
     // when
     imuComputeRotationMatrix();
@@ -421,7 +447,7 @@ extern "C" {
     uint32_t millis(void) { return 0; }
     uint32_t micros(void) { return 0; }
 
-    bool compassIsHealthy(void) { return true; }
+    bool compassEnabledAndCalibrated(void) { return true; }
     bool baroIsCalibrated(void) { return true; }
     void performBaroCalibrationCycle(void) {}
     float baroCalculateAltitude(void) { return 0; }
@@ -438,7 +464,6 @@ extern "C" {
     float gyroGetFilteredDownsampled(int) { return 0.0f; }
     float baroUpsampleAltitude()  { return 0.0f; }
     float getBaroAltitude(void) { return 3000.0f; }
-    float gpsRescueGetImuYawCogGain(void) { return 1.0f; }
     float getRcDeflectionAbs(int) { return 0.0f; }
 
     void positionEstimatorInit(void) { }
@@ -446,7 +471,9 @@ extern "C" {
     void positionEstimatorResetZ(void) { }
     bool positionEstimatorIsValidZ(void) { return false; }
     float positionEstimatorGetAltitudeCm(void) { return 0.0f; }
-    float positionEstimatorGetAltitudeDerivative(void) { return 0.0f; }
+    float positionEstimatorGetVerticalVelocity(void) { return 0.0f; }
+    float positionEstimatorGetVerticalAcceleration(void) { return 0.0f; }
+    float positionEstimatorGetTrustZ(void) { return 0.0f; }
     static positionEstimate3d_t stubEstimate = {};
     const positionEstimate3d_t *positionEstimatorGetEstimate(void) { return &stubEstimate; }
 }

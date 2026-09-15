@@ -21,6 +21,9 @@
 #include <stdint.h>
 
 #include "common/axis.h"
+#include "common/time.h"
+#include "common/vector.h"
+
 
 #ifndef USE_WING
 
@@ -32,18 +35,28 @@ void autopilotInit(void);
 void resetAltitudeControl(void);
 void setSticksActiveStatus(bool areSticksActive);
 void resetPositionControl(unsigned taskRateHz);
-void posControlOutput(void);
 bool positionControl(void);
-// targetAltitudeVelCmS: climb-rate feedforward (cm/s) — stick in alt hold, rescue ascent/descent rates.
-// velLimitCmS: |vertical velocity command| cap (cm/s); use 0 for default (1500 cm/s).
-void altitudeControl(float targetAltitudeCm, float taskIntervalS, float targetAltitudeVelCmS, float velLimitCmS);
-
+void altitudeControl(float targetAltitudeCm, timeUs_t taskIntervalUs, float targetAltitudeVelCmS, float velLimitCmS);
+// Measured interval since the calling task last ran, bounded around its nominal
+// period. The autopilot control tasks are event driven, so their interval is
+// real rather than the nominal task period.
+timeUs_t autopilotTaskIntervalUs(timeUs_t nominalIntervalUs);
+void moveTargetLocation(const vector2_t *stepEF, unsigned taskRateHz, bool forceAbortNav);// for nav modes to update the target position
+void pitchForwardOverride(bool request);
+void autopilotForceLevelPark(bool request); // heading/mag fault: force angle-mode self-level, never position hold
+void autopilotSetNavHeadingOverride(bool valid, float headingDeg); // mission pre-turn: command nose heading directly
+void initPositionHold(void);
+void positionControlReanchor(void);
 uint16_t autopilotGetEffectiveHoverThrottlePwm(void);
 void autopilotCaptureHoverThrottleForAltHold(void);
 void autopilotClearAltHoldHoverThrottle(void);
-
 bool isBelowLandingAltitude(void);
 float getAutopilotThrottle(void);
-bool isAutopilotInControl(void);
+
+// Mission yaw control: rate injected as the yaw setpoint by rc.c while a
+// navigation leg is being flown (see updateYawControl in autopilot_multirotor.c)
+float autopilotGetYawRate(void);
+bool autopilotYawControlActive(void);
+void autopilotSetYawRateLimit(float rateLimitDps); // deg/s, 0 = no mission cap
 
 #endif // !USE_WING

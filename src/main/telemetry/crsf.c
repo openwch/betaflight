@@ -50,6 +50,7 @@
 #include "fc/rc_modes.h"
 #include "fc/runtime_config.h"
 
+#include "flight/flight_plan_nav.h"
 #include "flight/gps_rescue.h"
 #include "flight/imu.h"
 #include "flight/pid.h"
@@ -618,7 +619,7 @@ static void crsfFrameFlightMode(sbuf_t *dst)
     // Flight modes in decreasing order of importance
     if (FLIGHT_MODE(FAILSAFE_MODE) || IS_RC_MODE_ACTIVE(BOXFAILSAFE)) {
         flightMode = "!FS!";
-    } else if (FLIGHT_MODE(GPS_RESCUE_MODE) || IS_RC_MODE_ACTIVE(BOXGPSRESCUE)) {
+    } else if (FLIGHT_MODE(GPS_RESCUE_MODE) || IS_RC_MODE_ACTIVE(BOXGPSRESCUE) || flightPlanNavIsRescuePlanActive()) {
         flightMode = "RTH";
     } else if (FLIGHT_MODE(PASSTHRU_MODE)) {
         flightMode = "PASS";
@@ -668,8 +669,12 @@ uint8_t     0x01 (Parameter version 1)
 */
 static void crsfFrameDeviceInfo(sbuf_t *dst)
 {
-    char buff[30];
-    tfp_sprintf(buff, "%s %s: %s", FC_FIRMWARE_NAME, FC_VERSION_STRING, systemConfig()->boardIdentifier);
+    // tfp_sprintf() is unbounded, so size the buffer from the parts that go into it.
+    // The version string is deliberately left out: with calver plus an optional suffix
+    // (e.g. "2026.12.0-alpha") the name no longer fits, and it is of little use in the
+    // transmitter's device list anyway.
+    char buff[sizeof(FC_FIRMWARE_NAME ": ") + sizeof(systemConfig()->boardIdentifier)];
+    tfp_sprintf(buff, "%s: %s", FC_FIRMWARE_NAME, systemConfig()->boardIdentifier);
 
     uint8_t *lengthPtr = sbufPtr(dst);
     sbufWriteU8(dst, 0);
@@ -1116,13 +1121,39 @@ FAST_CODE void crsfScheduleTelemetryResponse(void)
 }
 
 // Scheduler check function for event-driven telemetry.
-// Parameters reserved for potential future rate-limiting or timing logic.
+// Cap TASK_TELEMETRY wake-ups at 50Hz so high RC link rates (e.g. 250Hz ELRS)
+// cannot wake the scheduler faster than it produces frames, which otherwise
+// starves time-critical tasks (PID/motor write). Each sensor frame type is
+// sent at most once per CRSF_CYCLETIME_US (100ms), so 50Hz task wakes are
+// sufficient to transmit all types on schedule.
+// Latency-sensitive ad-hoc responses (MSP-over-telemetry, device info) bypass
+// the cap so they still drain at the inbound frame rate.
 bool crsfTelemetryUpdateCheck(timeUs_t currentTimeUs, timeDelta_t currentDeltaTimeUs)
 {
-    UNUSED(currentTimeUs);
     UNUSED(currentDeltaTimeUs);
 
-    return telemetryResponsePending;
+    // Ad-hoc replies span several CRSF payloads and need one task run per chunk, so they are
+    // exempt from both the rate limit and telemetryResponsePending.
+#if defined(USE_MSP_OVER_TELEMETRY)
+    if (mspReplyPending) {
+        return true;
+    }
+#endif
+    if (deviceInfoReplyPending) {
+        return true;
+    }
+
+    if (!telemetryResponsePending) {
+        return false;
+    }
+
+    static timeUs_t lastTelemetryCheckTimeUs = 0;
+    if (cmpTimeUs(currentTimeUs, lastTelemetryCheckTimeUs) < (timeDelta_t)CRSF_TELEMETRY_FRAME_INTERVAL_MAX_US) {
+        return false;
+    }
+
+    lastTelemetryCheckTimeUs = currentTimeUs;
+    return true;
 }
 
 #endif
@@ -1306,15 +1337,9 @@ void handleCrsfTelemetry(timeUs_t currentTimeUs)
     // in between the RX frames.
     crsfRxSendTelemetryData();
 
-#if defined(USE_CRSF_V3)
-    // only send responses on recipt of full frames, this ensures the telemetry rate is never faster
-    // than the frame rate
-    if (!telemetryResponsePending) {
-        return;
-    }
-#endif
-
-    // Send ad-hoc response frames as soon as possible
+    // Send ad-hoc response frames as soon as possible, ahead of the gate below: a chunked reply
+    // needs one pass per chunk, and inbound frames can be too sparse to clock them out. ELRS
+    // WiFi passthrough has no RC link, so its only inbound frames are the MSP requests themselves.
 #if defined(USE_MSP_OVER_TELEMETRY)
     if (mspReplyPending) {
         mspReplyPending = handleCrsfMspFrameBuffer(&crsfSendMspResponse);
@@ -1339,6 +1364,15 @@ void handleCrsfTelemetry(timeUs_t currentTimeUs)
         crsfLastCycleTime = currentTimeUs; // reset telemetry timing due to ad-hoc request
         return;
     }
+
+#if defined(USE_CRSF_V3)
+    // Only send periodic telemetry on receipt of a full frame, so the telemetry rate is never
+    // faster than the frame rate. Skipped on fixed-rate links, where it would instead throttle
+    // telemetry down to the inbound frame rate.
+    if (crsfRxIsEventDrivenTelemetry() && !telemetryResponsePending) {
+        return;
+    }
+#endif
 
 #if defined(USE_CRSF_CMS_TELEMETRY)
     if (crsfDisplayPortScreen()->reset) {
@@ -1403,7 +1437,7 @@ void handleCrsfTelemetry(timeUs_t currentTimeUs)
     if (processCrsf(currentTimeUs, crsfLastCycleTime)) {
         crsfLastCycleTime = currentTimeUs;
 #ifdef USE_CRSF_ACCGYRO_TELEMETRY
-    } else if (crsfAccGyroEnabled() && isCrsfV3Running) {  // let the inbound request rate dictate the outbound rate
+    } else if (crsfAccGyroEnabled() && crsfRxIsEventDrivenTelemetry()) {  // let the inbound request rate dictate the outbound rate
         sbuf_t crsfPayloadBuf;
         sbuf_t *dst = &crsfPayloadBuf;
         crsfInitializeFrame(dst);

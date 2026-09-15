@@ -21,6 +21,23 @@
  * porting for ch32h41x by Temperslee
  */
 #pragma once
+#include <stdint.h>
+#define PLATFORM_CUSTOM_BASEPRI_NB
+#define PFIC_ITHRESDR_ADDR (0xE000E040)
+#define PFIC_ITHRESDR      *((volatile uint32_t *)PFIC_ITHRESDR_ADDR)
+
+__attribute__((always_inline)) static inline void __set_BASEPRI_nb(uint32_t basePri)
+{
+    PFIC_ITHRESDR = basePri & 0xF0;
+    asm("fence");
+}
+
+__attribute__((always_inline)) static inline void __set_BASEPRI_MAX_nb(uint32_t basePri)
+{
+    uint32_t cur_tmp = PFIC_ITHRESDR & 0xF0;
+    if (cur_tmp < (basePri & 0xF0)) PFIC_ITHRESDR = basePri & 0xF0;
+    asm("fence");
+}
 
 #if defined(CH32H415)
 
@@ -204,7 +221,7 @@
 #define DMA_TRAIT_MUX 1
 // #define DMA_TRAIT_CHANNEL 1
 
-#define MAX_MSP_PORT_COUNT 4  //default msp count is 3, it would not be enough for us
+#define MAX_MSP_PORT_COUNT 3  //default msp count is 3, it would not be enough for us
 
 #endif
 

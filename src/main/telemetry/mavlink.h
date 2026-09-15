@@ -22,6 +22,8 @@
 
 #include "common/time.h"
 
+#define MIN_MAVLINK_TELEMETRY_UPDATE_INTERVAL_MS 20
+
 void initMAVLinkTelemetry(void);
 void handleMAVLinkTelemetry(void);
 void checkMAVLinkTelemetryState(void);
@@ -30,8 +32,13 @@ void freeMAVLinkTelemetryPort(void);
 void configureMAVLinkTelemetryPort(void);
 
 // Forward-typedef so consumers can hold pointers without dragging in
-// common/mavlink.h (which carries -Wpedantic-noisy unnamed unions).
+// common/mavlink.h (which carries -Wpedantic-noisy unnamed unions). When the
+// full MAVLink headers are already in the translation unit they provide the real
+// (identical) typedef, so skip ours to avoid a -Wtypedef-redefinition clash
+// under stricter compilers. MAVLINK_MAX_PAYLOAD_LEN is defined by mavlink_types.h.
+#ifndef MAVLINK_MAX_PAYLOAD_LEN
 typedef struct __mavlink_message mavlink_message_t;
+#endif
 
 // Pack a fully-formed mavlink_message_t into the shared TX buffer and write it
 // to the open MAVLink serial port. Implemented in telemetry/mavlink.c; shared
@@ -39,8 +46,10 @@ typedef struct __mavlink_message mavlink_message_t;
 // buffer/port path.
 void mavlinkSendMessage(mavlink_message_t *msg);
 
-typedef struct mavlinkTelemetryStream_s {
-    uint8_t rate;
+typedef struct mavlinkTelemetryOutputMessage_s {
+    const uint32_t id;
+    const uint8_t stream;
+    timeMs_t updateInterval;
     timeMs_t updateTime;
-    void (*const streamFunc)(void);
-} mavlinkTelemetryStream_t;
+    void (*const sendMessageFunc)(void);
+} mavlinkTelemetryOutputMessage_t;

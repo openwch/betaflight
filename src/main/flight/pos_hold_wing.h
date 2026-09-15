@@ -18,20 +18,19 @@
 #pragma once
 
 #ifdef USE_WING
-
-// #include "pg/pos_hold.h"
-
 #ifdef USE_POSITION_HOLD
+
 #include "common/time.h"
 #include "io/gps.h"
 
 #define POSHOLD_TASK_RATE_HZ 100 // hz
 
 void posHoldInit(void);
+bool posHoldUpdateCheck(timeUs_t currentTimeUs, timeDelta_t currentDeltaTimeUs);
 void updatePosHold(timeUs_t currentTimeUs);
 
 bool posHoldFailure(void);
+bool posHoldReady(void);
 
-#endif
-
+#endif // USE_POSITION_HOLD
 #endif // USE_WING

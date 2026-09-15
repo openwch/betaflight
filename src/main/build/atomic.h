@@ -22,9 +22,7 @@
 
 #include <stdint.h>
 
-#if !defined(UNIT_TEST)
-
-#ifndef RISC_V
+#if !defined(UNIT_TEST) && !defined(PLATFORM_CUSTOM_BASEPRI_NB)
 // BASEPRI manipulation functions
 // only set_BASEPRI is implemented in device library. It does always create memory barrier
 // missing versions are implemented here
@@ -41,31 +39,9 @@ __attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint3
    __ASM volatile ("\tMSR basepri_max, %0\n" : : "r" (basePri) );
 }
 
-#else 
-
-#if defined(CH32H4) 
-
-#define PFIC_ITHRESDR_ADDR    (0xE000E040)
-#define PFIC_ITHRESDR         *((volatile uint32_t *)PFIC_ITHRESDR_ADDR)
-
-__attribute__( ( always_inline ) ) static inline void __set_BASEPRI_nb(uint32_t basePri)
-{
-    PFIC_ITHRESDR = basePri & 0xF0;
-    asm("fence");
-}
-
-__attribute__( ( always_inline ) ) static inline void __set_BASEPRI_MAX_nb(uint32_t basePri)
-{
-    uint32_t cur_tmp = PFIC_ITHRESDR & 0xF0;
-    if(cur_tmp < (basePri & 0xF0)) PFIC_ITHRESDR = basePri & 0xF0;
-    asm("fence");
-}
 
 #endif
 
-#endif
-
-#endif
 
 #if defined(UNIT_TEST)
 // atomic related functions for unittest.

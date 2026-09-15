@@ -244,7 +244,10 @@ uint8_t usbVcpIsConnected(void)
     return usbIsConnected();
 }
 
-
+uint8_t usbVcpIsActive(void)
+{
+    return usbIsConnected() && usbIsConfigured();
+}
 
 static void usbVcpSetBaudRate(serialPort_t *instance, uint32_t baudRate)
 {

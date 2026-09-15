@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 #include "common/axis.h"
+#include "common/time.h"
 
 #ifdef USE_WING
 
@@ -26,13 +27,23 @@ extern float autopilotAngle[RP_AXIS_COUNT]; // NOTE: ANGLES ARE IN CENTIDEGREES
 
 void autopilotInit(void);
 void resetAltitudeControl(void);
-void setSticksActiveStatus(bool areSticksActive);
 void resetPositionControl(unsigned taskRateHz);
 bool positionControl(void);
-void altitudeControl(float targetAltitudeCm, float taskIntervalS, float targetAltitudeVelCmS, float velLimitCmS);
+void altitudeControl(float targetAltitudeCm, timeUs_t taskIntervalUs, float targetAltitudeVelCmS, float velLimitCmS);
+timeUs_t autopilotTaskIntervalUs(timeUs_t nominalIntervalUs);
 
 bool isBelowLandingAltitude(void);
 float getAutopilotThrottle(void);
 bool isAutopilotInControl(void);
+
+float autopilotGetYawRate(void);
+bool autopilotYawControlActive(void);
+void autopilotSetYawRateLimit(float rateLimitDps);
+
+// Nav inner-loop hooks driven by the shared flight-plan engine. Stubbed until
+// the wing control law lands (Phase 3+); present so the engine links on wing.
+void autopilotSetNavHeadingOverride(bool valid, float headingDeg);
+void autopilotForceLevelPark(bool request);
+void pitchForwardOverride(bool request);
 
 #endif // USE_WING

@@ -148,7 +148,7 @@ MAYBE_UNUSED static void ghstFrameGpsSecondaryTelemetry(sbuf_t *dst)
     sbufWriteU8(dst, GHST_FRAME_GPS_PAYLOAD_SIZE + GHST_FRAME_LENGTH_CRC + GHST_FRAME_LENGTH_TYPE);
     sbufWriteU8(dst, GHST_DL_GPS_SECONDARY);
 
-    sbufWriteU16(dst, gpsSol.groundSpeed);      // speed in 0.1m/s
+    sbufWriteU16(dst, gpsSol.groundSpeed);      // speed in 0.01m/s
     sbufWriteU16(dst, gpsSol.groundCourse);     // degrees * 10
     sbufWriteU8(dst, gpsSol.numSat);
 
@@ -235,7 +235,7 @@ static void ghstSendMspResponse(uint8_t *payload, const uint8_t payloadSize)
     sbuf_t *dst = &ghstPayloadBuf;
 
     static uint8_t mspFrameCounter = 0;
-    DEBUG_SET(DEBUG_GHST_MSP, 1, ++mspFrameCounter);
+    DEBUG_SET(DEBUG_GHST_MSP, 1, ++mspFrameCounter);  //!< MSP Responses Sent
 
     ghstInitializeFrame(dst);                                                               // addr
     sbufWriteU8(dst, GHST_PAYLOAD_SIZE + GHST_FRAME_LENGTH_CRC + GHST_FRAME_LENGTH_TYPE);   // length

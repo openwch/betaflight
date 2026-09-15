@@ -167,6 +167,21 @@ READELF      = $(ARM_SDK_PREFIX)readelf
 SIZE         = $(ARM_SDK_PREFIX)size
 DFUSE-PACK  := src/utils/dfuse-pack.py
 
+# Command used to link the final ELF. Platform makefiles can override this
+# when linking requires a dedicated linker instead of the C compiler driver.
+# $(file ...) needs GNU make 4.0; macOS ships 3.81, which silently expands it to
+# nothing and leaves the linker looking for an arguments file that was never written.
+ifeq ($(filter 3.%,$(MAKE_VERSION)),)
+ELF_LINK_CMD = $(file > $@.args,$(filter-out %.ld,$^)) $(CROSS_CC) -o $@ @$@.args $(LD_FLAGS)
+else
+# Exported so the warning is emitted once, not once per recursive make invocation.
+ifndef OLD_MAKE_WARNED
+export OLD_MAKE_WARNED := 1
+$(warning GNU make $(MAKE_VERSION) detected, falling back to linking without an arguments file. Support for GNU make older than 4.0 may be dropped in a future release. macOS ships an old system make: install a current one with 'brew install make' and build with gmake.)
+endif
+ELF_LINK_CMD = $(CROSS_CC) -o $@ $(filter-out %.ld,$^) $(LD_FLAGS)
+endif
+
 # Preprocessor helpers (generic .h parsing)
 include $(MAKE_SCRIPT_DIR)/preprocess.mk
 
@@ -197,7 +212,7 @@ include $(TARGET_DIR)/target.mk
 endif
 
 REVISION := norevision
-ifneq ($(wildcard .git/),)
+ifneq ($(wildcard .git),)
 ifeq ($(shell git diff --shortstat),)
 REVISION := $(shell git rev-parse --short=9 HEAD)
 endif
@@ -466,6 +481,11 @@ TARGET_EXE      := $(BIN_DIR)/$(TARGET_FULLNAME)
 TARGET_DFU      := $(BIN_DIR)/$(TARGET_FULLNAME).dfu
 TARGET_ZIP      := $(BIN_DIR)/$(TARGET_FULLNAME).zip
 TARGET_OBJ_DIR  := $(OBJECT_DIR)/$(TARGET_NAME)
+# Scoped under TARGET_OBJ_DIR, not the shared OBJECT_DIR: concurrent
+# `make TARGET=X` invocations (e.g. `make -jN all_configs`) each run their
+# own validate-deps, and a manifest shared across targets races on the
+# mv below when multiple targets build in parallel.
+SRC_MANIFEST    := $(TARGET_OBJ_DIR)/.src_manifest
 TARGET_ELF      := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME).elf
 TARGET_EXST_ELF := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_EXST.elf
 TARGET_UNPATCHED_BIN := $(OBJECT_DIR)/$(FORKNAME)_$(TARGET_NAME)_UNPATCHED.bin
@@ -484,7 +504,7 @@ endif
 
 TARGET_EF_HASH_FILE := $(TARGET_OBJ_DIR)/.efhash_$(TARGET_EF_HASH)
 
-CLEAN_ARTIFACTS := $(TARGET_ELF) $(TARGET_EXST_ELF) $(TARGET_MAP)
+CLEAN_ARTIFACTS := $(TARGET_ELF) $(TARGET_ELF).args $(TARGET_EXST_ELF) $(TARGET_MAP)
 CLEAN_ARTIFACTS += $(wildcard $(BIN_DIR)/*$(TARGET_NAME_CLEAN)*)
 
 # Make sure build date and revision is updated on every incremental build
@@ -497,9 +517,16 @@ $(TARGET_LST): $(TARGET_ELF)
 	$(V0) $(OBJDUMP) -S --disassemble $< > $@
 
 ifeq ($(EXST),no)
-$(TARGET_BIN): $(TARGET_ELF)
+$(TARGET_BIN): $(TARGET_ELF) $(BIN_FROM_ELF_DEPS)
 	@echo "Creating BIN $(TARGET_BIN)" "$(STDOUT)"
+# A platform may set BIN_FROM_ELF_CMD to generate the binary from the ELF its
+# own way (e.g. ESP32 wraps it into a bootable image with esptool elf2image);
+# otherwise fall back to a plain objcopy raw dump.
+ifdef BIN_FROM_ELF_CMD
+	$(V1) $(BIN_FROM_ELF_CMD)
+else
 	$(V1) $(OBJCOPY) -O binary $< $@
+endif
 
 $(TARGET_HEX): $(TARGET_ELF)
 	@echo "Creating HEX $(TARGET_HEX)" "$(STDOUT)"
@@ -556,7 +583,7 @@ endif
 
 $(TARGET_ELF): $(TARGET_OBJS) $(LD_SCRIPT) $(LD_SCRIPTS)
 	@echo "Linking $(TARGET_NAME)" "$(STDOUT)"
-	$(V1) $(CROSS_CC) -o $@ $(filter-out %.ld,$^) $(LD_FLAGS)
+	$(V1) $(ELF_LINK_CMD)
 	$(V1) $(SIZE) $(TARGET_ELF)
 
 $(TARGET_UF2): $(TARGET_ELF)
@@ -737,45 +764,54 @@ $(AUTOHYDRATE_STAMPS):
 	$(V1) git submodule update --init -- "$(@:/.git=)" \
 	    || { echo "submodule update failed: $(@:/.git=)"; exit 1; }
 
-# Drop .d files whose recorded source path no longer exists. The most
-# common trigger is pulling across a source-move commit (e.g. promoting
-# an embedded vendor tree to a submodule) — gcc's -MMD pinned the .o to
-# the previous path, and make then bails with "No rule to make target
-# <old-path>" before the compiler ever runs to regenerate the .d. Cheap
-# scan: just stat the first .c prereq the .d declares.
-.PHONY: clean-stale-deps
-clean-stale-deps:
-	$(V1) if [ -d "$(OBJECT_DIR)" ]; then \
-	    find "$(OBJECT_DIR)" -name '*.d' 2>/dev/null | while IFS= read -r dfile; do \
-	        src=$$(awk '{ for (i=1; i<=NF; i++) if ($$i ~ /\.c$$/) { print $$i; exit } }' "$$dfile" 2>/dev/null); \
-	        if [ -n "$$src" ] && [ ! -f "$$src" ]; then \
-	            echo "Removing stale dependency file: $$dfile (source moved: $$src)"; \
-	            $(RM) "$$dfile"; \
-	        fi; \
-	    done; \
-	fi
+# Drop .d files when a source is removed (deleted, moved, or promoted to
+# a submodule). gcc's -MMD pins the .o to the old path; without cleanup
+# make bails with "No rule to make target <old-path>". A manifest of all
+# compiled sources is written to $(SRC_MANIFEST); on each build we compare
+# the current source list against it. If any sources were removed all .d
+# files are deleted so gcc can regenerate them cleanly. If nothing changed
+# the cost is a single cmp call.
+.PHONY: validate-deps
+validate-deps:
+	$(V1) mkdir -p "$(TARGET_OBJ_DIR)"; \
+	printf '%s\n' $(SRC) | sort > "$(SRC_MANIFEST).new"; \
+	if [ ! -f "$(SRC_MANIFEST)" ]; then \
+	    find "$(TARGET_OBJ_DIR)" -name '*.d' -delete 2>/dev/null; \
+	elif ! cmp -s "$(SRC_MANIFEST)" "$(SRC_MANIFEST).new"; then \
+	    if comm -23 "$(SRC_MANIFEST)" "$(SRC_MANIFEST).new" | grep -q .; then \
+	        echo "Sources removed — clearing stale dependency files"; \
+	        find "$(TARGET_OBJ_DIR)" -name '*.d' -delete 2>/dev/null; \
+	    fi; \
+	fi; \
+	mv -f "$(SRC_MANIFEST).new" "$(SRC_MANIFEST)"
 
 .PHONY: binary
-binary: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) clean-stale-deps
+binary: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) validate-deps
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_BIN)
 
 .PHONY: hex
-hex: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) clean-stale-deps
+hex: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) validate-deps
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_HEX)
 
 .PHONY: uf2
-uf2: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) clean-stale-deps
+uf2: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) validate-deps
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_UF2)
 
 .PHONY: exe
-exe: $(AUTOHYDRATE_STAMPS) clean-stale-deps
+exe: $(AUTOHYDRATE_STAMPS) validate-deps
 	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_EXE)
+
+.PHONY: elf
+elf: $(PLATFORM_SDK_STAMP) $(AUTOHYDRATE_STAMPS) validate-deps
+	$(V1) $(MAKE) $(MAKE_PARALLEL) $(TARGET_ELF)
 
 # FWO (Firmware Output) is the default output for building the firmware
 .PHONY: fwo
 fwo:
 ifeq ($(DEFAULT_OUTPUT),exe)
 	$(V1) $(MAKE) exe
+else ifeq ($(DEFAULT_OUTPUT),elf)
+	$(V1) $(MAKE) elf
 else ifeq ($(DEFAULT_OUTPUT),uf2)
 	$(V1) $(MAKE) uf2
 else ifeq ($(DEFAULT_OUTPUT),bin)
@@ -865,7 +901,15 @@ targets-ci-grouped-print:
 		done; \
 		for t in $(CI_TARGETS); do \
 			config_h="$(CONFIG_DIR)/configs/$$t/config.h"; \
-			if [ -f "$$config_h" ]; then \
+			if [ ! -f "$$config_h" ]; then \
+				config_h=""; \
+				for c in $(CONFIG_DIR)/configs/*/$$t/config.h; do \
+					[ -f "$$c" ] || continue; \
+					if [ -n "$$config_h" ]; then echo "Ambiguous CI target $$t matches multiple configs" >&2; config_h=""; break; fi; \
+					config_h="$$c"; \
+				done; \
+			fi; \
+			if [ -n "$$config_h" ]; then \
 				mcu=$$(grep -m1 'FC_TARGET_MCU' "$$config_h" | awk '{print $$NF}'); \
 				echo "CONFIG $$t $$mcu"; \
 			fi; \

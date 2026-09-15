@@ -55,8 +55,13 @@
 #include "drivers/time.h"
 
 #include "fc/runtime_config.h"
-
+#include "flight/imu.h"
 #include "io/beeper.h"
+
+#if ENABLE_DRONECAN
+#include "io/dronecan/dronecan.h"
+#include "io/dronecan/dronecan_mag.h"
+#endif
 
 #include "pg/pg.h"
 #include "pg/pg_ids.h"
@@ -85,6 +90,7 @@
 static timeUs_t magCalEndTime = 0;
 static bool didMovementStart = false;
 static bool magCalProcessActive = false;
+static bool compassHasBeenCalibrated = false;
 
 static compassBiasEstimator_t compassBiasEstimator;
 
@@ -146,6 +152,12 @@ void pgResetFn_compassConfig(compassConfig_t *compassConfig)
     compassConfig->mag_i2c_address = MAG_I2C_ADDRESS;
     compassConfig->mag_spi_device = SPI_DEV_TO_CFG(SPIINVALID);
     compassConfig->mag_spi_csn = IO_TAG_NONE;
+#elif defined(USE_VIRTUAL_MAG)
+    compassConfig->mag_busType = BUS_TYPE_NONE;
+    compassConfig->mag_i2c_device = I2C_DEV_TO_CFG(I2CINVALID);
+    compassConfig->mag_i2c_address = 0;
+    compassConfig->mag_spi_device = SPI_DEV_TO_CFG(SPIINVALID);
+    compassConfig->mag_spi_csn = IO_TAG_NONE;
 #else
     compassConfig->mag_hardware = MAG_NONE;
     compassConfig->mag_busType = BUS_TYPE_NONE;
@@ -164,6 +176,50 @@ void pgResetFn_compassConfig(compassConfig_t *compassConfig)
 
 static int16_t magADCRaw[XYZ_AXIS_COUNT];
 
+#if ENABLE_DRONECAN
+// Frames older than this are treated as no data, so a dead bus trips the
+// compass task's read-failure path rather than latching the last vector.
+#define DRONECAN_MAG_TIMEOUT_US (500 * 1000)
+
+static bool dronecanMagDevInit(magDev_t *magDev)
+{
+    UNUSED(magDev);
+    return true;
+}
+
+static bool dronecanMagDevRead(magDev_t *magDev, int16_t *magData)
+{
+    UNUSED(magDev);
+
+    int16_t latest[XYZ_AXIS_COUNT];
+    if (!dronecanMagGetLatest(latest)) {
+        return false;
+    }
+
+    if (cmpTimeUs(micros(), dronecanMagLastUpdateUs()) >= DRONECAN_MAG_TIMEOUT_US) {
+        return false;
+    }
+
+    magData[X] = latest[X];
+    magData[Y] = latest[Y];
+    magData[Z] = latest[Z];
+    return true;
+}
+
+static bool dronecanMagDevDetect(magDev_t *magDev)
+{
+    // A DroneCAN mag can't be probed on a bus. dronecanInit() runs before
+    // compassInit() in fc/init.c, so dronecanIsInitialised() already reflects
+    // the enabled flag, a valid node ID and a valid CAN device.
+    if (!dronecanIsInitialised()) {
+        return false;
+    }
+    magDev->init = dronecanMagDevInit;
+    magDev->read = dronecanMagDevRead;
+    return true;
+}
+#endif // ENABLE_DRONECAN
+
 void compassPreInit(void)
 {
 #ifdef USE_SPI
@@ -180,6 +236,18 @@ static bool compassDetect(magDev_t *magDev, sensor_align_e *alignment)
 
     magSensor_e magHardware = MAG_NONE;
 
+#if ENABLE_DRONECAN
+    // Explicitly-selected only; never part of AUTO probing.
+    if (compassConfig()->mag_hardware == MAG_DRONECAN) {
+        if (dronecanMagDevDetect(magDev)) {
+            detectedSensors[SENSOR_INDEX_MAG] = MAG_DRONECAN;
+            sensorsSet(SENSOR_MAG);
+            return true;
+        }
+        return false;
+    }
+#endif
+
     extDevice_t *dev = &magDev->dev;
     // Associate magnetometer bus with its device
     dev->bus = &magDev->bus;
@@ -191,7 +259,9 @@ static bool compassDetect(magDev_t *magDev, sensor_align_e *alignment)
     switch (compassConfig()->mag_busType) {
 #ifdef USE_I2C
     case BUS_TYPE_I2C:
-        i2cBusSetInstance(dev, compassConfig()->mag_i2c_device);
+        if (!i2cBusSetInstance(dev, compassConfig()->mag_i2c_device)) {
+            return false;
+        }
         dev->busType_u.i2c.address = compassConfig()->mag_i2c_address;
         break;
 #endif
@@ -386,12 +456,28 @@ static bool compassDetect(magDev_t *magDev, sensor_align_e *alignment)
 #else
 static bool compassDetect(magDev_t *dev, sensor_align_e *alignment)
 {
+#if defined(USE_VIRTUAL_MAG)
+    *alignment = ALIGN_DEFAULT; // virtual mag data is already in the body frame
+    if (compassConfig()->mag_hardware != MAG_NONE && virtualMagDetect(dev)) {
+        detectedSensors[SENSOR_INDEX_MAG] = MAG_DEFAULT;
+        sensorsSet(SENSOR_MAG);
+        return true;
+    }
+#endif
     UNUSED(dev);
     UNUSED(alignment);
 
     return false;
 }
 #endif // !ENABLE_SIMULATOR
+
+static bool compassHasCalibration(void)
+{
+    const flightDynamicsTrims_t *magZero = &compassConfig()->magZero;
+    return (magZero->raw[X] != 0) ||
+           (magZero->raw[Y] != 0) ||
+           (magZero->raw[Z] != 0);
+}
 
 bool compassInit(void)
 {
@@ -423,7 +509,9 @@ bool compassInit(void)
 
     buildRotationMatrixFromAngles(&magDev.rotationMatrix, &magCustomAlignment);
 
-    compassBiasEstimatorInit(&compassBiasEstimator, LAMBDA_MIN, P0);
+    compassBiasEstimatorInit(&compassBiasEstimator, LAMBDA_MIN, P0);  
+
+    compassHasBeenCalibrated = compassHasCalibration();
 
     if (magDev.magOdrHz) {
         // For Mags that send data at a fixed ODR, we wait some quiet period after a read before checking for new data
@@ -438,9 +526,20 @@ bool compassInit(void)
     return true;
 }
 
-bool compassIsHealthy(void)
+static bool compassIsHealthy(void)
 {
-    return (mag.magADC.x != 0) && (mag.magADC.y != 0) && (mag.magADC.z != 0);
+    return (mag.magADC.x != 0) ||
+           (mag.magADC.y != 0) ||
+           (mag.magADC.z != 0);
+           // fail if all axes report zero, the original isHealthy check
+}
+
+bool compassEnabledAndCalibrated(void)
+{
+    return sensors(SENSOR_MAG)
+        && imuConfig()->trust_mag
+        && compassHasBeenCalibrated
+        && compassIsHealthy(); // and appars to have valid data
 }
 
 void compassStartCalibration(void)
@@ -464,10 +563,10 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
     static timeUs_t previousTaskTimeUs = 0;
     const timeDelta_t dTaskTimeUs = cmpTimeUs(currentTimeUs, previousTaskTimeUs);
     previousTaskTimeUs = currentTimeUs;
-    DEBUG_SET(DEBUG_MAG_TASK_RATE, 6, dTaskTimeUs);
+    DEBUG_SET(DEBUG_MAG_TASK_RATE, 6, dTaskTimeUs);  //!< Task Interval [unit:us]
 
     bool checkBusBusy = busBusy(&magDev.dev, NULL);
-    DEBUG_SET(DEBUG_MAG_TASK_RATE, 4, checkBusBusy);
+    DEBUG_SET(DEBUG_MAG_TASK_RATE, 4, checkBusBusy);  //!< Bus Busy
     if (checkBusBusy) {
         // No action is taken, as the bus was busy.
         schedulerIgnoreTaskExecRate();
@@ -475,7 +574,7 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
     }
 
     bool checkReadState = !magDev.read(&magDev, magADCRaw);
-    DEBUG_SET(DEBUG_MAG_TASK_RATE, 5, checkReadState);
+    DEBUG_SET(DEBUG_MAG_TASK_RATE, 5, checkReadState);  //!< Read State
     if (checkReadState) {
         // The compass reported no data available to be retrieved; it may use a state engine that has more than one read state
         schedulerIgnoreTaskExecRate();
@@ -531,6 +630,7 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
                     for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
                         magZero->raw[axis] = lrintf(compassBiasEstimator.b[axis]);
                     }
+                    compassHasBeenCalibrated = compassHasCalibration();
                     beeper(BEEPER_GYRO_CALIBRATED); // re-purpose gyro cal success beep
                     saveConfigAndNotify();
                 } else {
@@ -552,12 +652,12 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
     if (debugMode == DEBUG_MAG_CALIB) {
         for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
             // DEBUG 0-2: magADC.x, magADC.y, magADC.z
-            DEBUG_SET(DEBUG_MAG_CALIB, axis, lrintf(mag.magADC.v[axis]));
+            DEBUG_SET(DEBUG_MAG_CALIB, axis, lrintf(mag.magADC.v[axis]));  //!< [index:0..2] Mag {X|Y|Z}
             // DEBUG 4-6: estimated magnetometer bias, increases above zero when calibration starts
-            DEBUG_SET(DEBUG_MAG_CALIB, axis + 4, lrintf(compassBiasEstimator.b[axis]));
+            DEBUG_SET(DEBUG_MAG_CALIB, axis + 4, lrintf(compassBiasEstimator.b[axis]));  //!< [index:4..6] Estimated Mag Bias {X|Y|Z}
         }
         // DEBUG 3: absolute vector length of magADC, should stay constant independent of the orientation of the quad
-        DEBUG_SET(DEBUG_MAG_CALIB, 3, lrintf(vector3Norm(&mag.magADC)));
+        DEBUG_SET(DEBUG_MAG_CALIB, 3, lrintf(vector3Norm(&mag.magADC)));  //!< Mag Vector Length
         // DEBUG 7: adaptive forgetting factor lambda, only while analysing cal data
         // after the transient phase it should converge to 2000
         // set dsiplayed lambda to zero unless calibrating, to indicate start and finish in Sensors tab
@@ -567,7 +667,7 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
             const float mapLambdaGain = 1.0f / (1.0f - compassBiasEstimator.lambda_min + 1.0e-6f) * 2.0e3f;
             displayLambdaGain = (compassBiasEstimator.lambda - compassBiasEstimator.lambda_min) * mapLambdaGain;
         }
-        DEBUG_SET(DEBUG_MAG_CALIB, 7, lrintf(displayLambdaGain));
+        DEBUG_SET(DEBUG_MAG_CALIB, 7, lrintf(displayLambdaGain));  //!< Calibration Forgetting Factor
     }
 
     if (debugMode == DEBUG_MAG_TASK_RATE) {
@@ -576,10 +676,10 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
         previousTimeUs = currentTimeUs;
         const uint16_t actualCompassDataRateHz = 1e6f / dataIntervalUs;
         timeDelta_t executeTimeUs = micros() - currentTimeUs;
-        DEBUG_SET(DEBUG_MAG_TASK_RATE, 0, TASK_COMPASS_RATE_HZ);
-        DEBUG_SET(DEBUG_MAG_TASK_RATE, 1, actualCompassDataRateHz);
-        DEBUG_SET(DEBUG_MAG_TASK_RATE, 2, dataIntervalUs);
-        DEBUG_SET(DEBUG_MAG_TASK_RATE, 3, executeTimeUs); // time in uS to complete the mag task
+        DEBUG_SET(DEBUG_MAG_TASK_RATE, 0, TASK_COMPASS_RATE_HZ);     //!< Task Rate [unit:Hz]
+        DEBUG_SET(DEBUG_MAG_TASK_RATE, 1, actualCompassDataRateHz);  //!< Actual Data Rate [unit:Hz]
+        DEBUG_SET(DEBUG_MAG_TASK_RATE, 2, dataIntervalUs);           //!< Data Interval [unit:us]
+        DEBUG_SET(DEBUG_MAG_TASK_RATE, 3, executeTimeUs);            //!< Task Execute Time [unit:us]
     }
 
     // don't do the next read check until compassReadIntervalUs has expired
