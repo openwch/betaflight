@@ -263,6 +263,7 @@ static uint32_t getDshotBaseFrequency(motorProtocolTypes_e pwmProtocolType)
 static void bbSetupDma(bbPort_t *bbPort)
 {
     const dmaIdentifier_e dmaIdentifier = dmaGetIdentifier(bbPort->dmaResource);
+    dmaMuxEnable(dmaIdentifier, bbPort->dmaChannel);
     dmaEnable(dmaIdentifier);
     bbPort->dmaSource = timerDmaSource(bbPort->timhw->channel);
 
